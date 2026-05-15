@@ -1,0 +1,7 @@
+*.o
+*.d
+build/
+dist/
+*.gcov
+*.gcda
+*.gcno
