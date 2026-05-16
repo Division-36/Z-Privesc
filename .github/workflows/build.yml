@@ -1,0 +1,30 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build on Linux
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential man-db
+      - name: Build
+        run: make
+      - name: Build static
+        run: make static
+      - name: Smoke test
+        run: |
+          ./build/bin/z_privesc --version
+          ./build/bin/z_privesc --help
+      - name: Install man page
+        run: |
+          sudo make install
+          man -w z_privesc
