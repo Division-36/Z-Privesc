@@ -1,0 +1,135 @@
+.\" Man page for z_privesc
+.\" Generated for Z-Privesc 1.0.0
+.TH Z_PRIVESC 1 "2026-06-04" "1.0.0" "Z-Privesc Manual"
+.SH NAME
+z_privesc \- privilege-escalation audit tool
+.SH SYNOPSIS
+.B z_privesc
+[\fIOPTIONS\fR]
+.SH DESCRIPTION
+\fBZ\-Privesc\fR inspects a Linux system for misconfigurations known
+to enable local privilege escalation across eight categories: SUID
+binaries, writable PATH entries, Linux capabilities, writable
+authentication files in \fI/etc\fR, exposed Docker control sockets,
+polkit / pkexec weaknesses, world\-writable sensitive files, and
+kernel version matches against well\-known privilege\-escalation
+CVEs.
+
+Every finding is collected as a piece of \fIevidence\fR and evaluated
+by the \fITruthimatics Public Version\fR engine, which assigns a
+majority\-weighted \fIverdict\fR to the chain (DETERMINISTIC,
+UNCERTAIN, or REJECT) and a CVSS\-like \fIrisk score\fR.
+.SH OPTIONS
+.TP
+.B \-\-all
+Run every registered probe.  This is the default.
+.TP
+.B \-\-probe=\fINAME\fR
+Run only the named probe.  May be repeated to run a subset.
+Recognised names are:
+.RS
+.IP
+suid, writable_path, capabilities, writable_etc, docker_socket,
+polkit, world_writable, kernel_vuln
+.RE
+.TP
+.B \-\-root=\fIDIR\fR
+Treat \fIDIR\fR as the filesystem root.  Useful for scanning the
+rootfs of a stopped container.
+.TP
+.B \-\-json
+Emit a JSON audit report conforming to schema
+\fIz-privesc.audit/v1\fR on stdout.
+.TP
+.B \-\-html
+Emit an HTML audit report on stdout.
+.TP
+.B \-\-quiet
+Suppress progress output.  Errors continue to be logged to stderr.
+.TP
+.B \-\-verbose
+Enable debug\-level logging.
+.TP
+.B \-\-version
+Print the build ID and exit.
+.TP
+.B \-\-help
+Print a usage summary and exit.
+.SH EXIT CODES
+.TP
+.B 0
+No privilege\-escalation paths were identified.
+.TP
+.B 1
+A probe encountered a fatal error (filesystem failure, permission
+denied).
+.TP
+.B 2
+At least one probe reported a DETERMINISTIC finding.
+.TP
+.B 125
+Internal error (out of memory, argument validation, ...).
+.SH OUTPUT SCHEMA
+The JSON document produced with \fB\-\-json\fR conforms to schema
+\fIz-privesc.audit/v1\fR.  Each probe produces a record with the
+chain verdict, the evidence count, a risk score, and an array of
+findings.
+.SH ENVIRONMENT
+.TP
+.B PATH
+Consulted by the \fIwritable_path\fR probe.
+.SH FILES
+.TP
+.I /proc/self/status
+Read by the \fIcapabilities\fR probe to determine the process
+capability bounding set.
+.TP
+.I /proc/version
+Read by the \fIkernel_vuln\fR probe.
+.TP
+.I /var/run/docker.sock
+Inspected by the \fIdocker_socket\fR probe.
+.TP
+.I /etc/passwd, /etc/shadow, /etc/sudoers
+Inspected by the \fIwritable_etc\fR probe.
+.SH EXAMPLES
+.PP
+Run every probe and emit JSON:
+.PP
+.RS
+.nf
+\fB
+z_privesc \-\-all \-\-json | jq
+\fR
+.fi
+.RE
+.PP
+Run only the SUID and kernel probes:
+.PP
+.RS
+.nf
+\fB
+z_privesc \-\-probe=suid \-\-probe=kernel_vuln \-\-json
+\fR
+.fi
+.RE
+.PP
+Scan a stopped container's rootfs:
+.PP
+.RS
+.nf
+\fB
+z_privesc \-\-root=/var/lib/containerd/.../rootfs \-\-json
+\fR
+.fi
+.RE
+.SH SEE ALSO
+.BR sudo (8),
+.BR getcap (8),
+.BR pkexec (1)
+.SH AUTHORS
+Zierax (Ziad Salah) <zs.01117875692@gmail.com>
+.SH BUGS
+Report bugs to <zs.01117875692@gmail.com> or open an issue at
+.UR https://github.com/Division-36/Z-Privesc
+.UE .
