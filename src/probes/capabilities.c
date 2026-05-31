@@ -34,7 +34,9 @@
 static const char *CRITICAL_CAPS[] = {
     "cap_sys_admin",   "cap_dac_override", "cap_setuid",     "cap_setgid",
     "cap_sys_ptrace",  "cap_net_raw",      "cap_dac_read_search",
-    "cap_sys_module",  "cap_sys_rawio",    "cap_linux_immutable"
+    "cap_sys_module",  "cap_sys_rawio",    "cap_linux_immutable",
+    "cap_sys_boot",
+    "cap_net_admin"
 };
 #define CRITICAL_CAPS_COUNT (sizeof(CRITICAL_CAPS) / sizeof(CRITICAL_CAPS[0]))
 
