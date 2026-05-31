@@ -111,3 +111,4 @@ int zp_probe_writable_etc(struct zp_evidence_chain *c,
     }
     return ZP_OK;
 }
+#define AUTH_FILES_COUNT (sizeof(AUTH_FILES) / sizeof(AUTH_FILES[0]))
