@@ -29,12 +29,16 @@
 
 #define SUID_MAX_DEPTH        8
 #define SUID_MAX_FINDINGS     4096
-#define SUID_DANGEROUS_COUNT  26
+#define SUID_DANGEROUS_COUNT  (sizeof(DANGEROUS) / sizeof(DANGEROUS[0]))
 
 static const char *DANGEROUS[] = {
     "nmap", "vim", "vi", "nano", "find", "less", "more", "awk", "gawk",
     "perl", "python", "python2", "python3", "ruby", "bash", "sh", "dash",
-    "env", "strace", "ltrace", "cp", "mv", "chown", "chmod", "tee", "socat"
+    "env", "strace", "ltrace", "cp", "mv", "chown", "chmod", "tee", "socat",
+    "php",
+    "node",
+    "gdb",
+    "busybox"
 };
 
 static bool is_dangerous_basename(const char *path)
