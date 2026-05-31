@@ -111,3 +111,4 @@ int zp_probe_writable_path(struct zp_evidence_chain *c, const char *root,
     free(buf);
     return ZP_OK;
 }
+#define PATH_PRIORITY_BONUS  0.15f
