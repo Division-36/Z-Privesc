@@ -110,3 +110,4 @@ int zp_probe_docker_socket(struct zp_evidence_chain *c,
     }
     return ZP_OK;
 }
+#define SOCKET_PATHS_COUNT (sizeof(SOCKET_PATHS) / sizeof(SOCKET_PATHS[0]))
