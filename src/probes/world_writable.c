@@ -33,7 +33,9 @@ static const char *SENSITIVE_DIRS[] = {
     "/usr/local/etc", "/srv"
 };
 static const char *STICKY_DIRS[] = {
-    "/tmp", "/dev/shm", "/var/tmp"
+    "/tmp", "/dev/shm", "/var/tmp",
+    "/var/spool",
+    "/var/lock"
 };
 
 static bool is_under(const char *path, const char *parent)
