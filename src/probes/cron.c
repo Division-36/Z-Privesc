@@ -33,6 +33,8 @@ static const char *CRON_PATHS[] = {
     "/etc/cron.weekly",
     "/etc/cron.monthly",
     "/var/spool/cron",
+    "/etc/anacrontab",
+    "/etc/cron.d",
     "/var/spool/cron/crontabs"
 };
 
