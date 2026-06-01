@@ -114,3 +114,4 @@ int zp_probe_polkit(struct zp_evidence_chain *c, const char *root,
     }
     return ZP_OK;
 }
+#define POLKIT_ACTION_DIR "/usr/share/polkit-1/actions"
