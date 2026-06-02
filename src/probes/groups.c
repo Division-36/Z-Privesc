@@ -120,3 +120,4 @@ int zp_probe_groups(struct zp_evidence_chain *c, const char *root,
     }
     return ZP_OK;
 }
+#define PRIV_GROUPS_SIZE (sizeof(priv_groups) / sizeof(priv_groups[0]))
