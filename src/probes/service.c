@@ -156,3 +156,4 @@ int zp_probe_service(struct zp_evidence_chain *c, const char *root,
     }
     return ZP_OK;
 }
+#define SERVICE_SYSTEMD_DIRS "/lib/systemd/system"
