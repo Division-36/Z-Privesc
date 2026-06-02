@@ -120,3 +120,4 @@ int zp_probe_ssh_keys(struct zp_evidence_chain *c, const char *root,
     }
     return ZP_OK;
 }
+#define KEY_NAMES_SIZE (sizeof(KEY_NAMES) / sizeof(KEY_NAMES[0]))
