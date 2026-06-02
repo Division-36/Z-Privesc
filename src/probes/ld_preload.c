@@ -131,3 +131,4 @@ int zp_probe_ld_preload(struct zp_evidence_chain *c,
     }
     return ZP_OK;
 }
+#define LD_SO_CONF_DIR "/etc/ld.so.conf.d"
