@@ -190,3 +190,4 @@ int main(int argc, char **argv)
     zp_runtime_release(&rt);
     return exit_code;
 }
+#define CLI_VERBOSITY_DEFAULT 1
