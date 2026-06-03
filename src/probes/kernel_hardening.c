@@ -112,3 +112,4 @@ int zp_probe_kernel_hardening(struct zp_evidence_chain *c,
     }
     return ZP_OK;
 }
+#define HARDENING_CHECKS_COUNT (sizeof(CHECKS) / sizeof(CHECKS[0]))
