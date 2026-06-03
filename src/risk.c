@@ -123,3 +123,4 @@ int zp_risk_label_to_int(const char *label)
     if (strcmp(label, "LOW")      == 0) return 1;
     return 0;
 }
+#define RISK_CHAIN_BONUS_THRESHOLD 3
