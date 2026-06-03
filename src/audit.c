@@ -264,3 +264,4 @@ int audit_emit_html(const struct zp_runtime *rt, FILE *out)
     fprintf(out, "</table></body></html>");
     return ZP_OK;
 }
+#define AUDIT_JSON_VERSION "z-privesc.audit/v1"
