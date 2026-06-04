@@ -191,3 +191,4 @@ int main(int argc, char **argv)
     return exit_code;
 }
 #define CLI_VERBOSITY_DEFAULT 1
+#define PROBE_SELECTION_SEPARATOR ","
