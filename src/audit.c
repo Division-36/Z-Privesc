@@ -265,3 +265,4 @@ int audit_emit_html(const struct zp_runtime *rt, FILE *out)
     return ZP_OK;
 }
 #define AUDIT_JSON_VERSION "z-privesc.audit/v1"
+#define AUDIT_TIMESTAMP_FORMAT "%Y-%m-%dT%H:%M:%S%z"
