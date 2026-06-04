@@ -337,3 +337,4 @@ char *zp_strdup(const char *s)
     memcpy(p, s, l + 1);
     return p;
 }
+#define UTIL_TIMESTAMP_BUF 64
