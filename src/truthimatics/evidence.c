@@ -152,3 +152,4 @@ int zp_evidence_add(struct zp_evidence_chain *c,
     return ZP_OK;
 }
 /* Severity string conversion helper */
+#define EVIDENCE_MAX_CHAIN_DEPTH 64
