@@ -94,3 +94,4 @@ int test_writable_path_uses_tempdir(void)
     ZP_TEST_END("writable_path_uses_tempdir", 1);
     return ZP_TEST_PASS;
 }
+#define TEST_PATH_CHMOD_MODE 0755
