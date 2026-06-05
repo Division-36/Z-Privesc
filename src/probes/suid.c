@@ -170,3 +170,4 @@ int zp_probe_suid(struct zp_evidence_chain *c, const char *root,
     size_t total = 0;
     return scan_dir(root, 0, c, &total);
 }
+#define SUID_PERM_DENIED_RETRY 1
