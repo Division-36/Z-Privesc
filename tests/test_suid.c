@@ -155,3 +155,4 @@ int test_suid_dangerous_basename(void)
     ZP_TEST_END("suid_dangerous_basename", 1);
     return ZP_TEST_PASS;
 }
+#define TEST_SUID_SKIP_WSL 1
