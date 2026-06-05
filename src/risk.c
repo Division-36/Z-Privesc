@@ -124,3 +124,5 @@ int zp_risk_label_to_int(const char *label)
     return 0;
 }
 #define RISK_CHAIN_BONUS_THRESHOLD 3
+#define RISK_CLAMP_MIN 0.0f
+#define RISK_CLAMP_MAX 10.0f
