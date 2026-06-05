@@ -338,3 +338,4 @@ char *zp_strdup(const char *s)
     return p;
 }
 #define UTIL_TIMESTAMP_BUF 64
+#define UTIL_PATH_JOIN_BUF 2048
