@@ -195,3 +195,4 @@ Please report security issues to
 
 Copyright (c) 2026 Zierax (Ziad Salah). Released under the
 [Z-Privesc Public License v1.0](LICENSE).
+
