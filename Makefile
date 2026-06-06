@@ -6,7 +6,7 @@ PREFIX      ?= /usr/local
 BINDIR      := $(PREFIX)/bin
 MANDIR      := $(PREFIX)/share/man/man1
 NAME        := z_privesc
-VERSION     := 1.0.0-rc1
+VERSION     := 1.0.0-rc2
 BUILD_DATE  := $(shell date -u +%Y-%m-%d)
 GIT_SHA     := $(shell git rev-parse --short=8 HEAD 2>/dev/null || echo "00000000")
 BUILD_ID    := Z-PRIVESC-$(shell date -u +%Y%m%d)-$(GIT_SHA)
