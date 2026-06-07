@@ -43,7 +43,7 @@ Tool versions installed at `/opt/bench/`:
 linpeas.sh                          PEASS-ng latest (2026-06-05)
 lynis/lynis                         Lynis 3.1.6
 linux-exploit-suggester-2/...pl     jondonas LES2 (latest, 2019)
-z_privesc                           1.0.0 (Z-PRIVESC-20260605-XXXXXXXX)
+z_privesc                           1.0.0 (Z-PRIVESC-20260605-b8920362)
 ```
 
 ## 3. Methodology
