@@ -125,17 +125,35 @@ test-full: $(INTEG_BIN)
 	./$(INTEG_BIN)
 
 coverage: clean
-	$(MAKE) CFLAGS="$(COV_CFLAGS)" LDFLAGS="$(COV_LDFLAGS)" $(TEST_BIN)
+	$(MAKE) coverage_build
+
+coverage_build: CFLAGS += -g3 -O0 --coverage
+coverage_build: LDFLAGS += --coverage
+coverage_build: $(TEST_BIN)
 	./$(TEST_BIN)
 	@mkdir -p build/coverage
 	@find $(OBJ_DIR) -name "*.gcda" -o -name "*.gcno" | xargs -I{} cp {} build/coverage/ 2>/dev/null || true
-	@find $(OBJ_DIR)/src -name "*.gcno" | xargs gcov 2>/dev/null >/dev/null || true
-	@mv *.gcov build/coverage/ 2>/dev/null || true
+	@cd build/coverage && for f in *.gcno; do \
+	    base="$${f%.gcno}"; \
+	    src="../../src/$$base.c"; \
+	    if [ -f "$$src" ]; then \
+	        gcov -o . "$$src" 2>/dev/null >/dev/null; \
+	    fi; \
+	done 2>/dev/null || true
+	@mkdir -p build/coverage
+	@cd build/coverage && find . -name '*.gcov' -exec mv {} . \; 2>/dev/null || true
 	@echo "==> Coverage report in build/coverage/"
 
 static: clean
-	$(MAKE) CFLAGS="$(CFLAGS_BASE) -static" LDFLAGS="-static"
+	$(MAKE) static_build
+
+static_build: CFLAGS += -static
+static_build: LDFLAGS += -static
+static_build: $(BIN)
 	@echo "==> Static build complete"
+
+build-id:
+	@echo "$(BUILD_ID)"
 
 release: static
 	@mkdir -p dist

@@ -67,8 +67,20 @@ static const struct test_case TESTS[] = {
     {"util_hex_encode",                  test_util_hex_encode},
 
     // Edge case and hard tests
+    {"util_path_extreme_length",         test_util_path_extreme_length},
+    {"util_null_empty_inputs",           test_util_null_empty_inputs},
+    {"audit_massive_findings",           test_audit_massive_findings},
+    {"audit_zero_allocations",           test_audit_zero_allocations},
+    {"evidence_massive_chain",           test_evidence_massive_chain},
+    {"truthimatics_extreme_weights",     test_truthimatics_extreme_weights},
+    {"risk_boundary_values",             test_risk_boundary_values},
+    {"file_permission_denied",           test_file_permission_denied},
+    {"deep_directory_structure",         test_deep_directory_structure},
+    {"special_characters_paths",         test_special_characters_paths},
     {"audit_memory_leak_fix",            test_audit_memory_leak_fix},
-    {"string_truncation_safety",         test_string_truncation_safety}
+    {"capabilities_long_paths",          test_capabilities_long_paths},
+    {"string_truncation_safety",         test_string_truncation_safety},
+    {"capabilities_edge_cases",          test_capabilities_edge_cases}
 };
 
 #endif
