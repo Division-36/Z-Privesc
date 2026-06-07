@@ -131,5 +131,3 @@ int zp_probe_kernel_vuln(struct zp_evidence_chain *c,
     }
     return ZP_OK;
 }
-#define CVE_TABLE_MAX 20
-#define KVER_MAX_SEGMENTS 4

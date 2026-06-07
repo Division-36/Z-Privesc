@@ -153,4 +153,3 @@ void zp_log_progress(const char *fmt, ...)
     pthread_mutex_unlock(&g_log_mtx);
     va_end(ap);
 }
-#define LOG_PROGRESS_INTERVAL_MS 100

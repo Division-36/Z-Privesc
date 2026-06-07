@@ -205,4 +205,3 @@ int zp_run_probes(struct zp_runtime *rt, struct audit_ctx *ctx)
     rt->end_ns = zp_monotonic_ns();
     return worst;
 }
-#define RUNNER_MAX_PROBES 64

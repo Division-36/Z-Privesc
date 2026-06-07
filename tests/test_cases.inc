@@ -65,6 +65,10 @@ static const struct test_case TESTS[] = {
     {"util_path_join",                   test_util_path_join},
     {"util_path_normalize",              test_util_path_normalize},
     {"util_hex_encode",                  test_util_hex_encode},
+
+    // Edge case and hard tests
+    {"audit_memory_leak_fix",            test_audit_memory_leak_fix},
+    {"string_truncation_safety",         test_string_truncation_safety}
 };
 
 #endif

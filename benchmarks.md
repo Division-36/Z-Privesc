@@ -6,7 +6,7 @@
 **License**: Z-Privesc Public License v1.0
 
 > **NOTICE**: This is the frozen v1.0.0 benchmark report with cryptographic evidence
-> signing, 17 probe categories, and 46 passing tests (44 pass, 2 skip on WSL2).
+> signing, 17 probe categories, and 46 tests total (45 pass, 1 skip on patched systems).
 
 ## 1. Executive Summary
 

@@ -92,6 +92,8 @@ void audit_ctx_release(struct audit_ctx *ctx)
             free((void *)f->severity);
         }
         free(p->findings);
+        free((void *)p->name);
+        free((void *)p->verdict);
     }
     free(ctx->probes);
     memset(ctx, 0, sizeof(*ctx));
@@ -264,5 +266,3 @@ int audit_emit_html(const struct zp_runtime *rt, FILE *out)
     fprintf(out, "</table></body></html>");
     return ZP_OK;
 }
-#define AUDIT_JSON_VERSION "z-privesc.audit/v1"
-#define AUDIT_TIMESTAMP_FORMAT "%Y-%m-%dT%H:%M:%S%z"

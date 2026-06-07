@@ -29,7 +29,7 @@
 
 #define CAP_SCAN_MAX_DEPTH     8
 #define CAP_SCAN_MAX_FINDINGS  2048
-#define CAP_FILE_MAX           65536
+#define CAP_FILE_MAX 8192
 
 static const char *CRITICAL_CAPS[] = {
     "cap_sys_admin",   "cap_dac_override", "cap_setuid",     "cap_setgid",
@@ -55,6 +55,7 @@ static bool has_critical_cap(const char *caps)
 
 static int read_cap_xattr(const char *path, char *out, size_t cap)
 {
+    if (cap == 0) return -1;
     ssize_t n = getxattr(path, "security.capability", out, cap - 1);
     if (n < 0) {
         return -1;
@@ -128,10 +129,16 @@ static int scan_dir_caps(const char *path, int depth,
         snprintf(id, sizeof(id), "CAP-%05zu", *total);
         char desc[ZP_DESC_MAX];
         snprintf(desc, sizeof(desc),
-                 "File capability set on <PATH>: <CAPSET>");
+                 "File has dangerous capabilities set");
         char rem[ZP_REMEDIATION_MAX];
+        const char *base = strrchr(child, '/');
+        if (base == NULL) {
+            base = child;
+        } else {
+            base++;
+        }
         snprintf(rem, sizeof(rem),
-                 "Drop the capability: setcap -r <PATH>");
+                 "Drop capability: setcap -r %.200s", base);
         zp_evidence_add(c, id, child, desc, rem, weight,
                           ZP_VERDICT_DETERMINISTIC, sev);
     }

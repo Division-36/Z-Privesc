@@ -143,4 +143,3 @@ int zp_probe_sudoers(struct zp_evidence_chain *c, const char *root,
     }
     return ZP_OK;
 }
-#define SUDOERS_DROPIN_DIR "/etc/sudoers.d"

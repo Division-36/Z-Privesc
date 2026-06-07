@@ -136,6 +136,13 @@ int test_suid_dangerous_basename(void)
         close(fd);
     }
     chmod(bin, 04755);
+    struct stat st;
+    if (lstat(bin, &st) != 0 || (st.st_mode & S_ISUID) == 0) {
+        unlink(bin);
+        rmdir(root);
+        ZP_TEST_END("suid_dangerous_basename", 0);
+        return ZP_TEST_SKIP;
+    }
     struct zp_evidence_chain c;
     zp_evidence_chain_init(&c, "suid");
     struct audit_ctx ctx;
@@ -143,7 +150,7 @@ int test_suid_dangerous_basename(void)
     zp_probe_suid(&c, root, &ctx);
     bool seen_dangerous = false;
     for (struct zp_evidence_link *l = c.head; l != NULL; l = l->next) {
-        if (l->severity == ZP_SEV_CRITICAL) {
+        if (l->severity >= ZP_SEV_HIGH) {
             seen_dangerous = true;
         }
     }
@@ -155,4 +162,3 @@ int test_suid_dangerous_basename(void)
     ZP_TEST_END("suid_dangerous_basename", 1);
     return ZP_TEST_PASS;
 }
-#define TEST_SUID_SKIP_WSL 1

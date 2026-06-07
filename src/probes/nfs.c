@@ -90,4 +90,3 @@ int zp_probe_nfs(struct zp_evidence_chain *c, const char *root,
     }
     return ZP_OK;
 }
-#define NFS_EXPORTS_FILE "/etc/exports"

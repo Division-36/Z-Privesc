@@ -16,8 +16,6 @@ CFLAGS_BASE := -std=gnu99 -Wall -Wextra -Wpedantic -Werror \
                -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE \
                -DBUILD_ID=\"$(BUILD_ID)\" -DVERSION=\"$(VERSION)\"
 
-TEST_CFLAGS := $(CFLAGS_BASE) -Itests -Wno-unused-result
-
 CFLAGS      := $(CFLAGS_BASE) -Iinclude
 TEST_CFLAGS  := $(CFLAGS_BASE) -Iinclude -Itests -Wno-unused-result -Wno-format-truncation
 LDFLAGS     := -Wl,-z,relro,-z,now -Wl,--as-needed
@@ -78,7 +76,8 @@ TEST_SRCS    := tests/test_main.c \
                 tests/test_truthimatics.c \
                 tests/test_risk.c \
                 tests/test_audit.c \
-                tests/test_util.c
+                tests/test_util.c \
+                tests/test_edge_cases.c
 
 TEST_OBJS    := $(patsubst tests/%.c,$(OBJ_DIR)/tests/%.o,$(TEST_SRCS))
 TEST_BIN     := $(BIN_DIR)/test_$(NAME)
@@ -92,8 +91,7 @@ INTEG_BIN    := $(BIN_DIR)/test_integration
 all: dirs $(BIN)
 
 dirs:
-	@mkdir -p $(OBJ_DIR) $(OBJ_DIR)/src $(OBJ_DIR)/src/probes \
-	         $(OBJ_DIR)/src/truthimatics $(OBJ_DIR)/tests $(BIN_DIR)
+	@mkdir -p $(OBJ_DIR) $(BIN_DIR)
 
 $(BIN): $(OBJS)
 	@mkdir -p $(BIN_DIR)

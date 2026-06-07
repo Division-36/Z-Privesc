@@ -8,33 +8,19 @@ cadence.
 
 ## Development timeline
 
-- **2026-04-01** - Project bootstrap.  The first commit is a
-  one-line `Makefile` and a placeholder `main.c` that prints the
-  build ID.
-- **2026-04-08** - `v0.1.0`: the binary builds and prints
-  `--version`.  Probe registry is a single empty function pointer
-  table.
-- **2026-04-15** - First probe (`suid`) implemented; the evidence
-  chain API is in place; the verdict engine is a stub that always
-  returns UNCERTAIN.
-- **2026-04-22** - `writable_path` and `world_writable` probes land.
-  First end-to-end test against a deliberately-vulnerable Docker
-  container.
-- **2026-05-01** - `capabilities` and `writable_etc` probes land.
-  Truthimatics majority-weighting engine becomes functional.
-- **2026-05-12** - `v0.5.0` candidate release.  All eight probes
-  produce well-formed evidence chains.  14 unit tests pass.
-- **2026-05-19** - `docker_socket` and `polkit` probes land.  Risk
-  aggregator gains a CVSS-like severity band mapping.
-- **2026-05-25** - `kernel_vuln` probe gains its CVE table.
-  Integration test runner (`tests/test_integration.c`) is now
-  self-contained.
-- **2026-05-28** - `v0.9.0` candidate for security review.
-- **2026-06-01** - Documentation pass: README, ADRs, PROBES,
-  ARCHITECTURE, TRUTHIMATICS, man page.
-- **2026-06-03** - Release engineering: minisign signing,
-  reproducible build, release tarball.
-- **2026-06-04** - `v1.0.0` released.  First public tag.
+- **2026-06-04** - Project bootstrap. Initial commit, `main.c`,
+  `Makefile`, and project scaffolding.
+- **2026-06-04** - `feat: initial MVP` — core probes (suid,
+  writable_path) operational with evidence chain API.
+- **2026-06-04** - `fix: edge cases` and `test: enhanced tests`.
+- **2026-06-04** - `init: truthimatics engine`, `feat: probes`,
+  `feat: risk model` — all probes self-contained with risk
+  aggregation.
+- **2026-06-05** - Extensive improvement batch: audit output, logging,
+  risk model, probes, util functions, config, groups, Makefile,
+  integration tests, man page, README.
+- **2026-06-06** - `init: version: release 1.0.0` — first tagged
+  release.
 
 ## Notable design pivots
 

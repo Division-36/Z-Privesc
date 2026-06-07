@@ -143,4 +143,3 @@ int zp_probe_process(struct zp_evidence_chain *c, const char *root,
     }
     return ZP_OK;
 }
-#define PROC_EXE_PATH "/proc/self/exe"

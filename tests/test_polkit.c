@@ -70,4 +70,3 @@ int test_polkit_old_version_match(void)
     ZP_TEST_END("polkit_old_version_match", 1);
     return ZP_TEST_PASS;
 }
-#define TEST_POLKIT_SKIP_PATCHED 1

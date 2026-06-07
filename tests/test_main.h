@@ -140,4 +140,20 @@ int test_util_path_join(void);
 int test_util_path_normalize(void);
 int test_util_hex_encode(void);
 
+// Edge case and hard tests
+int test_util_path_extreme_length(void);
+int test_util_null_empty_inputs(void);
+int test_audit_massive_findings(void);
+int test_audit_zero_allocations(void);
+int test_evidence_massive_chain(void);
+int test_truthimatics_extreme_weights(void);
+int test_risk_boundary_values(void);
+int test_file_permission_denied(void);
+int test_deep_directory_structure(void);
+int test_special_characters_paths(void);
+int test_audit_memory_leak_fix(void);
+int test_capabilities_long_paths(void);
+int test_string_truncation_safety(void);
+int test_capabilities_edge_cases(void);
+
 #endif
