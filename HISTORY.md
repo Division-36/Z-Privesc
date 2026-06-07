@@ -8,7 +8,7 @@ cadence.
 
 ## Development timeline
 
-- **2026-05-15** — Project bootstrap. Initial commit, license, and
+- **2026-05-15** — Project bootstrap. Initial commit (MIT), and
   project scaffolding.
 - **2026-05-16** — Build system (Makefile), CI workflow, core type
   definitions and CLI argument struct.

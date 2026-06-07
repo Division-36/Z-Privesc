@@ -6,7 +6,7 @@
  * The output conforms to schema `z-privesc.audit/v1`.
  *
  * Author: Zierax (Ziad Salah) <zs.01117875692@gmail.com>
- * License: Z-Privesc Public License v1.0
+ * License: MIT
  */
 
 #ifndef Z_PRIVESC_AUDIT_H

@@ -21,6 +21,5 @@
 
 ## License
 
-Z-Privesc is released under the
-[Z-Privesc Public License v1.0](LICENSE).  Contributions are accepted
-under the same license.
+Z-Privesc is released under the [MIT License](LICENSE).
+Contributions are accepted under the same license.

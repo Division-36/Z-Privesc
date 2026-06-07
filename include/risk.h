@@ -6,7 +6,7 @@
  * evidence weight, then aggregated as the worst-finding dominance.
  *
  * Author: Zierax (Ziad Salah) <zs.01117875692@gmail.com>
- * License: Z-Privesc Public License v1.0
+ * License: MIT
  */
 
 #ifndef Z_PRIVESC_RISK_H

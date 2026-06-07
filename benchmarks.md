@@ -5,7 +5,7 @@
 **Git SHA**: 165da370
 **Date**: 2026-06-07
 **Author**: Zierax (Ziad Salah) <zs.01117875692@gmail.com>
-**License**: Z-Privesc Public License v1.0
+**License**: MIT
 
 > **NOTICE**: Frozen v1.0.0 benchmark report with 17 probe categories,
 > 60 test cases (58 pass, 2 skip on restricted environments), and

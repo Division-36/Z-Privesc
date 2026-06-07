@@ -6,7 +6,7 @@
 
 [![Build](https://github.com/Division-36/Z-Privesc/actions/workflows/build.yml/badge.svg)](https://github.com/Division-36/Z-Privesc/actions)
 [![Coverage](https://img.shields.io/badge/coverage-%E2%89%A595%25-brightgreen)](docs/TRUTHIMATICS.md)
-[![License: Z-Privesc v1.0](https://img.shields.io/badge/license-Z--Privesc%20v1.0-blue)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Platform: Linux x86_64](https://img.shields.io/badge/platform-Linux%20x86__64-lightgrey)](docs/ARCHITECTURE.md)
 [![Language: C17](https://img.shields.io/badge/language-C17-00599C)](https://en.cppreference.com/w/c/17)
 [![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-orange)](CHANGELOG.md)
@@ -136,7 +136,7 @@ per-probe and a per-system label (`INFO` / `LOW` / `MEDIUM` / `HIGH` /
 | Per-finding remediation guidance                 |    Yes    |  Partial |  No   |          No            |
 | Adversarial-resistant reporting                  |    Yes    |   No    |  No   |           No            |
 | Runs in offline air-gapped environments          |    Yes    |   Yes   |  Yes  |          Yes            |
-| License                                         | Z-Privesc v1.0 |  GPL-3  |  GPL  |          GPL-2          |
+| License                                         | MIT |  GPL-3  |  GPL  |          GPL-2          |
 
 ## Threat model
 
@@ -194,5 +194,5 @@ Please report security issues to
 ## License
 
 Copyright (c) 2026 Zierax (Ziad Salah). Released under the
-[Z-Privesc Public License v1.0](LICENSE).
+[MIT License](LICENSE).
 
