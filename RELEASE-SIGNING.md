@@ -7,26 +7,32 @@ explains how to verify a release.
 ## Verifying a release
 
 ```sh
-# 1. Download the tarball, signature, and public key.
+# 1. Download the tarball and signature.
 curl -O https://github.com/Division-36/Z-Privesc/releases/download/v1.0.0/z_privesc-1.0.0-linux-x86_64.tar.gz
 curl -O https://github.com/Division-36/Z-Privesc/releases/download/v1.0.0/z_privesc-1.0.0-linux-x86_64.tar.gz.minisig
-curl -O https://github.com/Division-36/Z-Privesc/releases/download/v1.0.0/public.key
 
-# 2. Verify.
+# 2. Verify with the public key embedded in this repo.
 minisign -Vm z_privesc-1.0.0-linux-x86_64.tar.gz \
          -p public.key
 ```
 
-A successful verification prints `Signature and comment signature are
-valid`.
+A successful verification prints `Signature and comment signature
+verified`.
+
+## Trust-on-first-use (TOFU) verification
+
+You may also verify directly with the public key string:
+
+```
+minisign -Vm <file> -P RWSKrBQzqEjk6dndIFokFP3UHqr5mU/bCa6RnHAigPHzAb19FgRsg29i
+```
 
 ## Public key
 
 The release public key fingerprint is published in
-[public.key](public.key) and on the GitHub release page.  The
-private key is held only by the project lead; the key is rotated
-only on suspected compromise, and a `SECURITY` advisory will be
-issued if a rotation is required.
+[public.key](public.key).  The private key is held only by the project
+lead; the key is rotated only on suspected compromise, and a `SECURITY`
+advisory will be issued if a rotation is required.
 
 ## Reproducing a build
 
@@ -40,8 +46,11 @@ make release
 sha256sum dist/z_privesc-1.0.0-linux-x86_64.tar.gz
 ```
 
-The SHA-256 of the produced tarball should match the value published
-in the release notes.
+The SHA-256 of the v1.0.0 release tarball is:
+
+```
+eedb6341881ae607449a695d2606dee53d625c55c63022642f2f093e191b5a44
+```
 
 ## Reporting a signing issue
 

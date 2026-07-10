@@ -160,6 +160,20 @@ release: static
 	@strip $(BIN)
 	@tar -czf dist/$(NAME)-$(VERSION)-linux-x86_64.tar.gz -C $(BIN_DIR) $(NAME)
 	@echo "==> Release tarball: dist/$(NAME)-$(VERSION)-linux-x86_64.tar.gz"
+	@if command -v minisign >/dev/null 2>&1; then \
+	    KEY=$${HOME}/.minisign/z-privesc.key; \
+	    if [ -f "$$KEY" ]; then \
+	        minisign -S -s "$$KEY" \
+	            -t "$(NAME)-$(VERSION) release tarball" \
+	            -m dist/$(NAME)-$(VERSION)-linux-x86_64.tar.gz; \
+	        echo "==> Signed: dist/$(NAME)-$(VERSION)-linux-x86_64.tar.gz.minisig"; \
+	        echo "==> SHA-256: $$(sha256sum dist/$(NAME)-$(VERSION)-linux-x86_64.tar.gz | cut -d' ' -f1)"; \
+	    else \
+	        echo "==> SKIP signing: $$KEY not found"; \
+	    fi; \
+	else \
+	    echo "==> SKIP signing: minisign not installed"; \
+	fi
 
 install: $(BIN)
 	install -d $(DESTDIR)$(BINDIR)
