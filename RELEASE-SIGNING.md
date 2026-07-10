@@ -49,7 +49,7 @@ sha256sum dist/z_privesc-1.0.0-linux-x86_64.tar.gz
 The SHA-256 of the v1.0.0 release tarball is:
 
 ```
-eedb6341881ae607449a695d2606dee53d625c55c63022642f2f093e191b5a44
+6bf34a28088642f987379df1c2b3bda82ad0fcb579a448010526f1f9f26fbe56
 ```
 
 ## Reporting a signing issue

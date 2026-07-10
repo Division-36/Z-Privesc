@@ -161,15 +161,20 @@ release: static
 	@tar -czf dist/$(NAME)-$(VERSION)-linux-x86_64.tar.gz -C $(BIN_DIR) $(NAME)
 	@echo "==> Release tarball: dist/$(NAME)-$(VERSION)-linux-x86_64.tar.gz"
 	@if command -v minisign >/dev/null 2>&1; then \
-	    KEY=$${HOME}/.minisign/z-privesc.key; \
-	    if [ -f "$$KEY" ]; then \
+	    if [ -f ".minisign/z-privesc.key" ]; then \
+	        KEY=.minisign/z-privesc.key; \
+	    elif [ -f "$${HOME}/.minisign/z-privesc.key" ]; then \
+	        KEY=$${HOME}/.minisign/z-privesc.key; \
+	    else \
+	        echo "==> SKIP signing: no secret key found in .minisign/ or ~/.minisign/"; \
+	        KEY=; \
+	    fi; \
+	    if [ -n "$$KEY" ]; then \
 	        minisign -S -s "$$KEY" \
 	            -t "$(NAME)-$(VERSION) release tarball" \
 	            -m dist/$(NAME)-$(VERSION)-linux-x86_64.tar.gz; \
 	        echo "==> Signed: dist/$(NAME)-$(VERSION)-linux-x86_64.tar.gz.minisig"; \
 	        echo "==> SHA-256: $$(sha256sum dist/$(NAME)-$(VERSION)-linux-x86_64.tar.gz | cut -d' ' -f1)"; \
-	    else \
-	        echo "==> SKIP signing: $$KEY not found"; \
 	    fi; \
 	else \
 	    echo "==> SKIP signing: minisign not installed"; \

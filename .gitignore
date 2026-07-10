@@ -5,3 +5,4 @@ dist/
 *.gcov
 *.gcda
 *.gcno
+.minisign/
