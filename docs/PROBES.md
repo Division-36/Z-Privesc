@@ -1,8 +1,38 @@
 # Probes
 
-This document describes each of the eight probes in detail: the
+This document describes each of the **seventeen** probes in detail: the
 misconfiguration it looks for, the evidence it adds, the weighting
 strategy, and the false-positive mitigations applied.
+
+| # | Probe | What it hunts |
+|---|-------|---------------|
+| 1 | `suid` | SUID / SGID binaries that can spawn a shell |
+| 2 | `writable_path` | World-writable entries in `$PATH` |
+| 3 | `capabilities` | File / process Linux capabilities |
+| 4 | `writable_etc` | Writable `/etc` authentication files |
+| 5 | `docker_socket` | Exposed Docker control socket |
+| 6 | `polkit` | polkit / pkexec misconfigurations (PwnKit) |
+| 7 | `world_writable` | World-writable sensitive files + missing sticky bits |
+| 8 | `kernel_vuln` | Kernel-version CVE matching |
+| 9 | `cron` | World-writable / wildcard crontabs |
+| 10 | `sudoers` | NOPASSWD / over-broad sudoers rules |
+| 11 | `ssh_keys` | World-readable private SSH keys |
+| 12 | `groups` | Privileged group membership (docker, lxd, disk, …) |
+| 13 | `service` | World-writable systemd unit files |
+| 14 | `kernel_hardening` | Weak sysctl hardening values |
+| 15 | `process` | Suspicious running processes |
+| 16 | `nfs` | `no_root_squash` NFS exports |
+| 17 | `ld_preload` | World-writable `ld.so.conf` / `ld.so.preload` |
+
+> **Implementation note.** Probes must never call glibc NSS functions
+> (`getpwuid`, `getgrnam`, …) directly: in a *statically linked*
+> binary those lookups segfault because `libnss_*.so` is not embedded.
+> The `groups` and `sudoers` probes therefore parse `/etc/passwd` and
+> `/etc/group` directly through the `zp_username_for_uid`,
+> `zp_primary_gid_for_uid`, and `zp_user_in_group` helpers in
+> `src/util.c`.
+
+---
 
 ## 1. `suid` - SUID / SGID binary scanner
 
@@ -42,6 +72,8 @@ contain a flood of legitimately-SUID files that drown the signal.
   filter.
 - The walker caps its depth at eight to bound scan time.
 
+---
+
 ## 2. `writable_path` - World-writable PATH entries
 
 ### What it looks for
@@ -65,6 +97,8 @@ entry is escalated to CRITICAL.
   exposure).
 - A directory that is `chmod o-w` between two runs will *not* be
   re-reported; the engine produces a fresh chain each scan.
+
+---
 
 ## 3. `capabilities` - File and process Linux capabilities
 
@@ -92,6 +126,8 @@ plus a read of `/proc/self/status`'s `CapBnd` (bounding) line.
   are not interpreted.
 - Capabilities on the probe binary itself are not added twice.
 
+---
+
 ## 4. `writable_etc` - Writable /etc authentication files
 
 ### What it looks for
@@ -111,6 +147,8 @@ plus a read of `/proc/self/status`'s `CapBnd` (bounding) line.
   symlink target can hide behind a non-world-writable symlink, but
   the lstat-based mode check still catches the world-writable
   final target via the parent walk.
+
+---
 
 ## 5. `docker_socket` - Exposed Docker control socket
 
@@ -133,6 +171,8 @@ When a socket is present, the probe attempts a non-destructive
 `GET /_ping HTTP/1.0` over the socket.  This is the standard
 Docker daemon health-check.  A positive response confirms that the
 current user can drive `docker` operations.
+
+---
 
 ## 6. `polkit` - polkit / pkexec misconfiguration
 
@@ -161,6 +201,8 @@ current user can drive `docker` operations.
   polkit is up to date - the directory misconfiguration is
   independent of the package version.
 
+---
+
 ## 7. `world_writable` - World-writable sensitive files
 
 ### What it looks for
@@ -183,6 +225,8 @@ file with the world-write bit set, an evidence link is added.
 `/tmp`, `/dev/shm`, and `/var/tmp` are checked for the sticky bit
 (`S_ISVTX`).  A missing sticky bit is HIGH severity with weight
 0.85.
+
+---
 
 ## 8. `kernel_vuln` - Kernel version CVE matcher
 
@@ -219,3 +263,239 @@ their distro's security feed.
 
 If the kernel matches no entry, the chain is *explicitly* given a
 REJECT link so the engine can be certain to adopt REJECT.
+
+---
+
+## 9. `cron` - Crontab / cron.d abuse
+
+### What it looks for
+
+`/etc/crontab`, every file under `/etc/cron.d/`, and the spool
+directories `/var/spool/cron/crontabs/`.  World-writable files
+and crontabs containing a `*` wildcard in the user field (which
+lets any user's jobs run as another) are flagged.
+
+### Evidence weighting
+
+| Condition                          | Weight | Severity |
+|------------------------------------|--------|----------|
+| World-writable crontab             | 0.95   | CRITICAL |
+| Wildcard user field (`* * * * *`)  | 0.80   | HIGH     |
+| Writable cron directory            | 0.70   | MEDIUM   |
+
+### False-positive mitigations
+
+- The probe reads the file mode, not the directory mode, so a
+  writable *parent* that contains a non-writable crontab is not
+  over-reported.
+
+---
+
+## 10. `sudoers` - Sudoers misconfiguration
+
+### What it looks for
+
+`/etc/sudoers` and every drop-in under `/etc/sudoers.d/`.  Rules
+granting `NOPASSWD` or `ALL` to the current user (or to a group
+the user belongs to) are flagged.
+
+### Evidence weighting
+
+| Condition                          | Weight | Severity |
+|------------------------------------|--------|----------|
+| `NOPASSWD` + `ALL` for current user | 0.95  | CRITICAL |
+| `ALL` (password) for current user   | 0.60   | HIGH     |
+
+### Implementation note
+
+Membership checks use `zp_user_in_group` (direct `/etc/group`
+parse), never `getgrnam`, so the probe is safe under static
+linking.
+
+---
+
+## 11. `ssh_keys` - Private key exposure
+
+### What it looks for
+
+`/root/.ssh/`, `/home/*/.ssh/`, and `/etc/ssh/`.  Any file whose
+name matches a private-key pattern (`id_rsa`, `id_ed25519`,
+`id_ecdsa`, `*.key`, `*.pem`) that is world- or group-readable is
+flagged.
+
+### Evidence weighting
+
+| Condition                          | Weight | Severity |
+|------------------------------------|--------|----------|
+| World-readable private key         | 0.90   | HIGH     |
+| Group-readable private key         | 0.70   | MEDIUM   |
+
+### False-positive mitigations
+
+- `authorized_keys` and `known_hosts` are exempt (they are not
+  secret).
+- The key pattern match is prefix/suffix based, not content based,
+  to avoid reading key material into memory.
+
+---
+
+## 12. `groups` - Privileged group membership
+
+### What it looks for
+
+Whether the current user is a member of any privilege-granting
+group: `docker`, `lxd`, `disk`, `shadow`, `root`, `sudo`/`wheel`,
+`kmem`, `mem`, `adm`, and several low-risk groups (`video`,
+`netdev`, `input`, `ssl-cert`).
+
+### Evidence weighting
+
+| Group     | Severity  | Weight |
+|-----------|-----------|--------|
+| docker    | CRITICAL  | 0.95   |
+| lxd       | CRITICAL  | 0.95   |
+| disk      | CRITICAL  | 0.90   |
+| root      | CRITICAL  | 0.99   |
+| kmem/mem  | HIGH      | 0.90   |
+| shadow    | HIGH      | 0.80   |
+| sudo/wheel| HIGH      | 0.85   |
+| adm       | MEDIUM    | 0.50   |
+
+### Implementation note
+
+Membership is resolved by parsing `/etc/passwd` and `/etc/group`
+directly (`zp_username_for_uid`, `zp_primary_gid_for_uid`,
+`zp_user_in_group`).  This avoids the glibc NSS crash that occurs
+in statically linked binaries.
+
+---
+
+## 13. `service` - Systemd unit abuse
+
+### What it looks for
+
+Units under `/etc/systemd/system/`, `/lib/systemd/system/`, and
+`/usr/lib/systemd/system/`.  Any unit file that is world-writable
+is flagged (an attacker who can write a unit can obtain the
+service's privileges on next start/reload).
+
+### Evidence weighting
+
+| Condition                          | Weight | Severity |
+|------------------------------------|--------|----------|
+| World-writable unit file           | 0.95   | CRITICAL |
+| World-writable unit directory      | 0.70   | MEDIUM   |
+
+### False-positive mitigations
+
+- Vendor-shipped units are usually root-owned and non-writable;
+  only genuinely world-writable files escalate.
+
+---
+
+## 14. `kernel_hardening` - sysctl hardening checks
+
+### What it looks for
+
+A set of sysctl values are read from `/proc/sys`:
+
+| sysctl                    | Safe value | Risk if weak     |
+|---------------------------|------------|------------------|
+| `kernel.randomize_va_space` | `2`    | ASLR disabled    |
+| `kernel.dmesg_restrict`   | `1`        | kernel leaks     |
+| `kernel.kptr_restrict`    | `1`/`2`    | kernel ptr leaks |
+| `kernel.unprivileged_bpf_disabled` | `1` | eBPF abuse |
+| `kernel.yama.ptrace_scope`| `1`/`2`/`3` | ptrace abuse |
+
+### Evidence weighting
+
+Each weak value adds a MEDIUM (0.5) evidence link; a fully hardened
+host gets a REJECT (CLEAN) link.
+
+---
+
+## 15. `process` - Suspicious running processes
+
+### What it looks for
+
+`/proc` is scanned for processes whose executable or libraries are
+world-writable, or which run with elevated capabilities.  This is a
+PID-scoped probe: it inspects live processes, not the filesystem.
+
+### Evidence weighting
+
+| Condition                          | Weight | Severity |
+|------------------------------------|--------|----------|
+| Writable executable of a running PID | 0.80 | HIGH   |
+| Process with dangerous capabilities  | 0.70 | MEDIUM |
+
+### False-positive mitigations
+
+- Only the executable path and `/proc/<pid>/status` are read; no
+  attach, no `ptrace`.
+
+---
+
+## 16. `nfs` - Insecure NFS exports
+
+### What it looks for
+
+`/etc/exports` is parsed for exports containing `no_root_squash`
+or `insecure`.  Such exports let a remote root client act as local
+root on the export.
+
+### Evidence weighting
+
+| Condition                          | Weight | Severity |
+|------------------------------------|--------|----------|
+| `no_root_squash` export           | 0.90   | CRITICAL |
+| `insecure` export                 | 0.60   | MEDIUM   |
+
+### False-positive mitigations
+
+- The probe reports the parsed misconfiguration even if `nfsd` is
+  not currently running; a live export is a stronger signal but
+  the static config is the audit artefact.
+
+---
+
+## 17. `ld_preload` - Dynamic-linker abuse
+
+### What it looks for
+
+`/etc/ld.so.preload` (applies to every process) and every file
+under `/etc/ld.so.conf.d/`.  Any world-writable entry is flagged:
+an attacker who controls a preloaded library owns every newly
+started process.
+
+### Evidence weighting
+
+| Condition                          | Weight | Severity |
+|------------------------------------|--------|----------|
+| World-writable `ld.so.preload`     | 0.99   | CRITICAL |
+| World-writable `ld.so.conf.d` file | 0.95   | CRITICAL |
+
+### False-positive mitigations
+
+- The probe checks file mode, not directory mode.
+
+---
+
+## Adding a new probe
+
+A probe is a function with the signature
+`int zp_probe_*(struct zp_evidence_chain *, const char *root,
+struct audit_ctx *)`.  To add one:
+
+1. Implement it in `src/probes/<name>.c`.
+2. Declare it in `include/probes.h` and register it in the probe
+   table in `src/probe_runner.c`.
+3. Add a `Makefile` object rule (already globbed) - no change
+   needed if you follow the `src/probes/*.c` convention.
+4. Add unit tests under `tests/` and register them in
+   `tests/test_cases.inc`.
+
+Probes must be pure readers.  They must never modify the host,
+never execute attacker-controlled content, and never call NSS
+functions directly (use the `/etc/passwd` / `/etc/group` helpers
+in `src/util.c`).

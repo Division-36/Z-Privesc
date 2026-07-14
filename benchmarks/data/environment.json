@@ -1,0 +1,11 @@
+{
+  "host": "primary",
+  "kernel": "7.0.0-27-generic",
+  "arch": "x86_64",
+  "os": "Ubuntu 26.04 LTS",
+  "gcc": "gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+  "nproc": 1,
+  "mem_mb": 891,
+  "date_utc": "2026-07-14T18:26:33Z",
+  "build_id": "Z-PRIVESC-20260714-00000000"
+}

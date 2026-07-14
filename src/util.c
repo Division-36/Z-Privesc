@@ -25,10 +25,9 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <dirent.h>
-#include <pwd.h>
-#include <grp.h>
 
 #include "log.h"
+#include "util.h"
 #include "zp_crypto.h"
 
 const char *zp_build_id(void)
@@ -269,20 +268,146 @@ int zp_hostname(char *out, size_t cap)
 
 int zp_username(char *out, size_t cap)
 {
+    return zp_username_for_uid(getuid(), out, cap);
+}
+
+int zp_username_for_uid(uid_t uid, char *out, size_t cap)
+{
     if (out == NULL || cap == 0) {
         return ZP_ERR_INVAL;
     }
-    struct passwd *pw = getpwuid(getuid());
-    if (pw == NULL) {
+    FILE *f = fopen("/etc/passwd", "r");
+    if (f == NULL) {
         return ZP_ERR_IO;
     }
-    size_t l = strlen(pw->pw_name);
-    if (l >= cap) {
-        l = cap - 1;
+    char line[1024];
+    int rc = ZP_ERR_IO;
+    while (fgets(line, sizeof(line), f) != NULL) {
+        /* /etc/passwd: name:passwd:uid:gid:gecos:home:shell */
+        char *name = line;
+        char *p = strchr(name, ':');
+        if (p == NULL) continue;
+        *p = '\0';
+        char *field = p + 1;
+        for (int i = 0; i < 1; i++) { /* skip passwd */
+            field = strchr(field, ':');
+            if (field == NULL) break;
+            field++;
+        }
+        if (field == NULL) continue;
+        char *uidstr = field;
+        char *q = strchr(uidstr, ':');
+        if (q == NULL) continue;
+        *q = '\0';
+        if ((uid_t)strtoul(uidstr, NULL, 10) != uid) {
+            continue;
+        }
+        size_t l = strlen(name);
+        if (l >= cap) {
+            l = cap - 1;
+        }
+        memcpy(out, name, l);
+        out[l] = '\0';
+        rc = ZP_OK;
+        break;
     }
-    memcpy(out, pw->pw_name, l);
-    out[l] = '\0';
-    return ZP_OK;
+    fclose(f);
+    return rc;
+}
+
+int zp_user_in_group(const char *user, const char *group,
+                     char *gid_out, size_t gid_cap)
+{
+    if (user == NULL || group == NULL) {
+        return ZP_ERR_INVAL;
+    }
+    FILE *f = fopen("/etc/group", "r");
+    if (f == NULL) {
+        return ZP_ERR_IO;
+    }
+    char line[1024];
+    int rc = ZP_ERR_IO;
+    while (fgets(line, sizeof(line), f) != NULL) {
+        /* /etc/group: name:passwd:gid:user1,user2,... */
+        char *name = line;
+        char *p = strchr(name, ':');
+        if (p == NULL) continue;
+        *p = '\0';
+        if (strcmp(name, group) != 0) {
+            continue;
+        }
+        char *field = p + 1;
+        field = strchr(field, ':'); /* skip passwd */
+        if (field == NULL) break;
+        field++;
+        char *gidstr = strchr(field, ':'); /* gid */
+        if (gidstr == NULL) break;
+        *gidstr = '\0';
+        if (gid_out != NULL && gid_cap > 0) {
+            size_t l = strlen(field);
+            if (l >= gid_cap) l = gid_cap - 1;
+            memcpy(gid_out, field, l);
+            gid_out[l] = '\0';
+        }
+        char *members = gidstr + 1;
+        size_t mlen = strlen(members);
+        if (mlen > 0 && members[mlen - 1] == '\n') {
+            members[mlen - 1] = '\0';
+        }
+        rc = 0; /* group exists, not a member yet */
+        if (members[0] == '\0') {
+            break; /* no members listed */
+        }
+        char *tok = strtok(members, ",");
+        while (tok != NULL) {
+            if (strcmp(tok, user) == 0) {
+                rc = 1; /* member */
+                break;
+            }
+            tok = strtok(NULL, ",");
+        }
+        break;
+    }
+    fclose(f);
+    return rc;
+}
+
+int zp_primary_gid_for_uid(uid_t uid, gid_t *out)
+{
+    if (out == NULL) {
+        return ZP_ERR_INVAL;
+    }
+    FILE *f = fopen("/etc/passwd", "r");
+    if (f == NULL) {
+        return ZP_ERR_IO;
+    }
+    char line[1024];
+    int rc = ZP_ERR_IO;
+    while (fgets(line, sizeof(line), f) != NULL) {
+        /* /etc/passwd: name:passwd:uid:gid:gecos:home:shell */
+        char *name = line;
+        char *p = strchr(name, ':');
+        if (p == NULL) continue;
+        *p = '\0';
+        char *field = p + 1;
+        field = strchr(field, ':'); /* skip passwd */
+        if (field == NULL) break;
+        field++;
+        char *uidstr = strchr(field, ':'); /* uid */
+        if (uidstr == NULL) break;
+        *uidstr = '\0';
+        if ((uid_t)strtoul(uidstr, NULL, 10) != uid) {
+            continue;
+        }
+        char *gidstr = strchr(field, ':'); /* gid */
+        if (gidstr == NULL) break;
+        *gidstr = '\0';
+        *out = (gid_t)strtoul(field, NULL, 10);
+        rc = ZP_OK;
+        break;
+    }
+    fclose(f);
+    return rc;
 }
 
 int zp_kernel_version(char *out, size_t cap)

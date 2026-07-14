@@ -1,0 +1,11 @@
+{
+  "lynis_version": "3.1.6",
+  "lynis_install_time_s": 8.31,
+  "lynis_run_time_s": 100.45,
+  "lynis_output_lines": 850,
+  "linpeas_download_time_s": 3.35,
+  "linpeas_run_time_s": 120.03,
+  "linpeas_output_lines": 378,
+  "z_privesc_full_scan_time_s": 2.6461,
+  "z_privesc_findings": 40
+}

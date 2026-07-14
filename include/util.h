@@ -30,6 +30,10 @@ void     zp_dir_close(DIR *d);
 uint64_t zp_monotonic_ns(void);
 int      zp_hostname(char *out, size_t cap);
 int      zp_username(char *out, size_t cap);
+int      zp_username_for_uid(uid_t uid, char *out, size_t cap);
+int      zp_user_in_group(const char *user, const char *group,
+                          char *gid_out, size_t gid_cap);
+int      zp_primary_gid_for_uid(uid_t uid, gid_t *out);
 int      zp_kernel_version(char *out, size_t cap);
 void    *zp_malloc(size_t n);
 void    *zp_calloc(size_t nmemb, size_t size);

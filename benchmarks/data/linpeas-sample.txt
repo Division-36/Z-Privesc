@@ -1,0 +1,379 @@
+
+
+[1;34m          LinPEAS-ng [1;33mby carlospolop
+[0m
+[1;33mADVISORY: [1;34mThis script should be used for authorized penetration testing and/or educational purposes only. Any misuse of this software will not be the responsibility of the author or of any other collaborator. Use it at your own computers and/or with the computer owner's permission.
+[0m
+[1;34mLinux Privesc Checklist: [1;33mhttps://book.hacktricks.wiki/en/linux-hardening/linux-privilege-escalation-checklist.html
+[0m[1;34mBest Linux PE & Hardening course: [1;33mhttps://hacktricks-training.com/courses/lhe/
+[0m [1;4mLEGEND[0m:
+  [1;31;103mRED/YELLOW[0m: 95% a PE vector
+  [1;31mRED[0m: You should take a look into it
+  [1;96mLightCyan[0m: Users with console
+  [1;34mBlue[0m: Users without console & mounted devs
+  [1;32mGreen[0m: Common things (users, groups, SUID/SGID, mounts, .sh scripts, cronjobs) 
+  [1;95mLightMagenta[0m: Your username
+
+ [1;90mStarting LinPEAS. Caching Writable Folders...[0m
+[1;34m                               ╔═══════════════════╗
+═══════════════════════════════╣ [1;32mBasic information[1;34m ╠═══════════════════════════════
+[1;34m                               ╚═══════════════════╝[0m
+[1;37mOS: [0mLinux version 7.0.0-27-generic (buildd@lcy02-amd64-114) (x86_64-linux-gnu-gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, GNU ld (GNU Binutils for Ubuntu) 2.46) #27-Ubuntu SMP PREEMPT_DYNAMIC Thu Jun 18 19:13:49 UTC 2026
+[1;37mUser & Groups: [0muid=1000(ubuntu) gid=1000(ubuntu) groups=1000(ubuntu),4(adm),24(cdrom),27(sudo),30(dip),102(lxd)
+[1;37mHostname: [0mprimary
+
+[1;37mRemember that you can use the '-t' option to call the Internet connectivity checks and automatic network recon!
+[0m[1;33m[+] [1;32m/usr/bin/ping[1;34m is available for network discovery[1;37m (LinPEAS can discover hosts, learn more with -h)
+[0m[1;33m[+] [1;32m/usr/bin/bash[1;34m is available for network discovery, port scanning and port forwarding[1;37m (LinPEAS can discover hosts, scan ports, and forward ports. Learn more with -h)
+[1;33m[+] [1;32m/usr/bin/nc[1;34m is available for network discovery & port scanning[1;37m (LinPEAS can discover hosts and scan ports, learn more with -h)
+[0m
+
+[1;32mCaching directories [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33mDONE
+[0m
+[1;34m                              ╔════════════════════╗
+══════════════════════════════╣ [1;32mSystem Information[1;34m ╠══════════════════════════════
+[1;34m                              ╚════════════════════╝[0m
+[1;34m╔══════════╣ [1;32mOperative system [1;90m(T1082)
+[0m[1;34m╚ [1;34m[3mhttps://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#kernel-exploits
+[0mLinux version 7.0.0-27-generic (buildd@lcy02-amd64-114) (x86_64-linux-gnu-gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, GNU ld (GNU Binutils for Ubuntu) 2.46) #27-Ubuntu SMP PREEMPT_DYNAMIC Thu Jun 18 19:13:49 UTC 2026
+Distributor ID:	Ubuntu
+Description:	Ubuntu 26.04 LTS
+Release:	26.04
+Codename:	resolute
+
+[1;34m╔══════════╣ [1;32mSudo version [1;90m(T1548.003,T1068)
+[0m[1;34m╚ [1;34m[3mhttps://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#sudo-version
+[0m
+
+[1;34m╔══════════╣ [1;32mPATH [1;90m(T1574.007)
+[0m[1;34m╚ [1;34m[3mhttps://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#writable-path-abuses
+[0m/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+
+[1;34m╔══════════╣ [1;32mDate & uptime [1;90m(T1082)
+[0mTue Jul 14 21:30:32 EEST 2026
+ 21:30:32 up  9:48,  2 users,  load average: 1.82, 0.77, 0.34
+
+[1;34m╔══════════╣ [1;32mCPU info [1;90m(T1082)
+[0mArchitecture:                            x86_64
+CPU op-mode(s):                          32-bit, 64-bit
+Address sizes:                           39 bits physical, 48 bits virtual
+Byte Order:                              Little Endian
+CPU(s):                                  1
+On-line CPU(s) list:                     0
+Vendor ID:                               GenuineIntel
+Model name:                              11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz
+CPU family:                              6
+Model:                                   141
+Thread(s) per core:                      1
+Core(s) per socket:                      1
+Socket(s):                               1
+Stepping:                                1
+CPU(s) scaling MHz:                      135%
+CPU max MHz:                             2300.0000
+CPU min MHz:                             800.0000
+BogoMIPS:                                4608.00
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves user_shstk avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid movdiri movdir64b fsrm avx512_vp2intersect md_clear ibt flush_l1d arch_capabilities
+Hypervisor vendor:                       Microsoft
+Virtualization type:                     full
+L1d cache:                               48 KiB (1 instance)
+L1i cache:                               32 KiB (1 instance)
+L2 cache:                                1.3 MiB (1 instance)
+L3 cache:                                24 MiB (1 instance)
+NUMA node(s):                            1
+NUMA node0 CPU(s):                       0
+Vulnerability Gather data sampling:      Not affected
+Vulnerability Ghostwrite:                Not affected
+Vulnerability Indirect target selection: Mitigation; Aligned branch/return thunks
+Vulnerability Itlb multihit:             Not affected
+Vulnerability L1tf:                      Not affected
+Vulnerability Mds:                       Not affected
+Vulnerability Meltdown:                  Not affected
+Vulnerability Mmio stale data:           Not affected
+Vulnerability Old microcode:             Not affected
+Vulnerability Reg file data sampling:    Not affected
+Vulnerability Retbleed:                  Mitigation; Enhanced IBRS
+Vulnerability Spec rstack overflow:      Not affected
+Vulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl
+Vulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI SW loop, KVM SW loop
+Vulnerability Srbds:                     Not affected
+Vulnerability Tsa:                       Not affected
+Vulnerability Tsx async abort:           Not affected
+Vulnerability Vmscape:                   Not affected
+
+[1;34m╔══════════╣ [1;32mUnmounted file-system? [1;90m(T1082,T1120)
+[0m[1;34m╚ [1;34m[3mCheck if you can mount umounted devices
+[0m[1;34mLABEL=cloudimg-rootfs[0m	[1;34m/[0m	 ext4	discard,commit=30,errors=remount-ro	0 1
+LABEL=BOOT	[1;34m/boot[0m	ext4	defaults	0 2
+LABEL=UEFI	[1;34m/boot/efi[0m	vfat	umask=0077	0 1
+
+[1;34m╔══════════╣ [1;32mAny sd*/disk* disk in /dev? (limit 20) [1;90m(T1082)
+[0mdisk
+sda
+sda1
+sda13
+sda14
+sda15
+
+[1;34m╔══════════╣ [1;32mSystem stats [1;90m(T1082)
+[0mFilesystem      Size  Used Avail Use% Mounted on
+tmpfs           179M  964K  178M   1% /run
+/dev/sda1       3.8G  2.5G  1.3G  68% /
+tmpfs           446M     0  446M   0% /dev/shm
+efivarfs        128M   32K  128M   1% /sys/firmware/efi/efivars
+tmpfs           446M  1.2M  445M   1% /tmp
+none            1.0M     0  1.0M   0% /run/credentials/systemd-journald.service
+none            1.0M     0  1.0M   0% /run/credentials/systemd-resolved.service
+/dev/sda13      989M  106M  816M  12% /boot
+/dev/sda15      105M  6.3M   99M   7% /boot/efi
+none            1.0M     0  1.0M   0% /run/credentials/systemd-networkd.service
+tmpfs            90M  8.0K   90M   1% /run/user/1000
+none            1.0M     0  1.0M   0% /run/credentials/getty@tty1.service
+none            1.0M     0  1.0M   0% /run/credentials/serial-getty@ttyS0.service
+               total        used        free      shared  buff/cache   available
+Mem:          912408      393420       88600        5272      612712      518988
+Swap:              0           0           0
+
+[1;34m╔══════════╣ [1;32mInode usage [1;90m(T1082)
+[0mFilesystem      Inodes  IUsed   IFree IUse% Mounted on
+tmpfs           819200    790  818410    1% /run
+/dev/sda1       501760 104983  396777   21% /
+tmpfs           114051      1  114050    1% /dev/shm
+efivarfs             0      0       0     - /sys/firmware/efi/efivars
+tmpfs          1048576    295 1048281    1% /tmp
+none              1024      1    1023    1% /run/credentials/systemd-journald.service
+none              1024      1    1023    1% /run/credentials/systemd-resolved.service
+/dev/sda13       65536    646   64890    1% /boot
+/dev/sda15           0      0       0     - /boot/efi
+none              1024      1    1023    1% /run/credentials/systemd-networkd.service
+tmpfs            22810     38   22772    1% /run/user/1000
+none              1024      1    1023    1% /run/credentials/getty@tty1.service
+none              1024      1    1023    1% /run/credentials/serial-getty@ttyS0.service
+
+[1;34m╔══════════╣ [1;32mEnvironment [1;90m(T1082,T1552.007)
+[0m[1;34m╚ [1;34m[3mAny private information inside environment variables?
+[0mSHELL=/bin/bash
+PWD=/home/ubuntu/zp
+LOGNAME=ubuntu
+HOME=/home/ubuntu
+LANG=C.UTF-8
+SSH_CONNECTION=192.168.240.1 52997 192.168.249.92 22
+USER=ubuntu
+SHLVL=2
+XDG_RUNTIME_DIR=/run/user/1000
+SSH_CLIENT=192.168.240.1 52997 22
+OLDPWD=/home/ubuntu
+_=/usr/bin/env
+
+[1;34m╔══════════╣ [1;32mSearching Signature verification failed in dmesg [1;90m(T1082)
+[0m[1;34m╚ [1;34m[3mhttps://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#dmesg-signature-verification-failed
+[0m[1;90mdmesg Not Found
+[0m
+[1;34m╔══════════╣ [1;32mProtections [1;90m(T1518.001)
+[0m[1;34m═╣ [1;32mAppArmor enabled? .............. [0m[0mYou do not have enough privilege to read the profile set.
+apparmor module is loaded.
+[1;34m═╣ [1;32mAppArmor profile? .............. [0m[0m[1;31munconfined[0m
+[1;34m═╣ [1;32mis linuxONE? ................... [0m[0m[1;90ms390x Not Found
+[0m[1;34m═╣ [1;32mgrsecurity present? ............ [0m[0m[1;90mgrsecurity Not Found
+[0m[1;34m═╣ [1;32mPaX bins present? .............. [0m[0m[1;90mPaX Not Found
+[0m[1;34m═╣ [1;32mExecshield enabled? ............ [0m[0m[1;90mExecshield Not Found
+[0m[1;34m═╣ [1;32mSELinux enabled? ............... [0m[0m[1;90msestatus Not Found
+[0m[1;34m═╣ [1;32mSeccomp enabled? ............... [0m[0m[1;31mdisabled[0m
+[1;34m═╣ [1;32mUser namespace? ................ [0m[0m[1;32menabled[0m
+[1;34m═╣ [1;32munpriv_userns_clone? ........... [0m[1;31m1[0m
+[1;34m═╣ [1;32munpriv_bpf_disabled? ........... [0m[1;32m2[0m
+[1;34m═╣ [1;32mCgroup2 enabled? ............... [0m[0m[1;32menabled[0m
+[1;34m═╣ [1;32mkptr_restrict? ................. [0m[1;32m1[0m
+[1;34m═╣ [1;32mdmesg_restrict? ................ [0m[1;32m1[0m
+[1;34m═╣ [1;32mptrace_scope? .................. [0m[1;32m1[0m
+[1;34m═╣ [1;32mprotected_symlinks? ............ [0m[1;32m1[0m
+[1;34m═╣ [1;32mprotected_hardlinks? ........... [0m[1;32m1[0m
+[1;34m═╣ [1;32mperf_event_paranoid? ........... [0m[0m[1;32m4[0m
+[1;34m═╣ [1;32mmmap_min_addr? ................. [0m[1;32m65536[0m
+[1;34m═╣ [1;32mlockdown mode? ................. [0m[0m[[1;31mnone[0m] [1;32mintegrity[0m [1;32mconfidentiality[0m
+[1;34m═╣ [1;32mKernel hardening flags? ........ [0m[0mCONFIG_RANDOMIZE_BASE=y
+CONFIG_STACKPROTECTOR=y
+CONFIG_STACKPROTECTOR_STRONG=y
+CONFIG_SLAB_FREELIST_RANDOM=y
+CONFIG_SLAB_FREELIST_HARDENED=y
+# CONFIG_KASAN is not set
+[1;34m═╣ [1;32mFail2ban present? .............. [0m[0m[1;90mfail2ban Not Found
+[0m[1;34m═╣ [1;32mCrowdSec present? .............. [0m[0m[1;90mcrowdsec Not Found
+[0m[1;34m═╣ [1;32mPending reboot? ................ [0m[0m[1;90mNo
+[0m[1;34m═╣ [1;32mIs ASLR enabled? ............... [0m[0m[1;32mYes[0m
+[1;34m═╣ [1;32mPrinter? ....................... [0m[0m[1;90mNo
+[0m[1;34m═╣ [1;32mIs this a virtual machine? ..... [0m[0m[1;31mYes (microsoft)[0m
+
+[1;34m╔══════════╣ [1;32mKernel Modules Information [1;90m(T1547.006)
+[0m[1;34m══╣ [1;32mLoaded kernel modules [1;90m(T1547.006)
+[0mModule                  Size  Used by
+nf_tables             409600  0
+tcp_diag               20480  0
+udp_diag               12288  0
+inet_diag              24576  2 tcp_diag,udp_diag
+qrtr                   53248  2
+isofs                  61440  0
+binfmt_misc            24576  1
+nls_iso8859_1          12288  1
+intel_rapl_msr         20480  0
+intel_rapl_common      57344  1 intel_rapl_msr
+intel_uncore_frequency_common    20480  0
+intel_pmc_core        151552  0
+pmt_telemetry          16384  1 intel_pmc_core
+pmt_discovery          24576  1 pmt_telemetry
+pmt_class              20480  2 pmt_telemetry,pmt_discovery
+intel_pmc_ssram_telemetry    16384  1 intel_pmc_core
+intel_vsec             24576  2 intel_pmc_ssram_telemetry,pmt_telemetry
+rapl                   20480  0
+vmgenid                12288  0
+hyperv_drm             24576  0
+hv_balloon             45056  0
+hv_utils               45056  0
+joydev                 32768  0
+mac_hid                12288  0
+sch_fq_codel           28672  1
+efi_pstore             12288  0
+nfnetlink              20480  3 nf_tables
+hv_sock                24576  0
+vsock                  73728  1 hv_sock
+serio_raw              20480  0
+hid_generic            12288  0
+hid_hyperv             16384  0
+hv_storvsc             32768  3
+hv_netvsc             126976  0
+scsi_transport_fc     122880  1 hv_storvsc
+hid                   278528  2 hid_hyperv,hid_generic
+hyperv_keyboard        12288  0
+hv_vmbus              188416  8 hv_balloon,hv_utils,hv_netvsc,hid_hyperv,hv_storvsc,hyperv_keyboard,hyperv_drm,hv_sock
+ghash_clmulni_intel    12288  0
+cfg80211             1536000  0
+dm_mirror              28672  0
+dm_region_hash         24576  1 dm_mirror
+dm_log                 20480  2 dm_region_hash,dm_mirror
+be2iscsi              167936  0
+bnx2i                  73728  0
+cnic                   86016  1 bnx2i
+uio                    28672  1 cnic
+cxgb4i                 53248  0
+cxgb4                 671744  1 cxgb4i
+tls                   163840  1 cxgb4
+cxgb3i                 36864  0
+cxgb3                 229376  1 cxgb3i
+mdio                   12288  1 cxgb3
+libcxgbi               86016  2 cxgb4i,cxgb3i
+libcxgb                24576  2 libcxgbi,cxgb3i
+qla4xxx               356352  0
+iscsi_boot_sysfs       20480  2 be2iscsi,qla4xxx
+iscsi_tcp              24576  0
+libiscsi_tcp           32768  4 libcxgbi,iscsi_tcp,cxgb4i,cxgb3i
+libiscsi               81920  8 be2iscsi,libiscsi_tcp,bnx2i,libcxgbi,iscsi_tcp,qla4xxx,cxgb4i,cxgb3i
+scsi_transport_iscsi   176128  7 be2iscsi,libiscsi_tcp,bnx2i,libcxgbi,iscsi_tcp,qla4xxx,libiscsi
+msr                    12288  0
+dm_multipath           45056  0
+dmi_sysfs              28672  0
+autofs4                61440  2
+aesni_intel            98304  0
+[1;34m══╣ [1;32mKernel modules with weak perms? [1;90m(T1547.006)
+[0m
+[1;34m══╣ [1;32mKernel modules loadable?  [1;90m(T1547.006)
+[0m[1;31mModules can be loaded[0m
+[1;34m══╣ [1;32mModule signature enforcement?  [1;90m(T1547.006)
+[0m[1;31mNot enforced[0m
+
+[1;34m╔══════════╣ [1;32mChecking for Copy Fail (CVE-2026-31431) [1;90m(T1068)
+[0m[1;34m╚ [1;34m[3mhttps://copy.fail/
+[0m[1;34m╚ [1;34m[3mhttps://www.cve.org/CVERecord?id=CVE-2026-31431
+[0m[1;32mNOT VULNERABLE: Python runtime probe left temp-file page cache intact[0m
+
+[1;34m╔══════════╣ [1;32mKernel Exploit Registry [1;90m(T1068)
+[0m[1;34m═╣ [1;32mOperating system ............. Linux
+[0m[1;34m═╣ [1;32mKernel release ............... 7.0.0-27-generic
+[0m[1;34m═╣ [1;32mComparable version ........... 7.0.0.27
+[0m[1;34m═╣ [1;32mData chunk limit ............. max 25 rows per KERNEL_CVE_DATA_* variable (1..22)
+[0m[1;34m═╣ [1;32mKernel config source ......... /boot/config-7.0.0-27-generic
+[0m[1;31;103mCVE: CVE-2026-43503 | Name: DirtyClone | Match data: pkg=linux-kernel,ver>=6.19,ver<7.0.10 | Tags: 1 | Rank: Fixed in stable 7.0.10 and mainline 7.1[0m
+[1;31;103mCVE: CVE-2026-46331 | Name: pedit COW | Match data: pkg=linux-kernel,ver>=6.19,ver<7.0.13 | Tags: 1 | Rank: Fixed in stable 7.0.13 and mainline 7.1[0m
+[1;31;103mCVE: CVE-2026-46333 | Name: ptrace exit-race | Match data: pkg=linux-kernel,ver>=6.19,ver<7.0.8,cmd:[ "$(cat /proc/sys/kernel/yama/ptrace_scope 2>/dev/null || echo 0)" -lt 2 ] | Tags: 1 | Rank: Upstream issue introduced in 4.10; fixed in 7.0.8; mitigated by kernel.yama.ptrace_scope >= 2[0m
+[1;31;103m[1;34m═╣ [1;32mKernel vulns found: 3[0m
+[1;31;103m[0m[0m
+[1;34m╔══════════╣ [1;32mChecking for Dirty Frag (CVE-2026-43284 / CVE-2026-43500) [1;90m(T1068)
+[0m[1;34m╚ [1;34m[3mhttps://ubuntu.com/blog/dirty-frag-linux-vulnerability-fixes-available
+[0m[1;34m╚ [1;34m[3mhttps://www.cve.org/CVERecord?id=CVE-2026-43284
+[0m[1;34m╚ [1;34m[3mhttps://www.cve.org/CVERecord?id=CVE-2026-43500
+[0m[1;31;103mCVE-2026-43284 (xfrm-ESP): autoloadable: esp4 esp6 xfrm_user ipcomp6[0m
+[1;31;103mCVE-2026-43500 (rxrpc): autoloadable: rxrpc[0m
+[1;33mmodprobe mitigation (xfrm-ESP): not found[0m
+[1;33mmodprobe mitigation (rxrpc): not found[0m
+[1;33mUnprivileged user namespaces: enabled[0m
+[1;31;103mLIKELY VULNERABLE to CVE-2026-43284 (xfrm-ESP).[0m
+[1;31;103mLIKELY VULNERABLE to CVE-2026-43500 (rxrpc).[0m
+Mitigation: 'install esp4/esp6/rxrpc /bin/false' in /etc/modprobe.d/, then rmmod;
+or sysctl kernel.unprivileged_userns_clone=0; or apply distro patches.
+
+[1;34m╔══════════╣ [1;32mPackage Vulnerabilities [1;90m(T1082)
+[0m[1;34m╚ [1;34m[3mThis uses the optional HackTricks online lookup enabled with -V or -a. Output is capped at 50 vulnerable packages.
+[0mOnline package vulnerabilities found: 45 vulnerable package(s), checked 250.
+- curl 8.18.0-1ubuntu2.1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-10536[0m, UBUNTU-[1;31;103mCVE-2026-11352[0m, UBUNTU-[1;31;103mCVE-2026-11564[0m, UBUNTU-[1;31;103mCVE-2026-11586[0m, UBUNTU-[1;31;103mCVE-2026-11856[0m, UBUNTU-[1;31;103mCVE-2026-12064[0m, UBUNTU-[1;31;103mCVE-2026-8286[0m, UBUNTU-[1;31;103mCVE-2026-8458[0m, UBUNTU-[1;31;103mCVE-2026-8924[0m, UBUNTU-[1;31;103mCVE-2026-8925[0m, UBUNTU-[1;31;103mCVE-2026-8926[0m, UBUNTU-[1;31;103mCVE-2026-8927[0m, UBUNTU-[1;31;103mCVE-2026-8932[0m, UBUNTU-[1;31;103mCVE-2026-9079[0m, UBUNTU-[1;31;103mCVE-2026-9080[0m, UBUNTU-[1;31;103mCVE-2026-9545[0m, UBUNTU-[1;31;103mCVE-2026-9547[0m, USN-8487-1, USN-8525-1
+- glib2.0 2.88.0-1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-58010[0m, UBUNTU-[1;31;103mCVE-2026-58011[0m, UBUNTU-[1;31;103mCVE-2026-58012[0m, UBUNTU-[1;31;103mCVE-2026-58013[0m, UBUNTU-[1;31;103mCVE-2026-58014[0m, UBUNTU-[1;31;103mCVE-2026-58015[0m, UBUNTU-[1;31;103mCVE-2026-58016[0m
+- busybox 1:1.37.0-7ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2023-42366[0m, UBUNTU-[1;31;103mCVE-2024-58251[0m, UBUNTU-[1;31;103mCVE-2025-46394[0m, UBUNTU-[1;31;103mCVE-2025-60876[0m, UBUNTU-[1;31;103mCVE-2026-26157[0m, UBUNTU-[1;31;103mCVE-2026-26158[0m, UBUNTU-[1;31;103mCVE-2026-29004[0m
+- dhcpcd 1:10.3.0-7 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-70102[0m, UBUNTU-[1;31;103mCVE-2026-14258[0m, UBUNTU-[1;31;103mCVE-2026-56113[0m, UBUNTU-[1;31;103mCVE-2026-56114[0m, UBUNTU-[1;31;103mCVE-2026-56115[0m, UBUNTU-[1;31;103mCVE-2026-56116[0m, UBUNTU-[1;31;103mCVE-2026-56117[0m
+- git 1:2.53.0-1ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2024-52005[0m
+- binutils 2.46-3ubuntu2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2017-13716[0m, UBUNTU-[1;31;103mCVE-2025-1150[0m, UBUNTU-[1;31;103mCVE-2025-1151[0m, UBUNTU-[1;31;103mCVE-2025-66861[0m, UBUNTU-[1;31;103mCVE-2025-66862[0m, UBUNTU-[1;31;103mCVE-2025-66863[0m, UBUNTU-[1;31;103mCVE-2025-66864[0m, UBUNTU-[1;31;103mCVE-2025-66865[0m, UBUNTU-[1;31;103mCVE-2025-66866[0m, UBUNTU-[1;31;103mCVE-2026-3441[0m, UBUNTU-[1;31;103mCVE-2026-3442[0m, UBUNTU-[1;31;103mCVE-2026-4647[0m, UBUNTU-[1;31;103mCVE-2026-6844[0m, UBUNTU-[1;31;103mCVE-2026-6845[0m, UBUNTU-[1;31;103mCVE-2026-6846[0m
+- fuse3 3.18.2-1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-33150[0m, UBUNTU-[1;31;103mCVE-2026-33179[0m
+- linux 7.0.0-27.27 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2012-4542[0m, UBUNTU-[1;31;103mCVE-2013-7445[0m, UBUNTU-[1;31;103mCVE-2015-7837[0m, UBUNTU-[1;31;103mCVE-2015-8553[0m, UBUNTU-[1;31;103mCVE-2016-8660[0m, UBUNTU-[1;31;103mCVE-2017-0537[0m, UBUNTU-[1;31;103mCVE-2017-13165[0m, UBUNTU-[1;31;103mCVE-2017-13693[0m, UBUNTU-[1;31;103mCVE-2017-13694[0m, UBUNTU-[1;31;103mCVE-2018-1121[0m, UBUNTU-[1;31;103mCVE-2018-12928[0m, UBUNTU-[1;31;103mCVE-2018-12929[0m, UBUNTU-[1;31;103mCVE-2018-12930[0m, UBUNTU-[1;31;103mCVE-2018-12931[0m, UBUNTU-[1;31;103mCVE-2018-17977[0m, UBUNTU-[1;31;103mCVE-2019-14899[0m, UBUNTU-[1;31;103mCVE-2019-15213[0m, UBUNTU-[1;31;103mCVE-2019-15794[0m, UBUNTU-[1;31;103mCVE-2019-19378[0m, UBUNTU-[1;31;103mCVE-2019-19814[0m
+- dracut 110-11 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-6893[0m
+- util-linux 2.41.3-3ubuntu2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-13595[0m, UBUNTU-[1;31;103mCVE-2026-27456[0m, UBUNTU-[1;31;103mCVE-2026-3184[0m, UBUNTU-[1;31;103mCVE-2026-53612[0m, UBUNTU-[1;31;103mCVE-2026-53613[0m, UBUNTU-[1;31;103mCVE-2026-53614[0m, UBUNTU-[1;31;103mCVE-2026-53615[0m
+- grub2-signed 1.215 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2024-45774[0m, UBUNTU-[1;31;103mCVE-2024-45775[0m, UBUNTU-[1;31;103mCVE-2024-45776[0m, UBUNTU-[1;31;103mCVE-2024-45777[0m, UBUNTU-[1;31;103mCVE-2024-45778[0m, UBUNTU-[1;31;103mCVE-2024-45779[0m, UBUNTU-[1;31;103mCVE-2024-45780[0m, UBUNTU-[1;31;103mCVE-2024-45781[0m, UBUNTU-[1;31;103mCVE-2024-45782[0m, UBUNTU-[1;31;103mCVE-2024-45783[0m, UBUNTU-[1;31;103mCVE-2024-49504[0m, UBUNTU-[1;31;103mCVE-2024-56737[0m, UBUNTU-[1;31;103mCVE-2024-56738[0m, UBUNTU-[1;31;103mCVE-2025-0622[0m, UBUNTU-[1;31;103mCVE-2025-0624[0m, UBUNTU-[1;31;103mCVE-2025-0677[0m, UBUNTU-[1;31;103mCVE-2025-0678[0m, UBUNTU-[1;31;103mCVE-2025-0684[0m, UBUNTU-[1;31;103mCVE-2025-0685[0m, UBUNTU-[1;31;103mCVE-2025-0686[0m
+- grub2-unsigned 2.14-2ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2024-45774[0m, UBUNTU-[1;31;103mCVE-2024-45775[0m, UBUNTU-[1;31;103mCVE-2024-45776[0m, UBUNTU-[1;31;103mCVE-2024-45777[0m, UBUNTU-[1;31;103mCVE-2024-45778[0m, UBUNTU-[1;31;103mCVE-2024-45779[0m, UBUNTU-[1;31;103mCVE-2024-45780[0m, UBUNTU-[1;31;103mCVE-2024-45781[0m, UBUNTU-[1;31;103mCVE-2024-45782[0m, UBUNTU-[1;31;103mCVE-2024-45783[0m, UBUNTU-[1;31;103mCVE-2024-49504[0m, UBUNTU-[1;31;103mCVE-2024-56737[0m, UBUNTU-[1;31;103mCVE-2024-56738[0m, UBUNTU-[1;31;103mCVE-2025-0622[0m, UBUNTU-[1;31;103mCVE-2025-0624[0m, UBUNTU-[1;31;103mCVE-2025-0677[0m, UBUNTU-[1;31;103mCVE-2025-0678[0m, UBUNTU-[1;31;103mCVE-2025-0684[0m, UBUNTU-[1;31;103mCVE-2025-0685[0m, UBUNTU-[1;31;103mCVE-2025-0686[0m
+- cpio 2.15+dfsg-2.1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2023-7216[0m
+- coreutils 9.7-3ubuntu2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-5278[0m
+- packagekit 1.3.4-3ubuntu1.1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2022-0987[0m, UBUNTU-[1;31;103mCVE-2024-0217[0m, UBUNTU-[1;31;103mCVE-2026-10294[0m
+- gnupg2 2.4.8-4ubuntu3 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-57062[0m
+- acl 2.3.2-2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-54369[0m, UBUNTU-[1;31;103mCVE-2026-54370[0m
+- attr 1:2.5.2-4 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-54371[0m
+- bzip2 1.0.8-6build2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-42250[0m
+- duktape 2.7.0+tests-0ubuntu4 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-12216[0m
+- efivar 39-2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-6862[0m
+- elfutils 0.194-4 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-1352[0m, UBUNTU-[1;31;103mCVE-2025-1376[0m
+- expat 2.7.4-1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-66382[0m, UBUNTU-[1;31;103mCVE-2026-32776[0m, UBUNTU-[1;31;103mCVE-2026-32777[0m, UBUNTU-[1;31;103mCVE-2026-32778[0m, UBUNTU-[1;31;103mCVE-2026-41080[0m, UBUNTU-[1;31;103mCVE-2026-45186[0m, UBUNTU-[1;31;103mCVE-2026-4739[0m, UBUNTU-[1;31;103mCVE-2026-50219[0m, UBUNTU-[1;31;103mCVE-2026-56131[0m, UBUNTU-[1;31;103mCVE-2026-56132[0m, UBUNTU-[1;31;103mCVE-2026-56403[0m, UBUNTU-[1;31;103mCVE-2026-56404[0m, UBUNTU-[1;31;103mCVE-2026-56405[0m, UBUNTU-[1;31;103mCVE-2026-56406[0m, UBUNTU-[1;31;103mCVE-2026-56407[0m, UBUNTU-[1;31;103mCVE-2026-56408[0m, UBUNTU-[1;31;103mCVE-2026-56409[0m, UBUNTU-[1;31;103mCVE-2026-56410[0m, UBUNTU-[1;31;103mCVE-2026-56411[0m, UBUNTU-[1;31;103mCVE-2026-56412[0m
+- freetype 2.14.2+dfsg-1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-50811[0m
+- gawk 1:5.3.2-1ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-40467[0m, UBUNTU-[1;31;103mCVE-2026-40468[0m, UBUNTU-[1;31;103mCVE-2026-40469[0m, UBUNTU-[1;31;103mCVE-2026-40553[0m
+- glibc 2.43-2ubuntu2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-4046[0m, UBUNTU-[1;31;103mCVE-2026-4437[0m, UBUNTU-[1;31;103mCVE-2026-4438[0m, UBUNTU-[1;31;103mCVE-2026-5435[0m, UBUNTU-[1;31;103mCVE-2026-5450[0m, UBUNTU-[1;31;103mCVE-2026-5928[0m, UBUNTU-[1;31;103mCVE-2026-6238[0m
+- gzip 1.14-1~exp2ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-41991[0m, UBUNTU-[1;31;103mCVE-2026-41992[0m, USN-8512-1
+- icu 78.2-2ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-5222[0m
+- jq 1.8.1-4ubuntu2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-9403[0m, UBUNTU-[1;31;103mCVE-2026-40612[0m, UBUNTU-[1;31;103mCVE-2026-41256[0m, UBUNTU-[1;31;103mCVE-2026-41257[0m, UBUNTU-[1;31;103mCVE-2026-43894[0m, UBUNTU-[1;31;103mCVE-2026-43895[0m, UBUNTU-[1;31;103mCVE-2026-43896[0m, UBUNTU-[1;31;103mCVE-2026-44777[0m, UBUNTU-[1;31;103mCVE-2026-47770[0m, UBUNTU-[1;31;103mCVE-2026-49839[0m, UBUNTU-[1;31;103mCVE-2026-54679[0m
+- krb5 1.22.1-2ubuntu4 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-11850[0m, UBUNTU-[1;31;103mCVE-2026-40355[0m, UBUNTU-[1;31;103mCVE-2026-40356[0m
+- libgcrypt20 1.12.0-2ubuntu0.1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2024-2236[0m
+- libpcap 1.10.6-1ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-11961[0m
+- libssh2 1.11.1-1ubuntu0.26.04.1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-15661[0m, UBUNTU-[1;31;103mCVE-2026-55199[0m, UBUNTU-[1;31;103mCVE-2026-55200[0m, UBUNTU-[1;31;103mCVE-2026-58050[0m, UBUNTU-[1;31;103mCVE-2026-58051[0m, USN-8486-1, USN-8532-1
+- llvm-toolchain-21 1:21.1.8-6ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-13573[0m, UBUNTU-[1;31;103mCVE-2026-13574[0m
+- lmdb 0.9.31-1build2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-22185[0m
+- nghttp2 1.68.0-2ubuntu0.1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-58055[0m, USN-8495-1
+- nss 2:3.120-1ubuntu2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-12318[0m, USN-8481-1
+- p11-kit 0.26.2-2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-13757[0m
+- pam 1.7.0-5ubuntu3 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-54411[0m
+- perl 5.40.1-7ubuntu0.1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-15649[0m, UBUNTU-[1;31;103mCVE-2026-12087[0m, UBUNTU-[1;31;103mCVE-2026-13221[0m, UBUNTU-[1;31;103mCVE-2026-42497[0m, UBUNTU-[1;31;103mCVE-2026-48959[0m, UBUNTU-[1;31;103mCVE-2026-48961[0m, UBUNTU-[1;31;103mCVE-2026-48962[0m, UBUNTU-[1;31;103mCVE-2026-57432[0m, UBUNTU-[1;31;103mCVE-2026-57433[0m, UBUNTU-[1;31;103mCVE-2026-7017[0m, UBUNTU-[1;31;103mCVE-2026-9538[0m
+- policykit-1 127-2ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2016-2568[0m
+- python3.14 3.14.4-1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-12781[0m, UBUNTU-[1;31;103mCVE-2026-0864[0m, UBUNTU-[1;31;103mCVE-2026-11940[0m, UBUNTU-[1;31;103mCVE-2026-11972[0m, UBUNTU-[1;31;103mCVE-2026-1502[0m, UBUNTU-[1;31;103mCVE-2026-15308[0m, UBUNTU-[1;31;103mCVE-2026-3276[0m, UBUNTU-[1;31;103mCVE-2026-4360[0m, UBUNTU-[1;31;103mCVE-2026-4786[0m, UBUNTU-[1;31;103mCVE-2026-5713[0m, UBUNTU-[1;31;103mCVE-2026-6019[0m, UBUNTU-[1;31;103mCVE-2026-6100[0m, UBUNTU-[1;31;103mCVE-2026-7210[0m, UBUNTU-[1;31;103mCVE-2026-7774[0m, UBUNTU-[1;31;103mCVE-2026-8328[0m, UBUNTU-[1;31;103mCVE-2026-9669[0m, USN-8509-1
+- slang2 2.3.3-5build1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2023-45927[0m, UBUNTU-[1;31;103mCVE-2023-45929[0m
+- sqlite3 3.46.1-9 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-11822[0m, UBUNTU-[1;31;103mCVE-2026-11824[0m, UBUNTU-[1;31;103mCVE-2026-50812[0m, UBUNTU-[1;31;103mCVE-2026-50813[0m, USN-8480-1
+- systemd 259.5-0ubuntu3 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-40228[0m
+
+
+
+[1;34m                                   ╔═══════════╗
+═══════════════════════════════════╣ [1;32mContainer[1;34m ╠═══════════════════════════════════
+[1;34m                                   ╚═══════════╝[0m
+[1;34m╔══════════╣ [1;32mContainer related tools present (if any): [1;90m(T1613)
+[0m/usr/sbin/lxc
+/usr/sbin/apparmor_parser
+/usr/bin/nsenter
+/usr/bin/unshare
+/usr/bin/chroot
+/usr/sbin/capsh
+/usr/sbin/setcap
+/usr/sbin/getcap
+
+[1;34m╔══════════╣ [1;32mContainer details [1;90m(T1613,T1611)
+[0m[1;34m═╣ [1;32mIs this a container? ...........[0m [1;90mNo
+[0m[0m[1;34m═╣ [1;32mLXC version ................[0m [0m

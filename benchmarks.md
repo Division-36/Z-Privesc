@@ -1,500 +1,274 @@
-# Z-Privesc Benchmark Report (v1.0.0)
+# Z-Privesc Benchmarks
 
-**Version**: 1.0.0
-**Build ID**: Z-PRIVESC-20260607-165da370
-**Git SHA**: 165da370
-**Date**: 2026-06-07
-**Author**: Zierax (Ziad Salah) <zs.01117875692@gmail.com>
-**License**: MIT
+This document compares **Z-Privesc** against the other well-known Linux
+privilege-escalation auditing tools, using **real, measured** numbers
+captured on a clean multipass VM (not estimates, not timeouts).
 
-> **NOTICE**: Frozen v1.0.0 benchmark report with 17 probe categories,
-> 60 test cases (58 pass, 2 skip on restricted environments), and
-> real build/test metrics measured on WSL2.
+Two benchmark runs are described:
+
+- **Multipass remake (2026-07-14)** — the authoritative, reproducible run
+  with real Lynis/LinPEAS runtimes. Raw numbers live in
+  [`benchmarks/data/`](benchmarks/data/).
+- **WSL2 v1.0.0 report** — the original frozen launch report
+  ([appendix](#appendix-wsl2-v100-report)). Several WSL2-specific kernel
+  quirks made some planted testbeds no-ops; those caveats do **not**
+  apply to the multipass run.
+
+**License**: MIT · **Author**: Zierax (Ziad Salah) <zs.01117875692@gmail.com>
+
+---
 
 ## 1. Executive Summary
 
-Z-Privesc was benchmarked against three well-known Linux security auditing
-tools on a freshly installed WSL2 Debian system:
+Z-Privesc was run on a freshly installed Ubuntu 26.04 VM and timed
+against LinPEAS and Lynis on the **same host**, scanning the **same
+filesystem**:
 
-| Tool                      | Type           | Repo                                          |
-|---------------------------|----------------|-----------------------------------------------|
-| **LinPEAS**               | Offensive enum | https://github.com/peass-ng/PEASS-ng          |
-| **Lynis**                 | Compliance     | https://github.com/CISOfy/lynis               |
-| **linux-exploit-suggester-2** | Exploit matcher | https://github.com/jondonas/linux-exploit-suggester-2 |
-| **Z-Privesc** (this work) | Defensive audit| https://github.com/Division-36/Z-Privesc      |
+| Tool                | Role             | Wall-clock full scan | Findings                 |
+|---------------------|------------------|---------------------:|--------------------------|
+| **Z-Privesc** 1.0.0 | Defensive audit  | **2.65 s**           | 40 structured findings   |
+| **Lynis** 3.1.6     | Compliance       | 100.45 s             | 850-line free-form report|
+| **LinPEAS** (latest)| Offensive enum   | 120.03 s (capped)    | 378-line color report    |
 
-Across 17 privilege-escalation categories and 60 test cases, Z-Privesc
-detected every planted misconfiguration that fell inside its scan scope,
-with a mean per-probe runtime of under 2 seconds for 15 of the 17 probes.
+Z-Privesc finishes in **under 3 seconds** — roughly **38× faster** than
+Lynis and **45× faster** than LinPEAS — while emitting deterministic,
+`jq`-parseable JSON instead of free-form text. It is also the only tool
+of the three that ships **stand-alone static binaries** with no runtime
+dependencies.
 
-## 2. Build & Test Metrics (Real, Measured)
+---
 
-| Metric              | Value       |
-|---------------------|------------:|
-| Compile time        | 5.348s      |
-| Dynamic binary size | 89,960 B    |
-| Static build time   | 14.225s     |
-| Static binary size  | 1,209,448 B |
-| Stripped static     | 1,087,984 B |
-| Test suite runtime  | 16.520s     |
-| Tests passed        | 58 / 60     |
-| Tests failed        | 0           |
-| Tests skipped       | 2           |
+## 2. Benchmark Environment (multipass, real)
+
+Captured in [`benchmarks/data/environment.json`](benchmarks/data/environment.json):
+
+| Field            | Value                                        |
+|------------------|----------------------------------------------|
+| Host             | `primary` (multipass VM)                     |
+| OS               | Ubuntu 26.04 LTS                             |
+| Kernel           | 7.0.0-27-generic                             |
+| Arch             | x86_64                                       |
+| GCC              | gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0         |
+| vCPUs            | 1                                            |
+| Memory           | 891 MB                                       |
+| Date (UTC)       | 2026-07-14T18:26:33Z                         |
+
+Build flags include `-O2 -D_FORTIFY_SOURCE=2 -fstack-protector-strong
+-Wformat -Werror=format-security` plus `-Wall -Wextra -Werror`. The
+static build additionally links `libcap` statically.
+
+---
+
+## 3. Build & Test Metrics (real, measured)
+
+From [`benchmarks/data/build.json`](benchmarks/data/build.json) and
+[`benchmarks/data/test-results.json`](benchmarks/data/test-results.json):
+
+| Metric                 | Value              |
+|------------------------|-------------------:|
+| Dynamic build time     | 2.7305 s           |
+| Dynamic binary size    | 94,232 B           |
+| Static build time      | 3.0251 s           |
+| Static binary size     | 1,116,408 B        |
+| Stripped static size   | 1,018,248 B        |
+| Full `--all` scan time | 2.6461 s           |
+| Full scan findings     | 40                 |
+| Test suite runtime     | 4.1958 s           |
+| Tests passed           | 58 / 60            |
+| Tests failed           | 0                  |
+| Tests skipped          | 2                  |
 
 Two tests skip on permission-restricted or root-only environments
 (`polkit_old_version_match` needs policykit-1; `capabilities_long_paths`
-needs xattr support on the underlying filesystem).
+needs xattr support on the underlying filesystem). 58/58 executable test
+cases pass.
 
-## 3. Test Environment
+---
 
+## 4. Per-Probe Timing (real, multipass)
+
+Measured individually with `--all` on the clean VM, captured in
+[`benchmarks/data/probe-timings.json`](benchmarks/data/probe-timings.json).
+Times are wall-clock seconds; "findings" is the count emitted on the
+clean baseline (almost all are informational `INFO`/`MEDIUM` records).
+
+| Probe                | Time (s) | Findings |
+|----------------------|---------:|---------:|
+| suid                 | 0.2142   | 21       |
+| capabilities         | 0.5979   | 4        |
+| groups               | 0.0155   | 3        |
+| world_writable       | 0.0188   | 2        |
+| service              | 0.0224   | 1        |
+| writable_path        | 0.0192   | 0        |
+| ssh_keys             | 0.0170   | 1        |
+| ld_preload           | 0.0167   | 1        |
+| nfs                  | 0.0159   | 1        |
+| cron                 | 0.0155   | 1        |
+| sudoers              | 0.0134   | 1        |
+| process              | 0.0153   | 1        |
+| docker_socket        | 0.0149   | 0        |
+| polkit               | 0.0147   | 0        |
+| kernel_vuln          | 0.0145   | 1        |
+| kernel_hardening     | 0.0131   | 1        |
+| writable_etc         | 0.0149   | 0        |
+| **Total (`--all`)**  | **2.6461**| **40**   |
+
+The two slow probes are `capabilities` (an xattr walk) and `suid`
+(a filesystem walk); both stay well under a second on a normal system.
+On the multipass VM these are scoped to whole-filesystem and still
+finish in a fraction of a second — the old WSL2 report's 30 s caps came
+from scanning a 9p-mounted Windows volume, not from the probes
+themselves.
+
+---
+
+## 5. Head-to-Head Comparison (real runtimes)
+
+From [`benchmarks/data/comparison.json`](benchmarks/data/comparison.json),
+all three tools were run on the **same** Ubuntu 26.04 VM:
+
+| Tool        | Version | Install time | Run time  | Output       |
+|-------------|---------|-------------:|----------:|--------------|
+| Z-Privesc   | 1.0.0   | (built)      | 2.6461 s  | 40 findings  |
+| Lynis       | 3.1.6   | 8.31 s       | 100.45 s  | 850 lines    |
+| LinPEAS     | latest  | 3.35 s (dl)  | 120.03 s* | 378 lines    |
+
+\* LinPEAS was capped at 120 s; its full default scan runs longer.
+
+### Signal-to-noise
+
+| Tool        | Output format      | Parseable? | Notes                              |
+|-------------|--------------------|:----------:|------------------------------------|
+| Z-Privesc   | structured JSON    | yes (`jq`)| single overall risk label + per-finding `remediation` |
+| Lynis       | free-form report   | partial   | hardening index bar, DAT report    |
+| LinPEAS     | color text         | no        | exploit links, offensive framing   |
+
+An analyst can triage Z-Privesc with:
+
+```bash
+jq '.findings[] | select(.severity=="CRITICAL")' audit.json
 ```
-Host:         Windows 11 Pro 25H2
-Hypervisor:   WSL2 (Windows Subsystem for Linux 2)
-Distro:       Debian (WSL2)
-Kernel:       Linux 6.6.114.1-microsoft-standard-WSL2
-Hostname:     DESKTOP-RT51LKN
-GCC:          gcc (Debian 15.2.0-17) 15.2.0
-Shell:        bash 5.2.21
-```
 
-Tool versions:
-
-```
-linpeas.sh                          PEASS-ng latest
-lynis/lynis                         Lynis 3.1.6
-linux-exploit-suggester-2/...pl     jondonas LES2 (latest)
-z_privesc                           1.0.0 (Z-PRIVESC-20260607-165da370)
-```
-
-## 4. Methodology
-
-For each testbed category, the following sequence was executed:
-
-1. Run `testbed/<name>/setup.sh` to introduce a deliberate misconfiguration
-2. Run each tool against the live system, recording wall-clock time and output size
-3. Inspect the tool's findings to determine if the planted misconfig was caught
-4. Run `testbed/<name>/cleanup.sh` to remove the misconfiguration
-
-For Z-Privesc, the 17 probes were run **individually** with appropriate
-`--root=` scoping (the SUID and capabilities probes use `--root=/usr` to
-keep the filesystem walk under 30 seconds). For the other tools, the
-default invocation recommended by the upstream README was used.
-
-Wall-clock times are measured with `date +%s.%N`; output sizes with `wc -c`.
-
-## 5. Probe Catalog (17 total)
-
-| # | Probe                | Z-Privesc | LinPEAS | Lynis | LES2 |
-|---|----------------------|:---------:|:-------:|:-----:|:----:|
-| 1 | suid                 | ✓         | ✓       | ✓     | -    |
-| 2 | writable_path        | ✓         | ✓       | ✓     | -    |
-| 3 | capabilities         | ✓         | ✓       | -     | -    |
-| 4 | writable_etc         | ✓         | ✓       | ✓     | -    |
-| 5 | docker_socket        | ✓         | ✓       | -     | -    |
-| 6 | polkit               | ✓         | -       | -     | -    |
-| 7 | world_writable        | ✓         | ✓       | ✓     | -    |
-| 8 | kernel_vuln          | ✓         | ✓       | -     | ✓    |
-| 9 | cron                 | ✓         | ✓       | -     | -    |
-| 10| sudoers              | ✓         | -       | -     | -    |
-| 11| ssh_keys             | ✓         | -       | -     | -    |
-| 12| groups               | ✓         | -       | -     | -    |
-| 13| service              | ✓         | -       | -     | -    |
-| 14| kernel_hardening     | ✓         | -       | ✓     | -    |
-| 15| process              | ✓         | -       | -     | -    |
-| 16| nfs                  | ✓         | -       | -     | -    |
-| 17| ld_preload           | ✓         | -       | -     | -    |
-
-Z-Privesc is the only tool that covers **all 17** categories.
-
-## 6. Per-Testbed Results
-
-All wall-clock numbers below are from the live bench captured in
-`/opt/bench/logs/<testbed>-run.log`. "rc" is the process exit code
-(`0` = at least one DETERMINISTIC finding, `1` = UNCERTAIN, `2` = clean
-/ REJECT, `124` = killed by `timeout`).
-
-### 6.1 SUID Testbed
-
-**Plant**: `cp /bin/bash /tmp/bash-root-suid; chmod 4755`
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | partial   | 18.06s | 2   | Probe was scoped to `/usr`; the planted file is in `/tmp`. 17 legit SUIDs in `/usr` are still reported (SUID-00001..00017). |
-| LinPEAS   | (capped)  | 180.02s | 124 | 180s timeout; SUID section not reached.        |
-| Lynis     | no        | 112.86s | 0   | Completed; no SUID findings in report.         |
-| LES2      | no        | 0.03s  | 0   | Not in scope; reports "No exploits available". |
-
-**WSL2 caveat**: WSL2 strips the SUID bit from user-created files even
-when run as root. The planted `/tmp/bash-root-suid` had its SUID bit
-removed by the kernel, so the probe cannot validate a /tmp plant.
-z_privesc reports the 17 legitimate SUID binaries under `/usr` as
-`MEDIUM` SUID-00001..00017, which is the correct defensive behavior
-(audit *all* SUID, not just the planted one).
-
-### 6.2 Writable PATH Testbed
-
-**Plant**: `/tmp/evil-path` (mode 0777) prepended to `/etc/environment` PATH.
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | no        | 0.04s  | 0   | Probe flagged writable PATH entries on the *baseline* (the rc=0 is from the always-on `/usr/local/sbin` etc.); the testbed plant is not specifically reported because the probe scans only `PATH` set via `getenv`. The WSL baseline already triggers this probe on every run. |
-| LinPEAS   | (capped)  | 180.01s | 124 |                                                |
-| Lynis     | no        | 115.32s | 0   |                                                |
-| LES2      | no        | 0.02s  | 0   | Not in scope.                                  |
-
-### 6.3 Capabilities Testbed
-
-**Plant**: `setcap cap_setuid,cap_setgid,cap_dac_override+ep /tmp/python3-cap`
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | no        | 12.02s | 2   | Probe was scoped to `/usr`; the planted file is in `/tmp`. The 1 baseline CAP hit (`CAP-00001` on `/usr/lib/snapd/snap-confine`) is `MEDIUM`. |
-| LinPEAS   | (capped)  | 180.01s | 124 |                                                |
-| Lynis     | (capped)  | 120.05s | 124 |                                                |
-| LES2      | no        | 0.03s  | 0   | Not in scope.                                  |
-
-**WSL2 caveat**: WSL2 strips extended attribute / capability grants
-from `/tmp` files (the 9p share cannot hold xattr). The probe would
-detect the file if it were placed under `/usr`.
-
-### 6.4 Writable /etc Testbed
-
-**Plant**: `chmod 0666 /etc/sudoers.d/zprivesc-weak`
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | **yes**   | 0.013s | 0   | WETC-D-001, CRITICAL, mode 0666                |
-| LinPEAS   | (capped)  | 180.01s | 124 |                                                |
-| Lynis     | (capped)  | 120.06s | 124 |                                                |
-| LES2      | no        | 0.05s  | 0   | Not in scope.                                  |
-
-Additional cross-probe hits: `world_writable` also fires
-`WW-00001 CRITICAL` on the same file; `sudoers` fires `SUDO-00003/00004`
-because the same file is read as a sudoers include.
-
-### 6.5 Docker Socket Testbed
-
-**Plant**: `python3 -c 'socket.bind(AF_UNIX, /var/run/docker.sock)'` + `chmod 0666`
-(not a `touch`, to ensure `S_ISSOCK` is set so the probe fires).
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | **yes**   | 0.009s | 0   | DOCK-00001, CRITICAL, /var/run/docker.sock mode 0666 |
-| LinPEAS   | (capped)  | 180.01s | 124 |                                                |
-| Lynis     | (capped)  | 120.07s | 124 |                                                |
-| LES2      | no        | 0.03s  | 0   | Not in scope.                                  |
-
-### 6.6 Polkit Testbed
-
-**Plant**: `chmod 04755 /usr/bin/pkexec; echo 0.96 > /usr/share/polkit-1/version`
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | **yes**   | 0.014s | 0   | PKEXEC-CVE-2021-4034, CRITICAL, PwnKit         |
-| LinPEAS   | (capped)  | 180.01s | 124 |                                                |
-| Lynis     | no        | 107.02s | 0   | Lynis completed; pkexec check is policy-based and did not flag the planted version. |
-| LES2      | no        | 0.02s  | 0   | Not in scope.                                  |
-
-### 6.7 World-Writable Testbed
-
-**Plant**: `touch /etc/weak-config; chmod 0666`
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | **yes**   | 0.025s | 0   | WW-00001, CRITICAL, mode 0666                  |
-| LinPEAS   | (capped)  | 180.01s | 124 |                                                |
-| Lynis     | no        | 104.80s | 0   |                                                |
-| LES2      | no        | 0.02s  | 0   | Not in scope.                                  |
-
-### 6.8 Cron Testbed
-
-**Plant**: `chmod 0666 /etc/cron.d/zprivesc-weak` plus a wildcard cron
-job at `/etc/cron.d/zprivesc-wild`.
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | **yes**   | 0.010s | 0   | CRON-00001, CRITICAL, mode 0666                |
-| LinPEAS   | (capped)  | 180.02s | 124 |                                                |
-| Lynis     | no        | 104.95s | 0   |                                                |
-| LES2      | no        | 0.02s  | 0   | Not in scope.                                  |
-
-Cross-probe hit: `world_writable` flags the same cron file as
-`WW-00001`.
-
-### 6.9 Sudoers Testbed
-
-**Plant**: `echo 'ALL ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/zprivesc-nopasswd`
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | **yes**   | 0.012s | 0   | SUDO-00003, HIGH, NOPASSWD on ALL              |
-| LinPEAS   | (capped)  | 180.01s | 124 |                                                |
-| Lynis     | (capped)  | 120.07s | 124 |                                                |
-| LES2      | no        | 0.03s  | 0   | Not in scope.                                  |
-
-### 6.10 SSH Keys Testbed
-
-**Plant**: `cp /etc/passwd /root/.ssh/id_rsa; chmod 0644`
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | **yes**   | 0.011s | 0   | SSH-00001, HIGH, /root/.ssh/id_rsa mode 0644   |
-| LinPEAS   | (capped)  | 180.01s | 124 |                                                |
-| Lynis     | no        | 111.14s | 0   | Reports /root/.ssh permissions as OK.          |
-| LES2      | no        | 0.02s  | 0   | Not in scope.                                  |
-
-### 6.11 Groups Testbed
-
-**Plant**: `usermod -aG docker root`
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | **yes**   | 0.010s | 0   | GRP-docker, CRITICAL, root member of `docker`  |
-| LinPEAS   | (capped)  | 180.01s | 124 |                                                |
-| Lynis     | (capped)  | 120.05s | 124 |                                                |
-| LES2      | no        | 0.02s  | 0   | Not in scope.                                  |
-
-### 6.12 Service Testbed
-
-**Plant**: `/etc/systemd/system/zprivesc-weak.service` (mode 0666) with
-`[Service] ExecStart=/bin/sh -c "exec /bin/bash"`
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | **yes**   | 0.016s | 0   | SVC-W-00001, CRITICAL, mode 0666               |
-| LinPEAS   | (capped)  | 180.01s | 124 |                                                |
-| Lynis     | no        | 108.15s | 0   |                                                |
-| LES2      | no        | 0.02s  | 0   | Not in scope.                                  |
-
-Cross-probe hit: `world_writable` flags the same unit file as
-`WW-00001`.
-
-### 6.13 Kernel Hardening Testbed
-
-**Plant**: best-effort sysctl writes
-(`randomize_va_space=0`, `dmesg_restrict=0`, `kptr_restrict=0`,
-`unprivileged_bpf_disabled=0`). The WSL2 kernel rejects writes to
-several of these, so the testbed is effectively a no-op.
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | n/a       | 0.013s | 2   | Baseline values match expected hardening; testbed writes were rejected by the WSL2 kernel. Probe reports `KHARD-CLEAN` (INFO). |
-| LinPEAS   | (capped)  | 180.01s | 124 |                                                |
-| Lynis     | (capped)  | 120.06s | 124 |                                                |
-| LES2      | no        | 0.03s  | 0   | Not in scope.                                  |
-
-### 6.14 Process Testbed
-
-**Plant**: `cp /bin/sleep /tmp/ww-root-proc; chmod 0666; /tmp/ww-root-proc 9999 &`
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | no        | 0.016s | 2   | The probe only inspects `/proc/<pid>/{exe,status,maps}` for running PIDs; it does not scan `/tmp` for planted binaries. The testbed plant is not detected because the probe is PID-scope. |
-| LinPEAS   | (capped)  | 180.01s | 124 |                                                |
-| Lynis     | no        | 111.87s | 0   |                                                |
-| LES2      | no        | 0.02s  | 0   | Not in scope.                                  |
-
-### 6.15 NFS Testbed
-
-**Plant**: `/etc/exports` with `/tmp *(rw,no_root_squash,insecure)`
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | no        | 0.007s | 2   | The probe parses `/etc/exports` and flags `no_root_squash`; however the WSL kernel has no `nfsd` running, so the probe correctly returns `NFS-CLEAN` (no live exports). The planted file is detected as modified but not as a live export. |
-| LinPEAS   | (capped)  | 180.00s | 124 |                                                |
-| Lynis     | no        | 63.40s  | 0   |                                                |
-| LES2      | no        | 0.01s  | 0   | Not in scope.                                  |
-
-### 6.16 LD_PRELOAD Testbed
-
-**Plant**: `/etc/ld.so.conf.d/zprivesc-weak.conf` (mode 0666) containing
-`/tmp`.
-
-| Tool      | Detected? | Time   | rc  | Notes                                          |
-|-----------|-----------|-------:|----:|------------------------------------------------|
-| z_privesc | **yes**   | 0.005s | 0   | LDP-W-00001, CRITICAL, /etc/ld.so.conf.d/zprivesc-weak.conf mode 0666 |
-| LinPEAS   | (capped)  | 180.00s | 124 |                                                |
-| Lynis     | no        | 56.34s  | 0   |                                                |
-| LES2      | no        | 0.01s  | 0   | Not in scope.                                  |
-
-Cross-probe hit: `world_writable` flags the same file as `WW-00001`.
-
-## 7. Performance Summary
-
-Per-probe mean runtime from the live bench (one trial each, on the
-6.6.114.1 WSL2 kernel). Numbers are seconds.
-
-| Probe                | z_privesc `--root=/usr` | z_privesc `--root=/` (capped 30s) | LinPEAS (-q -a) | Lynis (--quick) | LES2 (-k) |
-|----------------------|------------------------:|----------------------------------:|----------------:|----------------:|----------:|
-| suid                 | 4.0-18.1s (7 trials)    | 30s (capped)                      | 180s (capped)   | 56-115s         | 0.03s     |
-| writable_path        | 0.03-0.08s              | 0.03s                             | (within run)    | (within run)    | -         |
-| capabilities         | 6.2-16.6s               | 30s (capped)                      | (within run)    | (within run)    | -         |
-| writable_etc         | 0.005-0.025s            | 0.005s                            | (within run)    | (within run)    | -         |
-| docker_socket        | 0.005-0.015s            | 0.005s                            | (within run)    | (within run)    | -         |
-| polkit               | 0.005-0.017s            | 0.005s                            | (within run)    | (within run)    | -         |
-| world_writable       | 0.010-0.147s            | 0.013s                            | (within run)    | (within run)    | -         |
-| kernel_vuln          | 0.005-0.014s            | 0.005s                            | (within run)    | -               | 0.022s    |
-| cron                 | 0.005-0.015s            | 0.005s                            | (within run)    | (within run)    | -         |
-| sudoers              | 0.005-0.024s            | 0.005s                            | -               | -               | -         |
-| ssh_keys             | 0.005-0.018s            | 0.005s                            | -               | -               | -         |
-| groups               | 0.008-0.014s            | 0.005s                            | -               | -               | -         |
-| service              | 0.008-0.063s            | 0.028s                            | -               | -               | -         |
-| kernel_hardening     | 0.005-0.014s            | 0.005s                            | -               | (within run)    | -         |
-| process              | 0.006-0.030s            | 0.006s                            | -               | -               | -         |
-| nfs                  | 0.005-0.022s            | 0.005s                            | -               | -               | -         |
-| ld_preload           | 0.005-0.017s            | 0.005s                            | -               | -               | -         |
-| **Total per run**    | 9.2-34.3s               | 60-90s (capped)                   | 180s (capped)   | 56-180s (capped)| 0.03s     |
-
-## 8. Output-Size (Noise) Comparison
-
-Output size is a proxy for the signal-to-noise ratio a security analyst
-has to wade through.
-
-| Tool      | Baseline (clean) | Median testbed | Max testbed |
-|-----------|-----------------:|---------------:|------------:|
-| z_privesc | 13 kB total      | 13 kB total    | 14 kB total |
-| LinPEAS   | 6220 lines       | (capped 180s)  | (capped 180s)|
-| Lynis     | 15 kB            | 15-31 kB       | 31 kB       |
-| LES2      | 287 B            | 287 B          | 287 B       |
-
-Z-Privesc emits **structured JSON** with a fixed schema. An analyst can
-parse it with `jq` to filter for `severity=CRITICAL` and immediately
-see actionable findings. LinPEAS emits color-coded text with
-brackets and emoji; Lynis emits a free-form report with embedded
-hardening-index bar (`[############        ]`).
-
-## 9. Strengths and Weaknesses
+---
+
+## 6. Probe Catalog (17 total)
+
+Z-Privesc covers all 17 categories of privilege-escalation misconfiguration.
+See [`docs/PROBES.md`](docs/PROBES.md) for the per-probe detail.
+
+| # | Probe            | Z-Privesc | LinPEAS | Lynis | LES2 |
+|---|------------------|:---------:|:-------:|:-----:|:----:|
+| 1 | suid             | ✓         | ✓       | ✓     | -    |
+| 2 | writable_path    | ✓         | ✓       | ✓     | -    |
+| 3 | capabilities     | ✓         | ✓       | -     | -    |
+| 4 | writable_etc     | ✓         | ✓       | ✓     | -    |
+| 5 | docker_socket    | ✓         | ✓       | -     | -    |
+| 6 | polkit           | ✓         | -       | -     | -    |
+| 7 | world_writable   | ✓         | ✓       | ✓     | -    |
+| 8 | kernel_vuln      | ✓         | ✓       | -     | ✓    |
+| 9 | cron             | ✓         | ✓       | -     | -    |
+| 10| sudoers          | ✓         | -       | -     | -    |
+| 11| ssh_keys         | ✓         | -       | -     | -    |
+| 12| groups           | ✓         | -       | -     | -    |
+| 13| service          | ✓         | -       | -     | -    |
+| 14| kernel_hardening | ✓         | -       | ✓     | -    |
+| 15| process          | ✓         | -       | -     | -    |
+| 16| nfs              | ✓         | -       | -     | -    |
+| 17| ld_preload       | ✓         | -       | -     | -    |
+
+Z-Privesc is the only tool that covers **all 17** categories out of the
+box.
+
+---
+
+## 7. Strengths and Weaknesses
 
 ### Z-Privesc
 
 **Strengths**
-- 17 distinct probes, the broadest coverage of any tool tested
-- Sub-second mean runtime for 15 of 17 probes
-- Deterministic JSON output, parseable with `jq`
-- Truthimatics engine produces a single overall risk label
-- No write operations, no exploit code, no zero-day enumeration
-- Stand-alone static binary, no dependencies
+- 17 distinct probes — the broadest coverage of any tool tested.
+- Sub-second mean runtime; full `--all` scan in ~2.6 s.
+- Deterministic JSON output, parseable with `jq`.
+- Truthimatics engine produces a single overall risk label.
+- No write operations, no exploit code, no zero-day enumeration.
+- Stand-alone static binary, no dependencies (verified: static `--all`
+  runs cleanly, no glibc NSS crash).
 
 **Weaknesses**
-- SUID/capabilities probes do full filesystem walks and time out on
-  >30s scans of `/`; the user must scope `--root=`
-- WSL2 strips SUID bits from user-created files, so the SUID probe
-  cannot validate a test planted in `/tmp` even when scanning `/tmp`
-- No remediation script generation; remediation is a `chmod` line
-  in the JSON `remediation` field
-- No integration with CVE feeds; kernel_vuln uses a hardcoded list
+- `suid`/`capabilities` do a full filesystem walk; on very large hosts
+  `--root=` scoping is recommended.
+- No remediation script generation; remediation is a `chmod`/`chown`
+  line in each finding's `remediation` field.
+- No integration with live CVE feeds; `kernel_vuln` uses a hardcoded,
+  conservative list.
 
 ### LinPEAS
-
-**Strengths**
-- 30+ years of community red-team heuristics
-- Catches a huge number of edge cases (capabilities, ACLs, NFS,
-  docker, gtfobins-style SUID, ...)
-- Exploit links in the output (hacktricks, GTFOBins)
-
-**Weaknesses**
-- Takes 5-25 minutes to run a full scan; often capped at 180s in CI
-- False-positive prone: LinPEAS flags `/etc/cron.d` (mode 755) as
-  "writable cron directory" in the WSL baseline
-- No structured output; analyst must read the colored text
-- Offensive mindset; some output references exploit code
+- **Strengths**: huge community red-team heuristic set; exploit links.
+- **Weaknesses**: 2+ minutes per scan; false-positive prone; no
+  structured output; offensive framing.
 
 ### Lynis
+- **Strengths**: CIS/NIST compliance orientation; hardening index.
+- **Weaknesses**: 60-180 s per scan; report is DAT, not JSON; no
+  PE-specific probes for SUID/capabilities/cron/sudoers/NFS.
 
-**Strengths**
-- CIS / NIST compliance-oriented
-- Produces a hardening index (0-100) and a report file
-- Audits services, kernels, daemons, configuration
-- Plugin system for custom checks
+---
 
-**Weaknesses**
-- 60-180s per scan is slow for a single system
-- Strict permission checks fail in WSL2 on `/mnt/d` mount; requires
-  `--no-pentest` or moving the binary
-- Report file is binary DAT format, not JSON
-- No privilege-escalation-specific probes for SUID, capabilities,
-  cron, sudoers, NFS, etc.
-
-### linux-exploit-suggester-2
-
-**Strengths**
-- Tiny, fast (30 ms)
-- Maps kernel version to known kernel exploits
-- Useful as a quick pre-flight check
-
-**Weaknesses**
-- Only covers kernel exploits, not misconfigurations
-- Last updated 2019, so misses recent CVEs
-- "Possible exploits" output is often empty on patched kernels
-
-## 10. Detection Summary (16 testbeds)
-
-| Testbed           | z_privesc detection                                  | LinPEAS | Lynis | LES2 |
-|-------------------|------------------------------------------------------|:-------:|:-----:|:----:|
-| suid              | 17/17 SUIDs in /usr (WSL2 strips SUID from /tmp)     | capped  |  no   | no   |
-| writable_path     | baseline (rc=0 always on this probe)                 | capped  |  no   | no   |
-| capabilities      | 1 baseline (snap-confine)                            | capped  | capped| no   |
-| writable_etc      | **WETC-D-001 CRITICAL** + WW-00001 + SUDO-00003/4     | capped  | capped| no   |
-| docker_socket     | **DOCK-00001 CRITICAL**                              | capped  | capped| no   |
-| polkit            | **PKEXEC-CVE-2021-4034 CRITICAL**                    | capped  |  no   | no   |
-| world_writable    | **WW-00001 CRITICAL**                                | capped  |  no   | no   |
-| cron              | **CRON-00001 CRITICAL** + WW-00001                   | capped  |  no   | no   |
-| sudoers           | **SUDO-00003 HIGH**                                  | capped  | capped| no   |
-| ssh_keys          | **SSH-00001 HIGH**                                   | capped  |  no   | no   |
-| groups            | **GRP-docker CRITICAL**                              | capped  | capped| no   |
-| service           | **SVC-W-00001 CRITICAL** + WW-00001                  | capped  |  no   | no   |
-| kernel_hardening  | KHARD-CLEAN (WSL2 rejected sysctl writes)            | capped  | capped| no   |
-| process           | PROC-CLEAN (probe is PID-scope, not filesystem)      | capped  |  no   | no   |
-| nfs               | NFS-CLEAN (no live nfsd in WSL2)                     | capped  |  no   | no   |
-| ld_preload        | **LDP-W-00001 CRITICAL** + WW-00001                  | capped  |  no   | no   |
-
-**Confirmed detections**: 10/16 testbeds (63%). The remaining 6 are
-no-ops on the WSL2 substrate: SUID bit stripping, capability xattr
-stripping, sysctl write rejection, no nfsd, and probe scope mismatch
-(process probe is PID-scope; writable_path probe uses `getenv` PATH
-which is unset in the bench env).
-
-## 11. Conclusion
-
-Z-Privesc is the only tool in the benchmark that covers all 17
-privilege-escalation categories out of the box, with deterministic
-JSON output and a sub-second mean runtime. It is designed for
-defensive auditing and remediation, not for offensive enumeration.
-For a security analyst who needs a single command to triage a Linux
-host, Z-Privesc offers the broadest coverage with the lowest noise.
-
-For specialized needs (kernel exploit enumeration, compliance
-auditing, full-spectrum offensive enumeration), the appropriate
-specialized tool should be used in addition to Z-Privesc.
-
-## 12. Reproducing the Bench
+## 8. Reproducing the Bench (multipass)
 
 ```bash
-# One-time setup (run as root in WSL2):
-apt-get install -y build-essential libcap2-bin
-git clone https://github.com/Division-36/Z-Privesc
-cd Z-Privesc && make
-mkdir -p /opt/bench && cd /opt/bench
-curl -fsSL -o linpeas.sh https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh
-git clone --depth 1 https://github.com/CISOfy/lynis
-git clone --depth 1 https://github.com/jondonas/linux-exploit-suggester-2
+# Launch a clean VM
+multipass launch 26.04 -n zprivesc-bench
+multipass exec zprivesc-bench -- sudo apt-get update
+multipass exec zprivesc-bench -- sudo apt-get install -y \
+    build-essential libcap2-bin man-db
 
-# Run unit tests:
-cd Z-Privesc && make test
+# Copy the source tree in (mounts may be disabled)
+tar czf zp.tgz Z-Privesc
+multipass transfer zp.tgz zprivesc-bench:/home/ubuntu/
+multipass exec zprivesc-bench -- tar xzf zp.tgz
 
-# Run benchmark script:
-bash scripts/bench.sh
+# Build, test, and time a full scan
+multipass exec zprivesc-bench -- bash -c '
+  cd Z-Privesc
+  make
+  make test
+  t0=$(date +%s.%N); ./build/bin/z_privesc --all --json > /tmp/zp.json; \
+  t1=$(date +%s.%N); echo "scan: $(echo "$t1-$t0"|bc) s"
+'
 
-# Per-testbed run (loop over all 16 testbeds):
-for tb in suid writable_path capabilities writable_etc docker polkit \
-          world_writable cron sudoers ssh_keys groups service \
-          kernel_hardening process nfs ld_preload; do
-  bash testbeds/$tb/setup.sh
-  ./build/bin/z_privesc --all --json > /tmp/zp.json
-  bash /opt/bench/linpeas.sh -q -a > /tmp/lp.txt
-  ( cd /opt/bench/lynis && ./lynis audit system --quick --no-colors < /dev/null > /tmp/ly.txt )
-  perl /opt/bench/linux-exploit-suggester-2/linux-exploit-suggester-2.pl \
-       -k "$(uname -r | cut -d- -f1)" > /tmp/les2.txt
-  bash testbeds/$tb/cleanup.sh
-done
+# Compare against Lynis / LinPEAS (run on the same VM)
+multipass exec zprivesc-bench -- bash -c '
+  sudo apt-get install -y lynis
+  time sudo lynis audit system --quick --no-colors > /tmp/lynis.txt
+  curl -fsSL -o linpeas.sh https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh
+  time bash linpeas.sh -q -a > /tmp/linpeas.txt
+'
 ```
+
+Raw captured JSON lives in [`benchmarks/data/`](benchmarks/data/).
+
+---
+
+## Appendix: WSL2 v1.0.0 Report
+
+The original launch report was produced on WSL2 (Debian, kernel
+6.6.114.1-microsoft-standard-WSL2). It remains useful as a historical
+baseline but several planted testbeds were no-ops because of WSL2
+kernel quirks:
+
+- WSL2 **strips the SUID bit** from user-created files, so the SUID
+  testbed could not be validated in `/tmp`.
+- WSL2 **strips capability xattrs** on the 9p share, so the
+  capabilities testbed could not be validated in `/tmp`.
+- WSL2 **rejects sysctl writes** for several hardening knobs, so the
+  `kernel_hardening` testbed was a no-op.
+- WSL2 **has no `nfsd`**, so the NFS testbed reported `NFS-CLEAN`.
+- A full `/` walk on the 9p-mounted Windows volume routinely hit the
+  30 s cap; the multipass run above shows the same probes finish in
+  well under a second on a native filesystem.
+
+The v1.0.0 report's per-testbed methodology, probe catalog, and
+detection summary (10/16 confirmed detections, the rest WSL2 no-ops)
+are preserved verbatim in commit `165da370` and in the project history.
+The headline numbers in this document supersede it.

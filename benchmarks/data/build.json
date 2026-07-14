@@ -1,0 +1,8 @@
+{
+  "dynamic_build_time_s": 2.7305,
+  "dynamic_binary_bytes": 94232,
+  "static_build_time_s": 3.0251,
+  "static_binary_bytes": 1116408,
+  "stripped_static_bytes": 1018248,
+  "full_scan_time_s": 2.6461
+}

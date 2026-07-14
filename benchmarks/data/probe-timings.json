@@ -1,0 +1,35 @@
+[
+  { "probe": "suid", "time_s": 0.2142, "findings": 21 }
+,
+  { "probe": "writable_path", "time_s": 0.0192, "findings": 0 }
+,
+  { "probe": "capabilities", "time_s": 0.5979, "findings": 4 }
+,
+  { "probe": "writable_etc", "time_s": 0.0149, "findings": 0 }
+,
+  { "probe": "docker_socket", "time_s": 0.0149, "findings": 0 }
+,
+  { "probe": "polkit", "time_s": 0.0147, "findings": 0 }
+,
+  { "probe": "world_writable", "time_s": 0.0188, "findings": 2 }
+,
+  { "probe": "kernel_vuln", "time_s": 0.0145, "findings": 1 }
+,
+  { "probe": "cron", "time_s": 0.0155, "findings": 1 }
+,
+  { "probe": "sudoers", "time_s": 0.0134, "findings": 1 }
+,
+  { "probe": "ssh_keys", "time_s": 0.0170, "findings": 1 }
+,
+  { "probe": "groups", "time_s": 0.0155, "findings": 3 }
+,
+  { "probe": "service", "time_s": 0.0224, "findings": 1 }
+,
+  { "probe": "kernel_hardening", "time_s": 0.0131, "findings": 1 }
+,
+  { "probe": "process", "time_s": 0.0153, "findings": 1 }
+,
+  { "probe": "nfs", "time_s": 0.0159, "findings": 1 }
+,
+  { "probe": "ld_preload", "time_s": 0.0167, "findings": 1 }
+]

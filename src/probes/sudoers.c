@@ -24,8 +24,6 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <pwd.h>
-#include <grp.h>
 
 static bool current_user_matches(const char *spec)
 {
@@ -35,21 +33,16 @@ static bool current_user_matches(const char *spec)
     if (strcmp(spec, "ALL") == 0) {
         return true;
     }
-    struct passwd *pw = getpwuid(getuid());
-    if (pw == NULL) {
+    char user[256];
+    if (zp_username_for_uid(getuid(), user, sizeof(user)) != ZP_OK) {
         return false;
     }
-    if (strcmp(spec, pw->pw_name) == 0) {
+    if (strcmp(spec, user) == 0) {
         return true;
     }
     if (spec[0] == '%') {
-        struct group *g = getgrnam(spec + 1);
-        if (g != NULL) {
-            for (char **m = g->gr_mem; *m != NULL; m++) {
-                if (strcmp(*m, pw->pw_name) == 0) {
-                    return true;
-                }
-            }
+        if (zp_user_in_group(user, spec + 1, NULL, 0) == 1) {
+            return true;
         }
     }
     return false;

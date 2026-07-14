@@ -28,8 +28,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <grp.h>
-#include <pwd.h>
 
 struct priv_group {
     const char *name;
@@ -78,25 +76,26 @@ int zp_probe_groups(struct zp_evidence_chain *c, const char *root,
         return ZP_ERR_INVAL;
     }
     uid_t uid = getuid();
-    struct passwd *pw = getpwuid(uid);
-    if (pw == NULL) {
+    char user[256];
+    if (zp_username_for_uid(uid, user, sizeof(user)) != ZP_OK) {
         return ZP_ERR_IO;
     }
+    gid_t primary_gid = (gid_t)-1;
+    zp_primary_gid_for_uid(uid, &primary_gid);
+
     size_t total = 0;
     size_t n_priv = sizeof(PRIV_GROUPS) / sizeof(PRIV_GROUPS[0]);
     for (size_t i = 0; i < n_priv; i++) {
         const struct priv_group *pg = &PRIV_GROUPS[i];
-        struct group *g = getgrnam(pg->name);
-        if (g == NULL) continue;
-        bool member = false;
-        if (g->gr_gid == pw->pw_gid) {
-            member = true;
-        } else {
-            for (char **m = g->gr_mem; m != NULL && *m != NULL; m++) {
-                if (strcmp(*m, pw->pw_name) == 0) {
-                    member = true;
-                    break;
-                }
+        char gidbuf[32];
+        int res = zp_user_in_group(user, pg->name, gidbuf, sizeof(gidbuf));
+        if (res < 0) continue; /* group does not exist */
+        bool member = (res == 1);
+        if (!member && primary_gid != (gid_t)-1) {
+            /* primary group check via gid */
+            gid_t grp_gid = (gid_t)strtoul(gidbuf, NULL, 10);
+            if (grp_gid == primary_gid) {
+                member = true;
             }
         }
         if (!member) continue;
@@ -104,16 +103,17 @@ int zp_probe_groups(struct zp_evidence_chain *c, const char *root,
         char id[ZP_EVIDENCE_ID_MAX];
         snprintf(id, sizeof(id), "GRP-%s", pg->name);
         char desc[ZP_DESC_MAX];
-        snprintf(desc, sizeof(desc), "%s (gid=%u)", pg->description, g->gr_gid);
+        snprintf(desc, sizeof(desc), "%s (gid=%s)",
+                 pg->description, gidbuf[0] ? gidbuf : "?");
         char rem[ZP_REMEDIATION_MAX];
         snprintf(rem, sizeof(rem),
                  "Remove user from '%s' group unless required", pg->name);
-        zp_evidence_add(c, id, pw->pw_name, desc, rem,
+        zp_evidence_add(c, id, user, desc, rem,
                           pg->weight, ZP_VERDICT_DETERMINISTIC,
                           pg->sev);
     }
     if (total == 0) {
-        zp_evidence_add(c, "GRP-CLEAN", pw->pw_name,
+        zp_evidence_add(c, "GRP-CLEAN", user,
                            "User is not a member of any privileged group",
                            "No action required",
                            0.1f, ZP_VERDICT_REJECT, ZP_SEV_INFO);

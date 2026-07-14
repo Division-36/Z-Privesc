@@ -1,0 +1,10 @@
+{
+  "dynamic_build_time_s": 2.7305,
+  "static_build_time_s": 3.0251,
+  "full_scan_time_s": 2.6461,
+  "test_suite_time_s": 4.1958,
+  "tests_passed": 58,
+  "tests_failed": 0,
+  "tests_skipped": 2,
+  "full_scan_findings": 40
+}
