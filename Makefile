@@ -35,6 +35,7 @@ CORE_SRCS    := $(SRC_DIR)/main.c \
                 $(SRC_DIR)/util.c \
                 $(SRC_DIR)/crypto.c \
                 $(SRC_DIR)/audit.c \
+                $(SRC_DIR)/compose.c \
                 $(SRC_DIR)/risk.c
 
 TRUTH_SRCS   := $(SRC_DIR)/truthimatics/engine.c \

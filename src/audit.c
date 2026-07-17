@@ -17,6 +17,7 @@
 #include "util.h"
 #include "risk.h"
 #include "log.h"
+#include "compose.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -227,7 +228,9 @@ int audit_emit_json(const struct zp_runtime *rt, FILE *out)
         fprintf(out, "    ]\n  }");
     }
     if (rt->probe_count > 0) fputc('\n', out);
-    fputs("]\n}\n", out);
+    fputs("],\n", out);
+    zp_compose_json(rt, out);
+    fputs("\n}\n", out);
     return ZP_OK;
 }
 
