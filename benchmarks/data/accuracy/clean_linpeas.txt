@@ -1,0 +1,1822 @@
+
+
+[1;34m          LinPEAS-ng [1;33mby carlospolop
+[0m
+[1;33mADVISORY: [1;34mThis script should be used for authorized penetration testing and/or educational purposes only. Any misuse of this software will not be the responsibility of the author or of any other collaborator. Use it at your own computers and/or with the computer owner's permission.
+[0m
+[1;34mLinux Privesc Checklist: [1;33mhttps://book.hacktricks.wiki/en/linux-hardening/linux-privilege-escalation-checklist.html
+[0m[1;34mBest Linux PE & Hardening course: [1;33mhttps://hacktricks-training.com/courses/lhe/
+[0m [1;4mLEGEND[0m:
+  [1;31;103mRED/YELLOW[0m: 95% a PE vector
+  [1;31mRED[0m: You should take a look into it
+  [1;96mLightCyan[0m: Users with console
+  [1;34mBlue[0m: Users without console & mounted devs
+  [1;32mGreen[0m: Common things (users, groups, SUID/SGID, mounts, .sh scripts, cronjobs) 
+  [1;95mLightMagenta[0m: Your username
+
+  [1;31;103mYOU ARE ALREADY ROOT!!![0m (it could take longer to complete execution)
+
+ [1;90mStarting LinPEAS. Caching Writable Folders...[0m
+[1;34m                               ╔═══════════════════╗
+═══════════════════════════════╣ [1;32mBasic information[1;34m ╠═══════════════════════════════
+[1;34m                               ╚═══════════════════╝[0m
+[1;37mOS: [0mLinux version 7.0.0-27-generic (buildd@lcy02-amd64-114) (x86_64-linux-gnu-gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, GNU ld (GNU Binutils for Ubuntu) 2.46) #27-Ubuntu SMP PREEMPT_DYNAMIC Thu Jun 18 19:13:49 UTC 2026
+[1;37mUser & Groups: [0muid=0(root) gid=0(root) groups=0(root)
+[1;37mHostname: [0mprimary
+
+[1;37mRemember that you can use the '-t' option to call the Internet connectivity checks and automatic network recon!
+[0m[1;33m[+] [1;32m/usr/bin/ping[1;34m is available for network discovery[1;37m (LinPEAS can discover hosts, learn more with -h)
+[0m[1;33m[+] [1;32m/usr/bin/bash[1;34m is available for network discovery, port scanning and port forwarding[1;37m (LinPEAS can discover hosts, scan ports, and forward ports. Learn more with -h)
+[1;33m[+] [1;32m/usr/bin/nc[1;34m is available for network discovery & port scanning[1;37m (LinPEAS can discover hosts and scan ports, learn more with -h)
+[0m
+
+[1;32mCaching directories [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33m. [0m[1;33mDONE
+[0m
+[1;34m                              ╔════════════════════╗
+══════════════════════════════╣ [1;32mSystem Information[1;34m ╠══════════════════════════════
+[1;34m                              ╚════════════════════╝[0m
+[1;34m╔══════════╣ [1;32mOperative system [1;90m(T1082)
+[0m[1;34m╚ [1;34m[3mhttps://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#kernel-exploits
+[0mLinux version 7.0.0-27-generic (buildd@lcy02-amd64-114) (x86_64-linux-gnu-gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, GNU ld (GNU Binutils for Ubuntu) 2.46) #27-Ubuntu SMP PREEMPT_DYNAMIC Thu Jun 18 19:13:49 UTC 2026
+Distributor ID:	Ubuntu
+Description:	Ubuntu 26.04 LTS
+Release:	26.04
+Codename:	resolute
+
+[1;34m╔══════════╣ [1;32mSudo version [1;90m(T1548.003,T1068)
+[0m[1;34m╚ [1;34m[3mhttps://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#sudo-version
+[0m
+
+[1;34m╔══════════╣ [1;32mPATH [1;90m(T1574.007)
+[0m[1;34m╚ [1;34m[3mhttps://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#writable-path-abuses
+[0m
+[1;34m╔══════════╣ [1;32mDate & uptime [1;90m(T1082)
+[0mFri Jul 17 08:41:32 EEST 2026
+ 08:41:32 up 1 day, 13:32,  4 users,  load average: 1.64, 1.31, 0.93
+
+[1;34m╔══════════╣ [1;32mCPU info [1;90m(T1082)
+[0mArchitecture:                            x86_64
+CPU op-mode(s):                          32-bit, 64-bit
+Address sizes:                           39 bits physical, 48 bits virtual
+Byte Order:                              Little Endian
+CPU(s):                                  1
+On-line CPU(s) list:                     0
+Vendor ID:                               GenuineIntel
+Model name:                              11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz
+CPU family:                              6
+Model:                                   141
+Thread(s) per core:                      1
+Core(s) per socket:                      1
+Socket(s):                               1
+Stepping:                                1
+CPU(s) scaling MHz:                      131%
+CPU max MHz:                             2300.0000
+CPU min MHz:                             800.0000
+BogoMIPS:                                4608.00
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves user_shstk avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid movdiri movdir64b fsrm avx512_vp2intersect md_clear ibt flush_l1d arch_capabilities
+Hypervisor vendor:                       Microsoft
+Virtualization type:                     full
+L1d cache:                               48 KiB (1 instance)
+L1i cache:                               32 KiB (1 instance)
+L2 cache:                                1.3 MiB (1 instance)
+L3 cache:                                24 MiB (1 instance)
+NUMA node(s):                            1
+NUMA node0 CPU(s):                       0
+Vulnerability Gather data sampling:      Not affected
+Vulnerability Ghostwrite:                Not affected
+Vulnerability Indirect target selection: Mitigation; Aligned branch/return thunks
+Vulnerability Itlb multihit:             Not affected
+Vulnerability L1tf:                      Not affected
+Vulnerability Mds:                       Not affected
+Vulnerability Meltdown:                  Not affected
+Vulnerability Mmio stale data:           Not affected
+Vulnerability Old microcode:             Not affected
+Vulnerability Reg file data sampling:    Not affected
+Vulnerability Retbleed:                  Mitigation; Enhanced IBRS
+Vulnerability Spec rstack overflow:      Not affected
+Vulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl
+Vulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI SW loop, KVM SW loop
+Vulnerability Srbds:                     Not affected
+Vulnerability Tsa:                       Not affected
+Vulnerability Tsx async abort:           Not affected
+Vulnerability Vmscape:                   Not affected
+
+[1;34m╔══════════╣ [1;32mUnmounted file-system? [1;90m(T1082,T1120)
+[0m[1;34m╚ [1;34m[3mCheck if you can mount umounted devices
+[0m[1;34mLABEL=cloudimg-rootfs[0m	[1;34m[1;31m/[0m[0m	 ext4	discard,commit=30,errors=remount-ro	0 1
+LABEL=BOOT	[1;34m[1;31m/boot[0m[0m	ext4	defaults	0 2
+LABEL=UEFI	[1;34m[1;31m/boot/efi[0m[0m	vfat	umask=0077	0 1
+
+[1;34m╔══════════╣ [1;32mAny sd*/disk* disk in /dev? (limit 20) [1;90m(T1082)
+[0mdisk
+sda
+sda1
+sda13
+sda14
+sda15
+
+[1;34m╔══════════╣ [1;32mSystem stats [1;90m(T1082)
+[0mFilesystem      Size  Used Avail Use% Mounted on
+tmpfs           179M  1.1M  178M   1% /run
+/dev/sda1       3.8G  2.8G  933M  76% /
+tmpfs           446M     0  446M   0% /dev/shm
+efivarfs        128M   32K  128M   1% /sys/firmware/efi/efivars
+tmpfs           446M  1.4M  445M   1% /tmp
+none            1.0M     0  1.0M   0% /run/credentials/systemd-journald.service
+none            1.0M     0  1.0M   0% /run/credentials/systemd-resolved.service
+/dev/sda13      989M   81M  841M   9% /boot
+/dev/sda15      105M  6.3M   99M   7% /boot/efi
+none            1.0M     0  1.0M   0% /run/credentials/systemd-networkd.service
+tmpfs            90M  8.0K   90M   1% /run/user/1000
+none            1.0M     0  1.0M   0% /run/credentials/getty@tty1.service
+tmpfs           1.0M     0  1.0M   0% /var/snap/lxd/common/ns
+tmpfs           1.0M     0  1.0M   0% /run/media/.lxd-shmounts
+none            1.0M     0  1.0M   0% /run/credentials/serial-getty@ttyS0.service
+               total        used        free      shared  buff/cache   available
+Mem:          912408      512544       89356        5604      493160      399864
+Swap:              0           0           0
+
+[1;34m╔══════════╣ [1;32mInode usage [1;90m(T1082)
+[0mFilesystem      Inodes  IUsed   IFree IUse% Mounted on
+tmpfs           819200    837  818363    1% /run
+/dev/sda1       501760 105283  396477   21% /
+tmpfs           114051      1  114050    1% /dev/shm
+efivarfs             0      0       0     - /sys/firmware/efi/efivars
+tmpfs          1048576    312 1048264    1% /tmp
+none              1024      1    1023    1% /run/credentials/systemd-journald.service
+none              1024      1    1023    1% /run/credentials/systemd-resolved.service
+/dev/sda13       65536    646   64890    1% /boot
+/dev/sda15           0      0       0     - /boot/efi
+none              1024      1    1023    1% /run/credentials/systemd-networkd.service
+tmpfs            22810     38   22772    1% /run/user/1000
+none              1024      1    1023    1% /run/credentials/getty@tty1.service
+tmpfs           114051      2  114049    1% /var/snap/lxd/common/ns
+tmpfs           114051      1  114050    1% /run/media/.lxd-shmounts
+none              1024      1    1023    1% /run/credentials/serial-getty@ttyS0.service
+
+[1;34m╔══════════╣ [1;32mEnvironment [1;90m(T1082,T1552.007)
+[0m[1;34m╚ [1;34m[3mAny private information inside environment variables?
+[0mSHELL=/bin/bash
+SUDO_GID=1000
+SUDO_COMMAND=/usr/bin/bash scripts/ground_truth.sh
+SUDO_USER=ubuntu
+PWD=/home/ubuntu/zp
+LOGNAME=root
+SUDO_HOME=/home/ubuntu
+HOME=/root
+LANG=C.UTF-8
+TERM=unknown
+USER=root
+SHLVL=2
+SUDO_UID=1000
+OLDPWD=/home/ubuntu/zp
+_=/usr/bin/env
+
+[1;34m╔══════════╣ [1;32mSearching Signature verification failed in dmesg [1;90m(T1082)
+[0m[1;34m╚ [1;34m[3mhttps://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#dmesg-signature-verification-failed
+[0m[1;90mdmesg Not Found
+[0m
+[1;34m╔══════════╣ [1;32mProtections [1;90m(T1518.001)
+[0m[1;34m═╣ [1;32mAppArmor enabled? .............. [0m[0mapparmor module is loaded.
+198 profiles are loaded.
+122 profiles are in enforce mode.
+   /snap/snapd/27406/usr/lib/snapd/snap-confine
+   /usr/bin/man
+   /usr/lib/snapd/snap-confine
+   /usr/sbin/chronyd
+   alsamixer
+   babeld
+   bfdd
+   bgpd
+   bwrap
+   dig
+   dnstracer
+   eigrpd
+   fabricd
+   fusermount3
+   gs
+   hostname
+   iotop-c
+   ipa_verify
+   irssi
+   isisd
+   john
+   ldpd
+   linux-boot-prober
+   locale
+   locale//compressor
+   lsb_release
+   lsblk
+   lsusb
+   man_filter
+   man_groff
+   mbsync
+   mosquitto
+   nc.openbsd
+   nhrpd
+   notify-send
+   nslookup
+   nvidia_modprobe
+   nvidia_modprobe//kmod
+   os-prober
+   ospf6d
+   ospfd
+   pathd
+   pbrd
+   pim6d
+   pimd
+   plasmashell
+   plasmashell//QtWebEngineProcess
+   pollinate
+   proftpd
+   qpdf
+   ripd
+   ripngd
+   rsyslogd
+   sbuild
+   sbuild-abort
+   sbuild-adduser
+   sbuild-apt
+   sbuild-checkpackages
+   sbuild-clean
+   sbuild-createchroot
+   sbuild-destroychroot
+   sbuild-distupgrade
+   sbuild-hold
+   sbuild-shell
+   sbuild-unhold
+   sbuild-update
+   sbuild-upgrade
+   snap-update-ns.lxd
+   snap.lxd.activate
+   snap.lxd.buginfo
+   snap.lxd.check-kernel
+   snap.lxd.daemon
+   snap.lxd.hook.configure
+   snap.lxd.hook.connect-plug-ceph-conf
+   snap.lxd.hook.connect-plug-ovn-certificates
+   snap.lxd.hook.connect-plug-ovn-chassis
+   snap.lxd.hook.connect-plug-qemu-external
+   snap.lxd.hook.disconnect-plug-ceph-conf
+   snap.lxd.hook.disconnect-plug-ovn-certificates
+   snap.lxd.hook.disconnect-plug-ovn-chassis
+   snap.lxd.hook.disconnect-plug-qemu-external
+   snap.lxd.hook.install
+   snap.lxd.hook.remove
+   snap.lxd.lxc
+   snap.lxd.lxd
+   snap.lxd.user-daemon
+   ssh-keyscan
+   staticd
+   systemd-detect-virt
+   tcpdump
+   tinyproxy
+   tnftp
+   tnftp//cmds
+   tnftp//dash
+   tnftp//dash//more
+   transmission-cli
+   transmission-daemon
+   transmission-gtk
+   transmission-qt
+   tshark
+   tshark//dumpcap
+   ubuntu_pro_apt_news
+   ubuntu_pro_esm_cache
+   ubuntu_pro_esm_cache//apt_methods
+   ubuntu_pro_esm_cache//apt_methods_gpgv
+   ubuntu_pro_esm_cache//cloud_id
+   ubuntu_pro_esm_cache//dpkg
+   ubuntu_pro_esm_cache//ps
+   ubuntu_pro_esm_cache//ubuntu_distro_info
+   ubuntu_pro_esm_cache_systemctl
+   ubuntu_pro_esm_cache_systemd_detect_virt
+   unix-chkpwd
+   unpriv_bwrap
+   unprivileged_userns
+   vrrpd
+   wg
+   wg-quick
+   wg-quick//ip
+   wg-quick//nft
+   wg-quick//sysctl
+   who
+   znc
+2 profiles are in complain mode.
+   Xorg
+   Xorg_wrap
+0 profiles are in prompt mode.
+0 profiles are in kill mode.
+74 profiles are in unconfined mode.
+   1password
+   Discord
+   MongoDB Compass
+   QtWebEngineProcess
+   balena-etcher
+   brave
+   buildah
+   cam
+   ch-checkns
+   ch-run
+   chrome
+   chromium
+   crun
+   devhelp
+   element-desktop
+   epiphany
+   evolution
+   firefox
+   flatpak
+   foliate
+   geary
+   github-desktop
+   goldendict
+   kchmviewer
+   keybase
+   lc-compliance
+   libcamerify
+   linux-sandbox
+   loupe
+   lxc-attach
+   lxc-create
+   lxc-destroy
+   lxc-execute
+   lxc-stop
+   lxc-unshare
+   lxc-usernsexec
+   mmdebstrap
+   msedge
+   notepadqq
+   obsidian
+   opam
+   opera
+   pageedit
+   podman
+   polypane
+   privacybrowser
+   qcam
+   qmapshack
+   qutebrowser
+   rootlesskit
+   rpm
+   rssguard
+   runc
+   scide
+   signal-desktop
+   slack
+   slirp4netns
+   steam
+   stress-ng
+   surfshark
+   systemd-coredump
+   thunderbird
+   trinity
+   tup
+   tuxedo-control-center
+   userbindmount
+   uwsgi-core
+   vdens
+   virtiofsd
+   vivaldi-bin
+   vpnns
+   vscode
+   wike
+   wpcom
+3 processes have profiles defined.
+3 processes are in enforce mode.
+   /usr/sbin/chronyd (1617) 
+   /usr/sbin/chronyd (1619) 
+   /usr/sbin/rsyslogd (1703) rsyslogd
+0 processes are in complain mode.
+0 processes are in prompt mode.
+0 processes are in kill mode.
+0 processes are unconfined but have a profile defined.
+0 processes are in mixed mode.
+[1;34m═╣ [1;32mAppArmor profile? .............. [0m[0m[1;31munconfined[0m
+[1;34m═╣ [1;32mis linuxONE? ................... [0m[0m[1;90ms390x Not Found
+[0m[1;34m═╣ [1;32mgrsecurity present? ............ [0m[0m[1;90mgrsecurity Not Found
+[0m[1;34m═╣ [1;32mPaX bins present? .............. [0m[0m[1;90mPaX Not Found
+[0m[1;34m═╣ [1;32mExecshield enabled? ............ [0m[0m[1;90mExecshield Not Found
+[0m[1;34m═╣ [1;32mSELinux enabled? ............... [0m[0m[1;90msestatus Not Found
+[0m[1;34m═╣ [1;32mSeccomp enabled? ............... [0m[0m[1;31mdisabled[0m
+[1;34m═╣ [1;32mUser namespace? ................ [0m[0m[1;32menabled[0m
+[1;34m═╣ [1;32munpriv_userns_clone? ........... [0m[1;31m1[0m
+[1;34m═╣ [1;32munpriv_bpf_disabled? ........... [0m[1;32m1[0m
+[1;34m═╣ [1;32mCgroup2 enabled? ............... [0m[0m[1;32menabled[0m
+[1;34m═╣ [1;32mkptr_restrict? ................. [0m[1;32m2[0m
+[1;34m═╣ [1;32mdmesg_restrict? ................ [0m[1;32m1[0m
+[1;34m═╣ [1;32mptrace_scope? .................. [0m[1;32m1[0m
+[1;34m═╣ [1;32mprotected_symlinks? ............ [0m[1;32m1[0m
+[1;34m═╣ [1;32mprotected_hardlinks? ........... [0m[1;32m1[0m
+[1;34m═╣ [1;32mperf_event_paranoid? ........... [0m[0m[1;32m4[0m
+[1;34m═╣ [1;32mmmap_min_addr? ................. [0m[1;32m65536[0m
+[1;34m═╣ [1;32mlockdown mode? ................. [0m[0m[[1;31mnone[0m] [1;32mintegrity[0m [1;32mconfidentiality[0m
+[1;34m═╣ [1;32mKernel hardening flags? ........ [0m[0mCONFIG_RANDOMIZE_BASE=y
+CONFIG_STACKPROTECTOR=y
+CONFIG_STACKPROTECTOR_STRONG=y
+CONFIG_SLAB_FREELIST_RANDOM=y
+CONFIG_SLAB_FREELIST_HARDENED=y
+# CONFIG_KASAN is not set
+[1;34m═╣ [1;32mFail2ban present? .............. [0m[0m[1;90mfail2ban Not Found
+[0m[1;34m═╣ [1;32mCrowdSec present? .............. [0m[0m[1;90mcrowdsec Not Found
+[0m[1;34m═╣ [1;32mPending reboot? ................ [0m[0m[1;90mNo
+[0m[1;34m═╣ [1;32mIs ASLR enabled? ............... [0m[0m[1;32mYes[0m
+[1;34m═╣ [1;32mPrinter? ....................... [0m[0m[1;90mNo
+[0m[1;34m═╣ [1;32mIs this a virtual machine? ..... [0m[0m[1;31mYes (microsoft)[0m
+
+[1;34m╔══════════╣ [1;32mKernel Modules Information [1;90m(T1547.006)
+[0m[1;34m══╣ [1;32mLoaded kernel modules [1;90m(T1547.006)
+[0mModule                  Size  Used by
+ib_core               552960  0
+bluetooth            1130496  0
+zfs                  6533120  0
+spl                   159744  1 zfs
+ebtable_filter         12288  0
+ebtables               49152  1 ebtable_filter
+ip6table_raw           12288  0
+ip6table_mangle        12288  0
+ip6table_nat           12288  0
+ip6table_filter        12288  0
+ip6_tables             36864  4 ip6table_filter,ip6table_raw,ip6table_nat,ip6table_mangle
+iptable_raw            12288  0
+iptable_mangle         12288  0
+iptable_nat            12288  0
+nf_nat                 65536  2 ip6table_nat,iptable_nat
+nf_conntrack          196608  1 nf_nat
+nf_defrag_ipv6         24576  1 nf_conntrack
+nf_defrag_ipv4         12288  1 nf_conntrack
+iptable_filter         12288  0
+ip_tables              36864  4 iptable_filter,iptable_raw,iptable_nat,iptable_mangle
+x_tables               65536  11 ebtables,ip6table_filter,ip6table_raw,iptable_filter,ip6table_nat,ip6_tables,iptable_raw,ip_tables,iptable_nat,ip6table_mangle,iptable_mangle
+algif_hash             20480  0
+authencesn             12288  0
+authenc                12288  1 authencesn
+algif_aead             12288  0
+af_alg                 32768  2 algif_hash,algif_aead
+nf_tables             409600  0
+tcp_diag               20480  0
+udp_diag               12288  0
+inet_diag              24576  2 tcp_diag,udp_diag
+qrtr                   53248  2
+isofs                  61440  0
+binfmt_misc            24576  1
+nls_iso8859_1          12288  1
+intel_rapl_msr         20480  0
+intel_rapl_common      57344  1 intel_rapl_msr
+intel_uncore_frequency_common    20480  0
+intel_pmc_core        151552  0
+pmt_telemetry          16384  1 intel_pmc_core
+pmt_discovery          24576  1 pmt_telemetry
+pmt_class              20480  2 pmt_telemetry,pmt_discovery
+intel_pmc_ssram_telemetry    16384  1 intel_pmc_core
+intel_vsec             24576  2 intel_pmc_ssram_telemetry,pmt_telemetry
+rapl                   20480  0
+vmgenid                12288  0
+hyperv_drm             24576  0
+hv_balloon             45056  0
+hv_utils               45056  0
+joydev                 32768  0
+mac_hid                12288  0
+sch_fq_codel           28672  1
+efi_pstore             12288  0
+nfnetlink              20480  3 nf_tables
+hv_sock                24576  0
+vsock                  73728  1 hv_sock
+serio_raw              20480  0
+hid_generic            12288  0
+hid_hyperv             16384  0
+hv_storvsc             32768  3
+hv_netvsc             126976  0
+scsi_transport_fc     122880  1 hv_storvsc
+hid                   278528  2 hid_hyperv,hid_generic
+hyperv_keyboard        12288  0
+hv_vmbus              188416  8 hv_balloon,hv_utils,hv_netvsc,hid_hyperv,hv_storvsc,hyperv_keyboard,hyperv_drm,hv_sock
+ghash_clmulni_intel    12288  0
+cfg80211             1536000  0
+dm_mirror              28672  0
+dm_region_hash         24576  1 dm_mirror
+dm_log                 20480  2 dm_region_hash,dm_mirror
+be2iscsi              167936  0
+bnx2i                  73728  0
+cnic                   86016  1 bnx2i
+uio                    28672  1 cnic
+cxgb4i                 53248  0
+cxgb4                 671744  1 cxgb4i
+tls                   163840  1 cxgb4
+cxgb3i                 36864  0
+cxgb3                 229376  1 cxgb3i
+mdio                   12288  1 cxgb3
+libcxgbi               86016  2 cxgb4i,cxgb3i
+libcxgb                24576  2 libcxgbi,cxgb3i
+qla4xxx               356352  0
+iscsi_boot_sysfs       20480  2 be2iscsi,qla4xxx
+iscsi_tcp              24576  0
+libiscsi_tcp           32768  4 libcxgbi,iscsi_tcp,cxgb4i,cxgb3i
+libiscsi               81920  8 be2iscsi,libiscsi_tcp,bnx2i,libcxgbi,iscsi_tcp,qla4xxx,cxgb4i,cxgb3i
+scsi_transport_iscsi   176128  7 be2iscsi,libiscsi_tcp,bnx2i,libcxgbi,iscsi_tcp,qla4xxx,libiscsi
+msr                    12288  0
+dm_multipath           45056  0
+dmi_sysfs              28672  0
+autofs4                61440  2
+aesni_intel            98304  0
+[1;34m══╣ [1;32mKernel modules with weak perms? [1;90m(T1547.006)
+[0m
+[1;34m══╣ [1;32mKernel modules loadable?  [1;90m(T1547.006)
+[0m[1;31mModules can be loaded[0m
+[1;34m══╣ [1;32mModule signature enforcement?  [1;90m(T1547.006)
+[0m[1;31mNot enforced[0m
+
+[1;34m╔══════════╣ [1;32mChecking for Copy Fail (CVE-2026-31431) [1;90m(T1068)
+[0m[1;34m╚ [1;34m[3mhttps://copy.fail/
+[0m[1;34m╚ [1;34m[3mhttps://www.cve.org/CVERecord?id=CVE-2026-31431
+[0m[1;32mNOT VULNERABLE: Python runtime probe left temp-file page cache intact[0m
+
+[1;34m╔══════════╣ [1;32mKernel Exploit Registry [1;90m(T1068)
+[0m[1;34m═╣ [1;32mOperating system ............. Linux
+[0m[1;34m═╣ [1;32mKernel release ............... 7.0.0-27-generic
+[0m[1;34m═╣ [1;32mComparable version ........... 7.0.0.27
+[0m[1;34m═╣ [1;32mData chunk limit ............. max 25 rows per KERNEL_CVE_DATA_* variable (1..22)
+[0m[1;34m═╣ [1;32mKernel config source ......... /boot/config-7.0.0-27-generic
+[0m[1;31;103mCVE: CVE-2026-43503 | Name: DirtyClone | Match data: pkg=linux-kernel,ver>=6.19,ver<7.0.10 | Tags: 1 | Rank: Fixed in stable 7.0.10 and mainline 7.1[0m
+[1;31;103mCVE: CVE-2026-46331 | Name: pedit COW | Match data: pkg=linux-kernel,ver>=6.19,ver<7.0.13 | Tags: 1 | Rank: Fixed in stable 7.0.13 and mainline 7.1[0m
+[1;31;103mCVE: CVE-2026-46333 | Name: ptrace exit-race | Match data: pkg=linux-kernel,ver>=6.19,ver<7.0.8,cmd:[ "$(cat /proc/sys/kernel/yama/ptrace_scope 2>/dev/null || echo 0)" -lt 2 ] | Tags: 1 | Rank: Upstream issue introduced in 4.10; fixed in 7.0.8; mitigated by kernel.yama.ptrace_scope >= 2[0m
+[1;31;103m[1;34m═╣ [1;32mKernel vulns found: 3[0m
+[1;31;103m[0m[0m
+[1;34m╔══════════╣ [1;32mChecking for Dirty Frag (CVE-2026-43284 / CVE-2026-43500) [1;90m(T1068)
+[0m[1;34m╚ [1;34m[3mhttps://ubuntu.com/blog/dirty-frag-linux-vulnerability-fixes-available
+[0m[1;34m╚ [1;34m[3mhttps://www.cve.org/CVERecord?id=CVE-2026-43284
+[0m[1;34m╚ [1;34m[3mhttps://www.cve.org/CVERecord?id=CVE-2026-43500
+[0m[1;31;103mCVE-2026-43284 (xfrm-ESP): autoloadable: esp4 esp6 xfrm_user ipcomp6[0m
+[1;31;103mCVE-2026-43500 (rxrpc): autoloadable: rxrpc[0m
+[1;33mmodprobe mitigation (xfrm-ESP): not found[0m
+[1;33mmodprobe mitigation (rxrpc): not found[0m
+[1;33mUnprivileged user namespaces: enabled[0m
+[1;31;103mCurrent process: CAP_NET_ADMIN present (matches public PoC requirement)[0m
+[1;31;103mLIKELY VULNERABLE to CVE-2026-43284 (xfrm-ESP).[0m
+[1;31;103mLIKELY VULNERABLE to CVE-2026-43500 (rxrpc).[0m
+Mitigation: 'install esp4/esp6/rxrpc /bin/false' in /etc/modprobe.d/, then rmmod;
+or sysctl kernel.unprivileged_userns_clone=0; or apply distro patches.
+
+[1;34m╔══════════╣ [1;32mPackage Vulnerabilities [1;90m(T1082)
+[0m[1;34m╚ [1;34m[3mThis uses the optional HackTricks online lookup enabled with -V or -a. Output is capped at 50 vulnerable packages.
+[0mOnline package vulnerabilities found: 41 vulnerable package(s), checked 250.
+- curl 8.18.0-1ubuntu2.3 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-11856[0m, UBUNTU-[1;31;103mCVE-2026-8932[0m
+- gawk 1:5.3.2-1ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-40467[0m, UBUNTU-[1;31;103mCVE-2026-40468[0m, UBUNTU-[1;31;103mCVE-2026-40469[0m, UBUNTU-[1;31;103mCVE-2026-40553[0m
+- glib2.0 2.88.0-1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-58010[0m, UBUNTU-[1;31;103mCVE-2026-58011[0m, UBUNTU-[1;31;103mCVE-2026-58012[0m, UBUNTU-[1;31;103mCVE-2026-58013[0m, UBUNTU-[1;31;103mCVE-2026-58014[0m, UBUNTU-[1;31;103mCVE-2026-58015[0m, UBUNTU-[1;31;103mCVE-2026-58016[0m
+- busybox 1:1.37.0-7ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2023-42366[0m, UBUNTU-[1;31;103mCVE-2024-58251[0m, UBUNTU-[1;31;103mCVE-2025-46394[0m, UBUNTU-[1;31;103mCVE-2025-60876[0m, UBUNTU-[1;31;103mCVE-2026-26157[0m, UBUNTU-[1;31;103mCVE-2026-26158[0m, UBUNTU-[1;31;103mCVE-2026-29004[0m, UBUNTU-[1;31;103mCVE-2026-38752[0m, UBUNTU-[1;31;103mCVE-2026-38753[0m, UBUNTU-[1;31;103mCVE-2026-38754[0m, UBUNTU-[1;31;103mCVE-2026-38755[0m
+- dhcpcd 1:10.3.0-7 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-70102[0m, UBUNTU-[1;31;103mCVE-2026-14258[0m, UBUNTU-[1;31;103mCVE-2026-56113[0m, UBUNTU-[1;31;103mCVE-2026-56114[0m, UBUNTU-[1;31;103mCVE-2026-56115[0m, UBUNTU-[1;31;103mCVE-2026-56116[0m, UBUNTU-[1;31;103mCVE-2026-56117[0m
+- git 1:2.53.0-1ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2024-52005[0m
+- grub2-signed 1.215 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2024-45774[0m, UBUNTU-[1;31;103mCVE-2024-45775[0m, UBUNTU-[1;31;103mCVE-2024-45776[0m, UBUNTU-[1;31;103mCVE-2024-45777[0m, UBUNTU-[1;31;103mCVE-2024-45778[0m, UBUNTU-[1;31;103mCVE-2024-45779[0m, UBUNTU-[1;31;103mCVE-2024-45780[0m, UBUNTU-[1;31;103mCVE-2024-45781[0m, UBUNTU-[1;31;103mCVE-2024-45782[0m, UBUNTU-[1;31;103mCVE-2024-45783[0m, UBUNTU-[1;31;103mCVE-2024-49504[0m, UBUNTU-[1;31;103mCVE-2024-56737[0m, UBUNTU-[1;31;103mCVE-2024-56738[0m, UBUNTU-[1;31;103mCVE-2025-0622[0m, UBUNTU-[1;31;103mCVE-2025-0624[0m, UBUNTU-[1;31;103mCVE-2025-0677[0m, UBUNTU-[1;31;103mCVE-2025-0678[0m, UBUNTU-[1;31;103mCVE-2025-0684[0m, UBUNTU-[1;31;103mCVE-2025-0685[0m, UBUNTU-[1;31;103mCVE-2025-0686[0m
+- grub2-unsigned 2.14-2ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2024-45774[0m, UBUNTU-[1;31;103mCVE-2024-45775[0m, UBUNTU-[1;31;103mCVE-2024-45776[0m, UBUNTU-[1;31;103mCVE-2024-45777[0m, UBUNTU-[1;31;103mCVE-2024-45778[0m, UBUNTU-[1;31;103mCVE-2024-45779[0m, UBUNTU-[1;31;103mCVE-2024-45780[0m, UBUNTU-[1;31;103mCVE-2024-45781[0m, UBUNTU-[1;31;103mCVE-2024-45782[0m, UBUNTU-[1;31;103mCVE-2024-45783[0m, UBUNTU-[1;31;103mCVE-2024-49504[0m, UBUNTU-[1;31;103mCVE-2024-56737[0m, UBUNTU-[1;31;103mCVE-2024-56738[0m, UBUNTU-[1;31;103mCVE-2025-0622[0m, UBUNTU-[1;31;103mCVE-2025-0624[0m, UBUNTU-[1;31;103mCVE-2025-0677[0m, UBUNTU-[1;31;103mCVE-2025-0678[0m, UBUNTU-[1;31;103mCVE-2025-0684[0m, UBUNTU-[1;31;103mCVE-2025-0685[0m, UBUNTU-[1;31;103mCVE-2025-0686[0m
+- binutils 2.46-3ubuntu2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2017-13716[0m, UBUNTU-[1;31;103mCVE-2025-1150[0m, UBUNTU-[1;31;103mCVE-2025-1151[0m, UBUNTU-[1;31;103mCVE-2025-66861[0m, UBUNTU-[1;31;103mCVE-2025-66862[0m, UBUNTU-[1;31;103mCVE-2025-66863[0m, UBUNTU-[1;31;103mCVE-2025-66864[0m, UBUNTU-[1;31;103mCVE-2025-66865[0m, UBUNTU-[1;31;103mCVE-2025-66866[0m, UBUNTU-[1;31;103mCVE-2026-3441[0m, UBUNTU-[1;31;103mCVE-2026-3442[0m, UBUNTU-[1;31;103mCVE-2026-4647[0m, UBUNTU-[1;31;103mCVE-2026-6844[0m, UBUNTU-[1;31;103mCVE-2026-6845[0m, UBUNTU-[1;31;103mCVE-2026-6846[0m
+- fuse3 3.18.2-1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-33150[0m, UBUNTU-[1;31;103mCVE-2026-33179[0m
+- linux 7.0.0-27.27 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2012-4542[0m, UBUNTU-[1;31;103mCVE-2013-7445[0m, UBUNTU-[1;31;103mCVE-2015-7837[0m, UBUNTU-[1;31;103mCVE-2015-8553[0m, UBUNTU-[1;31;103mCVE-2016-8660[0m, UBUNTU-[1;31;103mCVE-2017-0537[0m, UBUNTU-[1;31;103mCVE-2017-13165[0m, UBUNTU-[1;31;103mCVE-2017-13693[0m, UBUNTU-[1;31;103mCVE-2017-13694[0m, UBUNTU-[1;31;103mCVE-2018-1121[0m, UBUNTU-[1;31;103mCVE-2018-12928[0m, UBUNTU-[1;31;103mCVE-2018-12929[0m, UBUNTU-[1;31;103mCVE-2018-12930[0m, UBUNTU-[1;31;103mCVE-2018-12931[0m, UBUNTU-[1;31;103mCVE-2018-17977[0m, UBUNTU-[1;31;103mCVE-2019-14899[0m, UBUNTU-[1;31;103mCVE-2019-15213[0m, UBUNTU-[1;31;103mCVE-2019-15794[0m, UBUNTU-[1;31;103mCVE-2019-19378[0m, UBUNTU-[1;31;103mCVE-2019-19814[0m
+- dracut 110-11 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-6893[0m
+- util-linux 2.41.3-3ubuntu2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-13595[0m, UBUNTU-[1;31;103mCVE-2026-27456[0m, UBUNTU-[1;31;103mCVE-2026-3184[0m, UBUNTU-[1;31;103mCVE-2026-53612[0m, UBUNTU-[1;31;103mCVE-2026-53613[0m, UBUNTU-[1;31;103mCVE-2026-53614[0m, UBUNTU-[1;31;103mCVE-2026-53615[0m
+- cpio 2.15+dfsg-2.1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2023-7216[0m
+- coreutils 9.7-3ubuntu2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-5278[0m
+- packagekit 1.3.4-3ubuntu1.1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2022-0987[0m, UBUNTU-[1;31;103mCVE-2024-0217[0m, UBUNTU-[1;31;103mCVE-2026-10294[0m
+- gnupg2 2.4.8-4ubuntu3 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-57062[0m
+- acl 2.3.2-2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-54369[0m, UBUNTU-[1;31;103mCVE-2026-54370[0m
+- attr 1:2.5.2-4 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-54371[0m
+- bzip2 1.0.8-6build2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-42250[0m
+- duktape 2.7.0+tests-0ubuntu4 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-12216[0m
+- efivar 39-2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-6862[0m
+- elfutils 0.194-4 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-1352[0m, UBUNTU-[1;31;103mCVE-2025-1376[0m
+- expat 2.7.4-1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-66382[0m, UBUNTU-[1;31;103mCVE-2026-32776[0m, UBUNTU-[1;31;103mCVE-2026-32777[0m, UBUNTU-[1;31;103mCVE-2026-32778[0m, UBUNTU-[1;31;103mCVE-2026-41080[0m, UBUNTU-[1;31;103mCVE-2026-45186[0m, UBUNTU-[1;31;103mCVE-2026-4739[0m, UBUNTU-[1;31;103mCVE-2026-50219[0m, UBUNTU-[1;31;103mCVE-2026-56131[0m, UBUNTU-[1;31;103mCVE-2026-56132[0m, UBUNTU-[1;31;103mCVE-2026-56403[0m, UBUNTU-[1;31;103mCVE-2026-56404[0m, UBUNTU-[1;31;103mCVE-2026-56405[0m, UBUNTU-[1;31;103mCVE-2026-56406[0m, UBUNTU-[1;31;103mCVE-2026-56407[0m, UBUNTU-[1;31;103mCVE-2026-56408[0m, UBUNTU-[1;31;103mCVE-2026-56409[0m, UBUNTU-[1;31;103mCVE-2026-56410[0m, UBUNTU-[1;31;103mCVE-2026-56411[0m, UBUNTU-[1;31;103mCVE-2026-56412[0m
+- freetype 2.14.2+dfsg-1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-50811[0m
+- glibc 2.43-2ubuntu2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-4046[0m, UBUNTU-[1;31;103mCVE-2026-4437[0m, UBUNTU-[1;31;103mCVE-2026-4438[0m, UBUNTU-[1;31;103mCVE-2026-5435[0m, UBUNTU-[1;31;103mCVE-2026-5450[0m, UBUNTU-[1;31;103mCVE-2026-5928[0m, UBUNTU-[1;31;103mCVE-2026-6238[0m
+- icu 78.2-2ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-5222[0m
+- jq 1.8.1-4ubuntu2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-9403[0m, UBUNTU-[1;31;103mCVE-2026-40612[0m, UBUNTU-[1;31;103mCVE-2026-41256[0m, UBUNTU-[1;31;103mCVE-2026-41257[0m, UBUNTU-[1;31;103mCVE-2026-43894[0m, UBUNTU-[1;31;103mCVE-2026-43895[0m, UBUNTU-[1;31;103mCVE-2026-43896[0m, UBUNTU-[1;31;103mCVE-2026-44777[0m, UBUNTU-[1;31;103mCVE-2026-47770[0m, UBUNTU-[1;31;103mCVE-2026-49839[0m, UBUNTU-[1;31;103mCVE-2026-54679[0m
+- krb5 1.22.1-2ubuntu4 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-11850[0m, UBUNTU-[1;31;103mCVE-2026-40355[0m, UBUNTU-[1;31;103mCVE-2026-40356[0m
+- libgcrypt20 1.12.0-2ubuntu0.1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2024-2236[0m
+- libpcap 1.10.6-1ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-11961[0m
+- llvm-toolchain-21 1:21.1.8-6ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-13573[0m, UBUNTU-[1;31;103mCVE-2026-13574[0m
+- lmdb 0.9.31-1build2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-22185[0m
+- p11-kit 0.26.2-2 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-13757[0m
+- pam 1.7.0-5ubuntu3 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-54411[0m
+- perl 5.40.1-7ubuntu0.1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-15649[0m, UBUNTU-[1;31;103mCVE-2026-12087[0m, UBUNTU-[1;31;103mCVE-2026-13221[0m, UBUNTU-[1;31;103mCVE-2026-42497[0m, UBUNTU-[1;31;103mCVE-2026-48959[0m, UBUNTU-[1;31;103mCVE-2026-48961[0m, UBUNTU-[1;31;103mCVE-2026-48962[0m, UBUNTU-[1;31;103mCVE-2026-57432[0m, UBUNTU-[1;31;103mCVE-2026-57433[0m, UBUNTU-[1;31;103mCVE-2026-7017[0m, UBUNTU-[1;31;103mCVE-2026-9538[0m
+- policykit-1 127-2ubuntu1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2016-2568[0m
+- python3.14 3.14.4-1ubuntu0.1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2025-12781[0m, UBUNTU-[1;31;103mCVE-2026-0864[0m, UBUNTU-[1;31;103mCVE-2026-11940[0m, UBUNTU-[1;31;103mCVE-2026-11972[0m, UBUNTU-[1;31;103mCVE-2026-15308[0m, UBUNTU-[1;31;103mCVE-2026-4360[0m, UBUNTU-[1;31;103mCVE-2026-7210[0m
+- slang2 2.3.3-5build1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2023-45927[0m, UBUNTU-[1;31;103mCVE-2023-45929[0m
+- sqlite3 3.46.1-9ubuntu0.1 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-50812[0m, UBUNTU-[1;31;103mCVE-2026-50813[0m
+- systemd 259.5-0ubuntu3 [Ubuntu:26.04]: UBUNTU-[1;31;103mCVE-2026-40228[0m
+
+
+
+[1;34m                                   ╔═══════════╗
+═══════════════════════════════════╣ [1;32mContainer[1;34m ╠═══════════════════════════════════
+[1;34m                                   ╚═══════════╝[0m
+[1;34m╔══════════╣ [1;32mContainer related tools present (if any): [1;90m(T1613)
+[0m/usr/sbin/lxc
+/usr/sbin/apparmor_parser
+/usr/bin/nsenter
+/usr/bin/unshare
+/usr/bin/chroot
+/usr/sbin/capsh
+/usr/sbin/setcap
+/usr/sbin/getcap
+
+[1;34m╔══════════╣ [1;32mContainer details [1;90m(T1613,T1611)
+[0m[1;34m═╣ [1;32mIs this a container? ...........[0m [1;90mNo
+[0m[0m[1;34m═╣ [1;32mLXC version ................[0m [0mClient version: 6.9
+Server version: 6.9
+[1;34m═╣ [1;32mLXC info ...................[0m [0mapi_extensions:
+- storage_zfs_remove_snapshots
+- container_host_shutdown_timeout
+- container_stop_priority
+- container_syscall_filtering
+- auth_pki
+- container_last_used_at
+- etag
+- patch
+- usb_devices
+- https_allowed_credentials
+- image_compression_algorithm
+- directory_manipulation
+- container_cpu_time
+- storage_zfs_use_refquota
+- storage_lvm_mount_options
+- network
+- profile_usedby
+- container_push
+- container_exec_recording
+- certificate_update
+- container_exec_signal_handling
+- gpu_devices
+- container_image_properties
+- migration_progress
+- id_map
+- network_firewall_filtering
+- network_routes
+- storage
+- file_delete
+- file_append
+- network_dhcp_expiry
+- storage_lvm_vg_rename
+- storage_lvm_thinpool_rename
+- network_vlan
+- image_create_aliases
+- container_stateless_copy
+- container_only_migration
+- storage_zfs_clone_copy
+- unix_device_rename
+- storage_lvm_use_thinpool
+- storage_rsync_bwlimit
+- network_vxlan_interface
+- storage_btrfs_mount_options
+- entity_description
+- image_force_refresh
+- storage_lvm_lv_resizing
+- id_map_base
+- file_symlinks
+- container_push_target
+- network_vlan_physical
+- storage_images_delete
+- container_edit_metadata
+- container_snapshot_stateful_migration
+- storage_driver_ceph
+- storage_ceph_user_name
+- resource_limits
+- storage_volatile_initial_source
+- storage_ceph_force_osd_reuse
+- storage_block_filesystem_btrfs
+- resources
+- kernel_limits
+- storage_api_volume_rename
+- network_sriov
+- console
+- restrict_devlxd
+- migration_pre_copy
+- infiniband
+- devlxd_events
+- proxy
+- network_dhcp_gateway
+- file_get_symlink
+- network_leases
+- unix_device_hotplug
+- storage_api_local_volume_handling
+- operation_description
+- clustering
+- event_lifecycle
+- storage_api_remote_volume_handling
+- nvidia_runtime
+- container_mount_propagation
+- container_backup
+- devlxd_images
+- container_local_cross_pool_handling
+- proxy_unix
+- proxy_udp
+- clustering_join
+- proxy_tcp_udp_multi_port_handling
+- network_state
+- proxy_unix_dac_properties
+- container_protection_delete
+- unix_priv_drop
+- pprof_http
+- proxy_haproxy_protocol
+- network_hwaddr
+- proxy_nat
+- network_nat_order
+- container_full
+- backup_compression
+- nvidia_runtime_config
+- storage_api_volume_snapshots
+- storage_unmapped
+- projects
+- network_vxlan_ttl
+- container_incremental_copy
+- usb_optional_vendorid
+- snapshot_scheduling
+- snapshot_schedule_aliases
+- container_copy_project
+- clustering_server_address
+- clustering_image_replication
+- container_protection_shift
+- snapshot_expiry
+- container_backup_override_pool
+- snapshot_expiry_creation
+- network_leases_location
+- resources_cpu_socket
+- resources_gpu
+- resources_numa
+- kernel_features
+- id_map_current
+- event_location
+- storage_api_remote_volume_snapshots
+- network_nat_address
+- container_nic_routes
+- cluster_internal_copy
+- seccomp_notify
+- lxc_features
+- container_nic_ipvlan
+- network_vlan_sriov
+- storage_cephfs
+- container_nic_ipfilter
+- resources_v2
+- container_exec_user_group_cwd
+- container_syscall_intercept
+- container_disk_shift
+- storage_shifted
+- resources_infiniband
+- daemon_storage
+- instances
+- image_types
+- resources_disk_sata
+- clustering_roles
+- images_expiry
+- resources_network_firmware
+- backup_compression_algorithm
+- ceph_data_pool_name
+- container_syscall_intercept_mount
+- compression_squashfs
+- container_raw_mount
+- container_nic_routed
+- container_syscall_intercept_mount_fuse
+- container_disk_ceph
+- virtual-machines
+- image_profiles
+- clustering_architecture
+- resources_disk_id
+- storage_lvm_stripes
+- vm_boot_priority
+- unix_hotplug_devices
+- api_filtering
+- instance_nic_network
+- clustering_sizing
+- firewall_driver
+- projects_limits
+- container_syscall_intercept_hugetlbfs
+- limits_hugepages
+- container_nic_routed_gateway
+- projects_restrictions
+- custom_volume_snapshot_expiry
+- volume_snapshot_scheduling
+- trust_ca_certificates
+- snapshot_disk_usage
+- clustering_edit_roles
+- container_nic_routed_host_address
+- container_nic_ipvlan_gateway
+- resources_usb_pci
+- resources_cpu_threads_numa
+- resources_cpu_core_die
+- api_os
+- container_nic_routed_host_table
+- container_nic_ipvlan_host_table
+- container_nic_ipvlan_mode
+- resources_system
+- images_push_relay
+- network_dns_search
+- container_nic_routed_limits
+- instance_nic_bridged_vlan
+- network_state_bond_bridge
+- usedby_consistency
+- custom_block_volumes
+- clustering_failure_domains
+- resources_gpu_mdev
+- console_vga_type
+- projects_limits_disk
+- network_type_macvlan
+- network_type_sriov
+- container_syscall_intercept_bpf_devices
+- network_type_ovn
+- projects_networks
+- projects_networks_restricted_uplinks
+- custom_volume_backup
+- backup_override_name
+- storage_rsync_compression
+- network_type_physical
+- network_ovn_external_subnets
+- network_ovn_nat
+- network_ovn_external_routes_remove
+- tpm_device_type
+- storage_zfs_clone_copy_rebase
+- gpu_mdev
+- resources_pci_iommu
+- resources_network_usb
+- resources_disk_address
+- network_physical_ovn_ingress_mode
+- network_ovn_dhcp
+- network_physical_routes_anycast
+- projects_limits_instances
+- network_state_vlan
+- instance_nic_bridged_port_isolation
+- instance_bulk_state_change
+- network_gvrp
+- instance_pool_move
+- gpu_sriov
+- pci_device_type
+- storage_volume_state
+- network_acl
+- migration_stateful
+- disk_state_quota
+- storage_ceph_features
+- projects_compression
+- projects_images_remote_cache_expiry
+- certificate_project
+- network_ovn_acl
+- projects_images_auto_update
+- projects_restricted_cluster_target
+- images_default_architecture
+- network_ovn_acl_defaults
+- gpu_mig
+- project_usage
+- network_bridge_acl
+- warnings
+- projects_restricted_backups_and_snapshots
+- clustering_join_token
+- clustering_description
+- server_trusted_proxy
+- clustering_update_cert
+- storage_api_project
+- server_instance_driver_operational
+- server_supported_storage_drivers
+- event_lifecycle_requestor_address
+- resources_gpu_usb
+- clustering_evacuation
+- network_ovn_nat_address
+- network_bgp
+- network_forward
+- custom_volume_refresh
+- network_counters_errors_dropped
+- metrics
+- image_source_project
+- clustering_config
+- network_peer
+- linux_sysctl
+- network_dns
+- ovn_nic_acceleration
+- certificate_self_renewal
+- instance_project_move
+- storage_volume_project_move
+- cloud_init
+- network_dns_nat
+- database_leader
+- instance_all_projects
+- clustering_groups
+- ceph_rbd_du
+- instance_get_full
+- qemu_metrics
+- gpu_mig_uuid
+- event_project
+- clustering_evacuation_live
+- instance_allow_inconsistent_copy
+- network_state_ovn
+- storage_volume_api_filtering
+- image_restrictions
+- storage_zfs_export
+- network_dns_records
+- storage_zfs_reserve_space
+- network_acl_log
+- storage_zfs_blocksize
+- metrics_cpu_seconds
+- instance_snapshot_never
+- certificate_token
+- instance_nic_routed_neighbor_probe
+- event_hub
+- agent_nic_config
+- projects_restricted_intercept
+- metrics_authentication
+- images_target_project
+- cluster_migration_inconsistent_copy
+- cluster_ovn_chassis
+- container_syscall_intercept_sched_setscheduler
+- storage_lvm_thinpool_metadata_size
+- storage_volume_state_total
+- instance_file_head
+- instances_nic_host_name
+- image_copy_profile
+- container_syscall_intercept_sysinfo
+- clustering_evacuation_mode
+- resources_pci_vpd
+- qemu_raw_conf
+- storage_cephfs_fscache
+- network_load_balancer
+- vsock_api
+- instance_ready_state
+- network_bgp_holdtime
+- storage_volumes_all_projects
+- metrics_memory_oom_total
+- storage_buckets
+- storage_buckets_create_credentials
+- metrics_cpu_effective_total
+- projects_networks_restricted_access
+- loki
+- acme
+- internal_metrics
+- cluster_join_token_expiry
+- remote_token_expiry
+- init_preseed
+- storage_volumes_created_at
+- cpu_hotplug
+- projects_networks_zones
+- network_txqueuelen
+- cluster_member_state
+- storage_pool_source_wipe
+- zfs_block_mode
+- instance_generation_id
+- disk_io_cache
+- amd_sev
+- storage_pool_loop_resize
+- migration_vm_live
+- ovn_nic_nesting
+- oidc
+- network_ovn_l3only
+- ovn_nic_acceleration_vdpa
+- cluster_healing
+- instances_state_total
+- auth_user
+- security_csm
+- instances_rebuild
+- numa_cpu_placement
+- custom_volume_iso
+- network_allocations
+- storage_api_remote_volume_snapshot_copy
+- zfs_delegate
+- operations_get_query_all_projects
+- metadata_configuration
+- syslog_socket
+- event_lifecycle_name_and_project
+- instances_nic_limits_priority
+- disk_initial_volume_configuration
+- operation_wait
+- cluster_internal_custom_volume_copy
+- disk_io_bus
+- storage_cephfs_create_missing
+- instance_move_config
+- ovn_ssl_config
+- init_preseed_storage_volumes
+- metrics_instances_count
+- server_instance_type_info
+- resources_disk_mounted
+- server_version_lts
+- oidc_groups_claim
+- loki_config_instance
+- storage_volatile_uuid
+- import_instance_devices
+- instances_uefi_vars
+- instances_migration_stateful
+- container_syscall_filtering_allow_deny_syntax
+- access_management
+- vm_disk_io_limits
+- storage_volumes_all
+- instances_files_modify_permissions
+- image_restriction_nesting
+- container_syscall_intercept_finit_module
+- device_usb_serial
+- network_allocate_external_ips
+- explicit_trust_token
+- shared_custom_block_volumes
+- instance_import_conversion
+- instance_create_start
+- instance_protection_start
+- devlxd_images_vm
+- disk_io_bus_virtio_blk
+- metrics_api_requests
+- projects_limits_disk_pool
+- ubuntu_pro_guest_attach
+- metadata_configuration_entity_types
+- access_management_tls
+- network_allocations_ovn_uplink
+- network_ovn_uplink_vlan
+- state_logical_cpus
+- vm_limits_cpu_pin_strategy
+- gpu_cdi
+- images_all_projects
+- metadata_configuration_scope
+- unix_device_hotplug_ownership_inherit
+- unix_device_hotplug_subsystem_device_option
+- storage_ceph_osd_pool_size
+- network_get_target
+- network_zones_all_projects
+- vm_root_volume_attachment
+- projects_limits_uplink_ips
+- entities_with_entitlements
+- profiles_all_projects
+- storage_driver_powerflex
+- storage_driver_pure
+- cloud_init_ssh_keys
+- oidc_scopes
+- project_default_network_and_storage
+- client_cert_presence
+- clustering_groups_used_by
+- container_bpf_delegation
+- override_snapshot_profiles_on_copy
+- resources_device_fs_uuid
+- backup_metadata_version
+- storage_buckets_all_projects
+- network_acls_all_projects
+- networks_all_projects
+- clustering_restore_skip_mode
+- disk_io_threads_virtiofsd
+- oidc_client_secret
+- pci_hotplug
+- device_patch_removal
+- daemon_storage_per_project
+- ovn_internal_load_balancer
+- auth_bearer_devlxd
+- devlxd_volume_management
+- storage_driver_alletra
+- resources_disk_used_by
+- ovn_dhcp_ranges
+- operation_requestor
+- import_custom_volume_tar
+- projects_force_delete
+- auth_oidc_sessions
+- instance_snapshots_multi_volume
+- vm_persistent_bus
+- instance_placement_groups
+- ovn_nic_acceleration_parent
+- storage_and_profile_operations
+- storage_source_recover
+- instance_force_delete
+- operation_metadata_entity_url
+- instance_boot_mode
+- auth_bearer
+- vm_limits_max_bus_ports
+- instances_state_selective_recursion
+- project_delete_operation
+- gpu_cdi_amd
+- instance_refresh_config
+- clustering_control_plane
+- storage_remote_drop_source
+- storage_ceph_use_rbd_defaults
+- bulk_operations
+- ovn_dynamic_northbound_connection
+- storage_zfs_promote
+- storage_and_network_operations
+- gpu_cdi_hotplug
+- image_extended_metadata
+- cluster_links
+- replicators
+- event_security
+- storage_driver_powerstore
+- oidc_device_client_id
+- storage_nvme_tcp
+- project_replica_mode
+- cluster_links_used_by
+- network_load_balancer_pool
+- clustering_evacuation_force
+api_status: stable
+api_version: "1.0"
+auth: trusted
+public: false
+auth_methods:
+- tls
+- bearer
+client_certificate: false
+config:
+  volatile.uuid: 019f6e8b-2e41-74be-8f56-b8425d54904d
+auth_user_name: root
+auth_user_method: unix
+environment:
+  addresses: []
+  architectures:
+  - x86_64
+  - i686
+  backup_metadata_version_range:
+  - 1
+  - 2
+  certificate: |
+    -----BEGIN CERTIFICATE-----
+    MIIB5jCCAWygAwIBAgIQLmEPcbltt7aTmbDbrZaRxDAKBggqhkjOPQQDAzAlMQww
+    CgYDVQQKEwNMWEQxFTATBgNVBAMMDHJvb3RAcHJpbWFyeTAeFw0yNjA3MTcwNTI2
+    MjRaFw0zNjA3MTQwNTI2MjRaMCUxDDAKBgNVBAoTA0xYRDEVMBMGA1UEAwwMcm9v
+    dEBwcmltYXJ5MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEYQilpcCFlDq8EwtyHdYZ
+    TpSUU5HOxZOfFMrWq3K6Cg2HFZNJZ1wOQ8Fsg0hHNRi199QdamdFF90DfGiCTM97
+    vX/sCwhsvrz3yyl0kUekxg7qaSuy8nhx8lueS1TlOfBPo2EwXzAOBgNVHQ8BAf8E
+    BAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAqBgNVHREE
+    IzAhggdwcmltYXJ5hwR/AAABhxAAAAAAAAAAAAAAAAAAAAABMAoGCCqGSM49BAMD
+    A2gAMGUCMQDKnvXbKJpgGM/FRoVIKFxh7/pe2dxd9GYje6MTeBznuxRMQTA/dyrL
+    tcxl+GzgnuACMFu94UTx+6s8jsemwR9quKMy9HVpVXbAW26KyanV/Tnh4P6o4rno
+    a3SteK1mh8/dFQ==
+    -----END CERTIFICATE-----
+  certificate_fingerprint: 71b08c70430c814baea7dd387839960e4fcecc9c209cf043b2b64394554fb134
+  driver: lxc
+  driver_version: 6.0.6
+  instance_types:
+  - container
+  firewall: nftables
+  kernel: Linux
+  kernel_architecture: x86_64
+  kernel_features:
+    bpf_token: "true"
+    idmapped_mounts: "true"
+    netnsid_getifaddrs: "true"
+    seccomp_listener: "true"
+    seccomp_listener_continue: "true"
+    uevent_injection: "true"
+    unpriv_binfmt: "true"
+    unpriv_fscaps: "true"
+  kernel_version: 7.0.0-27-generic
+  lxc_features:
+    cgroup2: "true"
+    core_scheduling: "true"
+    devpts_fd: "true"
+    idmapped_mounts_v2: "true"
+    mount_injection_file: "true"
+    network_gateway_device_route: "true"
+    network_ipvlan: "true"
+    network_l2proxy: "true"
+    network_phys_macvlan_mtu: "true"
+    network_veth_router: "true"
+    pidfd: "true"
+    seccomp_allow_deny_syntax: "true"
+    seccomp_notify: "true"
+    seccomp_proxy_send_notify_fd: "true"
+  os_name: Ubuntu
+  os_version: "26.04"
+  project: default
+  server: lxd
+  server_clustered: false
+  server_event_mode: full-mesh
+  server_name: primary
+  server_pid: 244661
+  server_version: "6.9"
+  server_lts: false
+  storage: ""
+  storage_version: ""
+  storage_supported_drivers:
+  - name: lvm
+    version: 2.03.31(2) (2025-02-27) / 1.02.205 (2025-02-27) / 4.50.0
+    remote: false
+  - name: powerflex
+    version: 2.16 (nvme-cli)
+    remote: true
+  - name: alletra
+    version: 2.16 (nvme-cli) / 2.1.11 (iscsiadm)
+    remote: true
+  - name: zfs
+    version: 2.4.1-1ubuntu5
+    remote: false
+  - name: cephfs
+    version: 20.2.0
+    remote: true
+  - name: cephobject
+    version: 20.2.0
+    remote: true
+  - name: powerstore
+    version: 2.1.11 (iscsiadm)
+    remote: true
+  - name: pure
+    version: 2.1.11 (iscsiadm) / 2.16 (nvme-cli)
+    remote: true
+  - name: btrfs
+    version: 6.17.1
+    remote: false
+  - name: ceph
+    version: 20.2.0
+    remote: true
+  - name: dir
+    version: "1"
+    remote: false
+[1;34m═╣ [1;32mInteresting runtime sockets ... [0m[0m[1;34m═╣ [1;32mAny running containers? ........ [0m[0m[1;90mNo
+[0m
+
+
+[1;34m                                     ╔═══════╗
+═════════════════════════════════════╣ [1;32mCloud[1;34m ╠═════════════════════════════════════
+[1;34m                                     ╚═══════╝[0m
+[1;33mLearn and practice cloud hacking techniques in [1;34mhttps://training.hacktricks.xyz
+[0m
+[1;34m═╣ [1;32mGCP Virtual Machine? ................. [1;32mNo[0m
+[0m[0m[1;34m═╣ [1;32mGCP Cloud Funtion? ................... [1;32mNo[0m
+[0m[0m[1;34m═╣ [1;32mAWS ECS? ............................. [1;32mNo[0m
+[0m[0m[1;34m═╣ [1;32mAWS EC2? ............................. [1;32mNo[0m
+[0m[0m[1;34m═╣ [1;32mAWS EC2 Beanstalk? ................... [1;32mNo[0m
+[0m[0m[1;34m═╣ [1;32mAWS Lambda? .......................... [1;32mNo[0m
+[0m[0m[1;34m═╣ [1;32mAWS Codebuild? ....................... [1;32mNo[0m
+[0m[0m[1;34m═╣ [1;32mDO Droplet? .......................... [1;32mNo[0m
+[0m[0m[1;34m═╣ [1;32mIBM Cloud VM? ........................ [1;32mNo[0m
+[0m[0m[1;34m═╣ [1;32mAzure VM or Az metadata? ............. [1;32mNo[0m
+[0m[0m[1;34m═╣ [1;32mAzure APP or IDENTITY_ENDPOINT? ...... [1;32mNo[0m
+[0m[0m[1;34m═╣ [1;32mAzure Automation Account? ............ [1;32mNo[0m
+[0m[0m[1;34m═╣ [1;32mAliyun ECS? .......................... [1;32mNo[0m
+[0m[0m[1;34m═╣ [1;32mTencent CVM? ......................... [1;32mNo[0m
+[0m[0m
+
+
+[1;34m                ╔════════════════════════════════════════════════╗
+════════════════╣ [1;32mProcesses, Crons, Timers, Services and Sockets[1;34m ╠════════════════
+[1;34m                ╚════════════════════════════════════════════════╝[0m
+[1;34m╔══════════╣ [1;32mRunning processes (cleaned) [1;90m(T1057)
+[0m[1;34m╚ [1;34m[3mCheck weird & unexpected processes run by root: https://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#processes
+[0m[1;95m[1;31mroot[0m[0m           1  0.1  1.6  26292 14628 ?        Ss   Jul15   2:50 [1;31m/usr/lib/[1;34msys[0mtemd[0m[1;31m/sys[0mtemd --switched-root --system --deserialize=44
+[1;95m[1;31mroot[0m[0m         905  0.0  1.6  75248 14708 ?        S<s  Jul15   0:24 [1;31m/usr/lib/[1;34msys[0mtemd[0m[1;31m/sys[0mtemd-journald
+[1;95m[1;31mroot[0m[0m         925  0.0  1.0 279492  9660 ?        SLsl Jul15   0:13 [1;31m/usr/sbin[0m[1;31m/[0mmultipathd -d -s
+[1;34msys[0mtemd+     956  0.0  1.3  22800 12204 ?        Ss   Jul15   0:00 [1;31m/usr/lib/systemd[0m[1;31m/sys[0mtemd-resolved
+  └─([1;90mCaps[0m) 0x0000000000002500=[1;31mcap_setpcap[0m,[1;31mcap_net_bind_service[0m,[1;31mcap_net_raw[0m
+[1;95m[1;31mroot[0m[0m         962  0.0  1.3  39756 11872 ?        Ss   Jul15   1:17 [1;31m/usr/lib/[1;34msys[0mtemd[0m[1;31m/sys[0mtemd-[1;32mudev[0md
+[1;34msys[0mtemd+    1361  0.0  1.0  21472  9428 ?        Ss   Jul15   0:00 [1;31m/usr/lib/systemd[0m[1;31m/sys[0mtemd-networkd
+  └─([1;90mCaps[0m) 0x0000000000003c00=[1;31mcap_net_bind_service[0m,cap_net_broadcast,[1;31mcap_net_admin[0m,[1;31mcap_net_raw[0m
+[1;95m[1;31mroot[0m[0m        1510  0.0  0.2   2888  2012 ?        Ss   Jul15   0:00 [1;31m/[0mbin[1;31m/[0msh [1;31m/usr/lib/[1;34msys[0mtemd[0m[1;31m/[0mscripts[1;31m/[0mchronyd-starter.sh -n -F 1
+[1;34m_chrony[0m     1617  0.0  0.8  23832  7660 ?        S    Jul15   0:01  _ [1;31m/usr/sbin[0m[1;31m/[0mchronyd -n -F 1
+  └─([1;90mCaps[0m) 0x0000000002000400=[1;31mcap_net_bind_service[0m,cap_sys_time
+[1;34m_chrony[0m     1619  0.0  0.2  12096  2276 ?        S    Jul15   0:00      _ [1;31m/usr/sbin[0m[1;31m/[0mchronyd -n -F 1
+  └─([1;90mCaps[0m) 0x0000000002000400=[1;31mcap_net_bind_service[0m,cap_sys_time
+[1;95m[1;31mroot[0m[0m        1512  0.0  0.3   7468  3200 ?        Ss   Jul15   0:00 [1;31m/usr/sbin[0m[1;31m/[0m[1;32mcron[0m -f -P
+[1;32mmessage+[0m    1513  0.0  0.5   9148  5108 ?        Ss   Jul15   0:21 @dbus-[1;34mdaemon[0m --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+  └─([1;90mCaps[0m) 0x0000000020000000=cap_audit_write
+[1;95m[1;31mroot[0m[0m        1523  0.0  2.4  47092 22596 ?        Ss   Jul15   0:00 [1;31m/usr/bin[0m[1;31m/[0mpython3 [1;31m/usr/bin[0m[1;31m/[0mnetworkd-dispatcher --run-startup-triggers
+[1;34mpolkitd[0m     1524  0.0  0.6 306444  5920 ?        Ssl  Jul15   0:03 [1;31m/usr/lib/polkit-1[0m[1;31m/[0mpolkitd --no-debug --log-level=notice
+[1;95m[1;31mroot[0m[0m        1532  0.0  0.9  18616  8364 ?        Ss   Jul15   0:06 [1;31m/usr/lib/[1;34msys[0mtemd[0m[1;31m/sys[0mtemd-logind
+[1;95m[1;31mroot[0m[0m        1601  0.0  0.3   8488  2784 tty1     Ss+  Jul15   0:00 [1;31m/usr/sbin[0m[1;31m/[0magetty --noreset --noclear --issue-file=[1;31m/etc[0m[1;31m/[0missue:[1;31m/etc[0m[1;31m/[0missue.d:[1;31m/run[0m[1;31m/[0missue.d:[1;31m/usr/lib[0m[1;31m/[0missue.d - linux
+[1;95m[1;31mroot[0m[0m        1622  0.0  2.4 126460 22196 ?        Ssl  Jul15   0:00 [1;31m/usr/bin[0m[1;31m/[0mpython3 [1;31m/usr/share/unattended-upgrades[0m[1;31m/[0munattended-upgrade-shutdown --wait-for-signal
+[1;95m[1;31mroot[0m[0m        1656  0.0  0.7 391608  7180 ?        Ssl  Jul15   0:00 [1;31m/usr/sbin[0m[1;31m/[0mModemManager
+[1;34m[1;32msyslog[0m[0m      1703  0.0  0.6 220548  5660 ?        Ssl  Jul15   0:06 [1;31m/usr/sbin[0m[1;31m/[0mrsyslogd -n -iNONE
+[1;96mubuntu[0m      1786  0.0  1.1  22580 10776 ?        Ss   Jul15   1:17 [1;31m/usr/lib/[1;34msys[0mtemd[0m[1;31m/sys[0mtemd --user
+  └─([1;90mCaps[0m) 0x0000000800000000=cap_wake_alarm
+[1;96mubuntu[0m      1796  0.0  0.4  23004  3944 ?        S    Jul15   0:00  _ (sd-pam)
+[1;96mubuntu[0m     11995  0.0  0.4   8548  4384 ?        Ss   Jul16   0:00  _ [1;31m/usr/bin[0m[1;31m/[0mdbus-[1;34m[1;32mdaemon[0m[0m --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+[1;95m[1;31mroot[0m[0m       75267  0.0  2.0 1851644 18716 ?       Ssl  Jul16   0:36 [1;31m/snap/snapd[0m[1;31m/[0mcurrent[1;31m/usr/lib/snapd[0m[1;31m/snap[0md
+[1;95m[1;31mroot[0m[0m      125048  0.0  1.0 543452  9748 ?        Ssl  Jul16   0:07 [1;31m/usr/libexec/udisks2[0m[1;31m/[0mudisksd
+[1;95m[1;31mroot[0m[0m      126478  0.0  1.7 597564 15628 ?        Ssl  Jul16   0:05 [1;31m/usr/libexec/fwupd[0m[1;31m/[0mfwupd
+[1;96mubuntu[0m    173067  0.0  0.8  18656  7684 ?        S    Jul16   0:00      _ [1;34msshd[0m-session: ubuntu@notty
+[1;95m[1;31mroot[0m[0m      244334  0.0  0.0   2888   184 ?        Ss   08:27   0:00 [1;31m/[0mbin[1;31m/[0msh [1;31m/snap/[1;34mlxd[0m/39858[0m[1;31m/[0mcommands[1;31m/[0m[1;32mdaemon.[0mstart
+[1;95m[1;31mroot[0m[0m      244661  1.5  5.0 2055944 46180 ?       Sl   08:27   0:14  _ [1;34mlxd[0m --logfile [1;31m/var/snap/lxd[0m[1;31m/[0mcommon[1;31m/[0mlxd[1;31m/[0mlogs[1;31m/[0mlxd.log --group lxd
+[1;95m[1;31mroot[0m[0m      244634  0.0  0.0  85652   516 ?        Sl   08:27   0:00 lxcfs [1;31m/var/snap/[1;34mlxd[0m[0m[1;31m/[0mcommon[1;31m/var/lib[0m[1;31m/[0mlxcfs -p [1;31m/var/snap/lxd[0m[1;31m/[0mcommon[1;31m/[0mlxcfs.pid
+[1;95m[1;31mroot[0m[0m      281318  0.0  0.2  82404  2612 ?        Ss   08:29   0:00 gpg-agent --homedir [1;31m/root/.gnupg[0m --use-standard-socket --[1;34m[1;32mdaemon[0m[0m
+[1;95m[1;31mroot[0m[0m      427948  0.0  0.6  12812  6276 ?        S    08:37   0:00 sudo bash scripts[1;31m/[0mground_truth.sh
+[1;95m[1;31mroot[0m[0m      427951  0.0  0.4   7944  3828 ?        S    08:37   0:00  _ bash scripts[1;31m/[0mground_truth.sh
+[1;95m[1;31mroot[0m[0m      516331  0.0  0.8  16112  7628 ?        S    08:41   0:00      _ timeout 200 bash linpeas.sh -q -a
+[1;95m[1;31mroot[0m[0m      516332  4.3  0.6  10392  6340 ?        S    08:41   0:02          _ bash linpeas.sh -q -a
+[1;95m[1;31mroot[0m[0m      535054  0.0  0.4  10392  4452 ?        S    08:42   0:00              _ bash linpeas.sh -q -a
+[1;95m[1;31mroot[0m[0m      535058  0.0  0.5  10208  4624 ?        R    08:42   0:00              |   _ ps faux[1;32mwww[0m
+[1;95m[1;31mroot[0m[0m      535057  0.0  0.4  10392  4324 ?        S    08:42   0:00              _ bash linpeas.sh -q -a
+[1;95m[1;31mroot[0m[0m      534974  0.2  0.3   8532  3084 ttyS0    Ss+  08:42   0:00 [1;31m/usr/sbin[0m[1;31m/[0magetty --noreset --noclear --issue-file=[1;31m/etc[0m[1;31m/[0missue:[1;31m/etc[0m[1;31m/[0missue.d:[1;31m/run[0m[1;31m/[0missue.d:[1;31m/usr/lib[0m[1;31m/[0missue.d --keep-baud 115200,57600,38400,9600 - vt220
+
+[1;34m╔══════════╣ [1;32mProcesses with unusual configurations [1;90m(T1057)
+[0mProcess 1 (root) - /usr/lib/systemd/systemd --switched-root --system --deserialize=44 
+Unusual number of FDs: 160
+
+Process 1617 (_chrony) - /usr/sbin/chronyd -n -F 1 
+SELinux context: /usr/sbin/chronyd (enforce)\n  └─ AppArmor profile: /usr/sbin/chronyd (enforce)
+
+Process 1619 (_chrony) - /usr/sbin/chronyd -n -F 1 
+SELinux context: /usr/sbin/chronyd (enforce)\n  └─ AppArmor profile: /usr/sbin/chronyd (enforce)
+
+Process 1703 (syslog) - /usr/sbin/rsyslogd -n -iNONE 
+SELinux context: rsyslogd (enforce)\n  └─ AppArmor profile: rsyslogd (enforce)
+
+grep: Unmatched [, [^, [:, [., or [=
+grep: Unmatched [, [^, [:, [., or [=
+grep: Unmatched [, [^, [:, [., or [=
+
+[1;34m╔══════════╣ [1;32mProcesses with credentials in memory (root req) [1;90m(T1003.007)
+[0m[1;34m╚ [1;34m[3mhttps://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#credentials-from-process-memory
+[0m[1;90mgdm-password Not Found
+[0m[1;90mgnome-keyring-daemon Not Found
+[0m[1;90mlightdm Not Found
+[0m[1;90mvsftpd Not Found
+[0m[1;90mapache2 Not Found
+[0m[1;31msshd:[0m process found (dump creds from memory as root)
+[1;90mmysql Not Found
+[0m[1;90mpostgres Not Found
+[0m[1;90mredis-server Not Found
+[0m[1;90mmongod Not Found
+[0m[1;90mmemcached Not Found
+[0m[1;90melasticsearch Not Found
+[0m[1;90mjenkins Not Found
+[0m[1;90mtomcat Not Found
+[0m[1;90mnginx Not Found
+[0m[1;90mphp-fpm Not Found
+[0m[1;90msupervisord Not Found
+[0m[1;90mvncserver Not Found
+[0m[1;90mxrdp Not Found
+[0m[1;90mteamviewer Not Found
+[0m
+[1;34m╔══════════╣ [1;32mOpened Files by processes [1;90m(T1003.007)
+[0mProcess 1 ([1;95m[1;31mroot[0m[0m) - /usr/lib/[1;34msys[0mtemd/systemd --switched-root --system --deserialize=44 
+  └─ Has open files:
+    └─ pipe:[6935]
+    └─ /proc/1/mountinfo
+    └─ /proc/swaps
+    └─ /dev/rfkill
+    └─ /run/dmeventd-server
+    └─ /run/dmeventd-client
+    └─ /memfd:[1;34msys[0mtemd-[1;32mudev[0md (deleted)
+    └─ /dev/autofs
+    └─ /dev/kmsg
+    └─ /[1;34msys[0m/fs/cgroup/init.scope/memory.pressure
+    └─ /[1;34msys[0m/fs/cgroup
+    └─ /usr/lib/[1;34msys[0mtemd/systemd-executor
+    └─ /run/cloud-init/share/hook-hotplug-cmd
+Process 905 ([1;95m[1;31mroot[0m[0m) - /usr/lib/[1;34msys[0mtemd/systemd-journald 
+  └─ Has open files:
+    └─ /proc/[1;34msys[0m/kernel/hostname
+    └─ /[1;34msys[0m/fs/cgroup/system.slice/systemd-journald.service/memory.pressure
+    └─ /var/log/journal/b29b98a0e6d34ae5820224b0eb9f392b/[1;34msys[0mtem.journal
+    └─ /var/log/journal/b29b98a0e6d34ae5820224b0eb9f392b/[1;34msys[0mtem@b4ff211d2f0942aeb99bf4d1a691c55b-000000000000b9fe-000656aa701d8a3d.journal
+    └─ /var/log/journal/b29b98a0e6d34ae5820224b0eb9f392b/user-1000.journal
+    └─ /dev/kmsg
+Process 925 ([1;95m[1;31mroot[0m[0m) - /usr/sbin/multipathd -d -s 
+  └─ Has open files:
+    └─ /run/multipathd.pid
+    └─ /dev/mapper/control
+Process 956 ([1;34msystemd-resolve[0m) - /usr/lib/systemd/systemd-resolved 
+  └─ Has open files:
+    └─ /[1;34msys[0m/fs/cgroup/system.slice/systemd-resolved.service/memory.pressure
+    └─ /proc/[1;34msys[0m/kernel/hostname
+Process 962 ([1;95m[1;31mroot[0m[0m) - /usr/lib/[1;34msys[0mtemd/systemd-[1;32mudev[0md 
+  └─ Has open files:
+    └─ /[1;34msys[0m/fs/cgroup/system.slice/systemd-[1;32mudev[0md.service/memory.pressure
+    └─ /usr/lib/[1;32mudev[0m/hwdb.bin
+Process 1361 ([1;34msystemd-network[0m) - /usr/lib/systemd/systemd-networkd 
+  └─ Has open files:
+    └─ /[1;34msys[0m/fs/cgroup/system.slice/systemd-networkd.service/memory.pressure
+    └─ /[1;34msys[0m/fs/cgroup/system.slice/systemd-networkd.service
+    └─ /var/lib/[1;34msys[0mtemd/network
+Process 1510 ([1;95m[1;31mroot[0m[0m) - /bin/sh /usr/lib/[1;34msys[0mtemd/scripts/chronyd-starter.sh -n -F 1 
+  └─ Has open files:
+    └─ /usr/lib/[1;34msys[0mtemd/scripts/chronyd-starter.sh
+Process 1512 ([1;95m[1;31mroot[0m[0m) - /usr/sbin/[1;32mcron[0m -f -P 
+  └─ Has open files:
+    └─ /run/[1;32mcron[0md.pid
+Process 1523 ([1;95m[1;31mroot[0m[0m) - /usr/bin/python3 /usr/bin/networkd-dispatcher --run-startup-triggers 
+  └─ Has open files:
+    └─ /usr/lib/x86_64-linux-gnu/libffi.so.8.2.0
+Process 1532 ([1;95m[1;31mroot[0m[0m) - /usr/lib/[1;34msys[0mtemd/systemd-logind 
+  └─ Has open files:
+    └─ /dev/input/event0
+    └─ /dev/tty6
+    └─ /run/[1;34msys[0mtemd/inhibit/1.ref
+    └─ /run/[1;34msys[0mtemd/inhibit/2.ref
+    └─ /[1;34msys[0m/fs/cgroup/system.slice/systemd-logind.service/memory.pressure
+    └─ /[1;34msys[0m/devices/virtual/tty/tty0/active
+Process 1601 ([1;95m[1;31mroot[0m[0m) - /usr/sbin/agetty --noreset --noclear --issue-file=/etc/issue:/etc/issue.d:/run/issue.d:/usr/lib/issu
+  └─ Has open files:
+    └─ /dev/tty1
+    └─ /run/credentials[1;32m/getty[0m@tty1.service
+Process 1622 ([1;95m[1;31mroot[0m[0m) - /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal 
+  └─ Has open files:
+    └─ /var/log/unattended-upgrades/unattended-upgrades-shutdown.log
+    └─ /usr/lib/x86_64-linux-gnu/libffi.so.8.2.0
+    └─ /run/[1;34msys[0mtemd/inhibit/2.ref
+Process 1656 ([1;95m[1;31mroot[0m[0m) - /usr/sbin/ModemManager 
+  └─ Has open files:
+    └─ /run/[1;34msys[0mtemd/inhibit/1.ref
+Process 1703 ([1;34m[1;32msyslog[0m[0m) - /usr/sbin/rsyslogd -n -iNONE 
+  └─ Has open files:
+    └─ /dev/urandom
+    └─ /proc/kmsg
+    └─ /var/log/auth.log
+    └─ /var/log/[1;34m[1;32msyslog[0m[0m
+    └─ /var/log/kern.log
+Process 1786 ([1;96mubuntu[0m) - /usr/lib/[1;34msys[0mtemd/systemd --user 
+  └─ Has open files:
+    └─ /proc/1786/mountinfo
+    └─ /proc/swaps
+    └─ /[1;34msys[0m/fs/cgroup/user.slice/user-1000.slice/user@1000.service/init.scope/memory.pressure
+    └─ /[1;34msys[0m/fs/cgroup
+    └─ /usr/lib/[1;34msys[0mtemd/systemd-executor
+Process 1796 ([1;96mubuntu[0m) - (sd-pam) 
+  └─ Has open files:
+    └─ pipe:[15568]
+Process 75267 ([1;95m[1;31mroot[0m[0m) - /snap/snapd/current/usr/lib/snapd/snapd 
+  └─ Has open files:
+    └─ pipe:[338949]
+    └─ /var/lib/snapd/state.lock
+Process 125048 ([1;95m[1;31mroot[0m[0m) - /usr/libexec/udisks2/udisksd 
+  └─ Has open files:
+    └─ /proc/125048/mountinfo
+    └─ /proc/swaps
+Process 126478 ([1;95m[1;31mroot[0m[0m) - /usr/libexec/fwupd/fwupd 
+  └─ Has open files:
+    └─ /var/lib/fwupd/pendingdb[1;31m.db[0m
+    └─ /var/cache/fwupd/quirksdb[1;31m.db[0m
+Process 244334 ([1;95m[1;31mroot[0m[0m) - /bin/sh /snap/[1;34mlxd[0m/39858/commands/[1;32mdaemon.[0mstart 
+  └─ Has open files:
+    └─ /snap/[1;34mlxd[0m/39858/commands/[1;32mdaemon.[0mstart
+Process 244634 ([1;95m[1;31mroot[0m[0m) - lxcfs /var/snap/[1;34mlxd[0m/common/var/lib/lxcfs -p /var/snap/lxd/common/lxcfs.pid 
+  └─ Has open files:
+    └─ /var/snap/[1;34mlxd[0m/common/lxcfs.pid
+    └─ /dev/fuse
+    └─ /[1;34msys[0m/fs/cgroup
+    └─ mnt:[4026532150]
+    └─ /
+Process 244661 ([1;95m[1;31mroot[0m[0m) - [1;34mlxd[0m --logfile /var/snap/lxd/common/lxd/logs/lxd.log --group lxd 
+  └─ Has open files:
+    └─ pipe:[1108917]
+    └─ pipe:[1108918]
+    └─ /var/snap/[1;34mlxd[0m/common/lxd/database/global/dqlite-lock
+    └─ /memfd:dqlite-shm (deleted)
+    └─ /var/snap/[1;34mlxd[0m/common/lxd/database/global/open-1
+    └─ /var/snap/[1;34mlxd[0m/common/lxd/database/global/open-2
+    └─ /var/snap/[1;34mlxd[0m/common/lxd/database/global/open-3
+    └─ /var/snap/[1;34mlxd[0m/common/lxd/logs/lxd.log
+    └─ /var/snap/[1;34mlxd[0m/common/lxd/database/localdb[1;31m.db[0m
+    └─ /dev
+Process 281318 ([1;95m[1;31mroot[0m[0m) - gpg-agent --homedir /root/.gnupg --use-standard-socket --[1;34m[1;32mdaemon[0m[0m 
+  └─ Has open files:
+    └─ pipe:[1180317]
+Process 427948 ([1;95m[1;31mroot[0m[0m) - sudo bash scripts/ground_truth.sh 
+  └─ Has open files:
+    └─ /home/[1;96mubuntu[0m/zp/gt.log
+Process 427951 ([1;95m[1;31mroot[0m[0m) - bash scripts/ground_truth.sh 
+  └─ Has open files:
+    └─ /home/[1;96mubuntu[0m/zp/gt.log
+    └─ /home/[1;96mubuntu[0m/zp/scripts/ground_truth.sh
+
+[1;34m╔══════════╣ [1;32mProcesses with memory-mapped credential files [1;90m(T1003.007)
+[0m
+[1;34m╔══════════╣ [1;32mProcesses whose PPID belongs to a different user (not root) [1;90m(T1134.004)
+[0m[1;34m╚ [1;34m[3mYou will know if a user can somehow spawn processes as a different user
+[0mProc 427951 with ppid 427948 is run by user [1;95m[1;31mroot[0m[0m but the ppid user is [1;96mubuntu[0m
+
+[1;34m╔══════════╣ [1;32mDifferent processes executed during 1 min (interesting is low number of repetitions) [1;90m(T1057)
+[0m[1;34m╚ [1;34m[3mhttps://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#frequent-cron-jobs
+[0m    298 [1;95m[1;31mroot[0m[0m     (udev-worker)
+      1 [1;95m[1;31mroot[0m[0m     (agetty)
+
+[1;34m╔══════════╣ [1;32mCheck for vulnerable cron jobs [1;90m(T1053.003)
+[0m[1;34m╚ [1;34m[3mhttps://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#scheduledcron-jobs
+[0m[1;34m══╣ [1;32mCron jobs list [1;90m(T1053.003)
+[0m/usr/bin/crontab
+[1;90mincrontab Not Found
+[0m[1;32m[0m-[1;32m[0mr[1;32m[0mw[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0m [1;32m[0m1[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m1[1;32m[0m1[1;32m[0m3[1;32m[0m6[1;32m[0m [1;32m[0mN[1;32m[0mo[1;32m[0mv[1;32m[0m [1;32m[0m [1;32m[0m5[1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m0[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32m[0m/[1;32m[0me[1;32m[0mt[1;32m[0mc[1;32m[0m/[1;32m[0mc[1;32m[0mr[1;32m[0mo[1;32m[0mn[1;32m[0mt[1;32m[0ma[1;32m[0mb[1;32m[0m
+[1;32m[0m
+[1;32m[0m/[1;32m[0me[1;32m[0mt[1;32m[0mc[1;32m[0m/[1;32m[0mc[1;32m[0mr[1;32m[0mo[1;32m[0mn[1;32m[0m.[1;32m[0md[1;32m[0m:[1;32m[0m
+[1;32m[0mt[1;32m[0mo[1;32m[0mt[1;32m[0ma[1;32m[0ml[1;32m[0m [1;32m[0m1[1;32m[0m6[1;32m[0m
+[1;32m[0md[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m4[1;32m[0m0[1;32m[0m9[1;32m[0m6[1;32m[0m [1;32m[0mJ[1;32m[0mu[1;32m[0ml[1;32m[0m [1;32m[0m1[1;32m[0m7[1;32m[0m [1;32m[0m0[1;32m[0m8[1;32m[0m:[1;32m[0m4[1;32m[0m1[1;32m[0m [1;32m[0m.[1;32m[0m
+[1;32m[0md[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m1[1;32m[0m1[1;32m[0m0[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m4[1;32m[0m0[1;32m[0m9[1;32m[0m6[1;32m[0m [1;32m[0mJ[1;32m[0mu[1;32m[0ml[1;32m[0m [1;32m[0m1[1;32m[0m7[1;32m[0m [1;32m[0m0[1;32m[0m8[1;32m[0m:[1;32m[0m4[1;32m[0m1[1;32m[0m [1;32m[0m.[1;32m[0m.[1;32m[0m
+[1;32m[0m-[1;32m[0mr[1;32m[0mw[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m0[1;32m[0m2[1;32m[0m [1;32m[0mN[1;32m[0mo[1;32m[0mv[1;32m[0m [1;32m[0m [1;32m[0m5[1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m0[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32m.placeholder[0m
+[1;32m[0m-[1;32m[0mr[1;32m[0mw[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m8[1;32m[0m8[1;32m[0m [1;32m[0mF[1;32m[0me[1;32m[0mb[1;32m[0m [1;32m[0m1[1;32m[0m3[1;32m[0m [1;32m[0m1[1;32m[0m4[1;32m[0m:[1;32m[0m1[1;32m[0m7[1;32m[0m [1;32me2scrub_all[0m
+[1;32m[0m
+[1;32m[0m/[1;32m[0me[1;32m[0mt[1;32m[0mc[1;32m[0m/[1;32m[0mc[1;32m[0mr[1;32m[0mo[1;32m[0mn[1;32m[0m.[1;32m[0md[1;32m[0ma[1;32m[0mi[1;32m[0ml[1;32m[0my[1;32m[0m:[1;32m[0m
+[1;32m[0mt[1;32m[0mo[1;32m[0mt[1;32m[0ma[1;32m[0ml[1;32m[0m [1;32m[0m3[1;32m[0m2[1;32m[0m
+[1;32m[0md[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m4[1;32m[0m0[1;32m[0m9[1;32m[0m6[1;32m[0m [1;32m[0mJ[1;32m[0mu[1;32m[0mn[1;32m[0m [1;32m[0m2[1;32m[0m7[1;32m[0m [1;32m[0m1[1;32m[0m9[1;32m[0m:[1;32m[0m2[1;32m[0m7[1;32m[0m [1;32m[0m.[1;32m[0m
+[1;32m[0md[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m1[1;32m[0m1[1;32m[0m0[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m4[1;32m[0m0[1;32m[0m9[1;32m[0m6[1;32m[0m [1;32m[0mJ[1;32m[0mu[1;32m[0ml[1;32m[0m [1;32m[0m1[1;32m[0m7[1;32m[0m [1;32m[0m0[1;32m[0m8[1;32m[0m:[1;32m[0m4[1;32m[0m1[1;32m[0m [1;32m[0m.[1;32m[0m.[1;32m[0m
+[1;32m[0m-[1;32m[0mr[1;32m[0mw[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m0[1;32m[0m2[1;32m[0m [1;32m[0mN[1;32m[0mo[1;32m[0mv[1;32m[0m [1;32m[0m [1;32m[0m5[1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m0[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32m.placeholder[0m
+[1;32m[0m-[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m [1;32m[0m3[1;32m[0m7[1;32m[0m6[1;32m[0m [1;32m[0mA[1;32m[0mp[1;32m[0mr[1;32m[0m [1;32m[0m1[1;32m[0m3[1;32m[0m [1;32m[0m1[1;32m[0m3[1;32m[0m:[1;32m[0m5[1;32m[0m1[1;32m[0m [1;32mapport[0m
+[1;32m[0m-[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m1[1;32m[0m4[1;32m[0m7[1;32m[0m8[1;32m[0m [1;32m[0mA[1;32m[0mp[1;32m[0mr[1;32m[0m [1;32m[0m [1;32m[0m7[1;32m[0m [1;32m[0m1[1;32m[0m1[1;32m[0m:[1;32m[0m0[1;32m[0m2[1;32m[0m [1;32mapt-compat[0m
+[1;32m[0m-[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m2[1;32m[0m3[1;32m[0m [1;32m[0mD[1;32m[0me[1;32m[0mc[1;32m[0m [1;32m[0m1[1;32m[0m6[1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m0[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32mdpkg[0m
+[1;32m[0m-[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m [1;32m[0m3[1;32m[0m7[1;32m[0m7[1;32m[0m [1;32m[0mD[1;32m[0me[1;32m[0mc[1;32m[0m [1;32m[0m [1;32m[0m6[1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m0[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32mlogrotate[0m
+[1;32m[0m-[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m1[1;32m[0m3[1;32m[0m9[1;32m[0m5[1;32m[0m [1;32m[0mM[1;32m[0ma[1;32m[0my[1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m0[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32mman-db[0m
+[1;32m[0m
+[1;32m[0m/[1;32m[0me[1;32m[0mt[1;32m[0mc[1;32m[0m/[1;32m[0mc[1;32m[0mr[1;32m[0mo[1;32m[0mn[1;32m[0m.[1;32m[0mh[1;32m[0mo[1;32m[0mu[1;32m[0mr[1;32m[0ml[1;32m[0my[1;32m[0m:[1;32m[0m
+[1;32m[0mt[1;32m[0mo[1;32m[0mt[1;32m[0ma[1;32m[0ml[1;32m[0m [1;32m[0m1[1;32m[0m2[1;32m[0m
+[1;32m[0md[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m4[1;32m[0m0[1;32m[0m9[1;32m[0m6[1;32m[0m [1;32m[0mJ[1;32m[0mu[1;32m[0mn[1;32m[0m [1;32m[0m2[1;32m[0m7[1;32m[0m [1;32m[0m1[1;32m[0m9[1;32m[0m:[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32m[0m.[1;32m[0m
+[1;32m[0md[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m1[1;32m[0m1[1;32m[0m0[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m4[1;32m[0m0[1;32m[0m9[1;32m[0m6[1;32m[0m [1;32m[0mJ[1;32m[0mu[1;32m[0ml[1;32m[0m [1;32m[0m1[1;32m[0m7[1;32m[0m [1;32m[0m0[1;32m[0m8[1;32m[0m:[1;32m[0m4[1;32m[0m1[1;32m[0m [1;32m[0m.[1;32m[0m.[1;32m[0m
+[1;32m[0m-[1;32m[0mr[1;32m[0mw[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m0[1;32m[0m2[1;32m[0m [1;32m[0mN[1;32m[0mo[1;32m[0mv[1;32m[0m [1;32m[0m [1;32m[0m5[1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m0[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32m.placeholder[0m
+[1;32m[0m
+[1;32m[0m/[1;32m[0me[1;32m[0mt[1;32m[0mc[1;32m[0m/[1;32m[0mc[1;32m[0mr[1;32m[0mo[1;32m[0mn[1;32m[0m.[1;32m[0mm[1;32m[0mo[1;32m[0mn[1;32m[0mt[1;32m[0mh[1;32m[0ml[1;32m[0my[1;32m[0m:[1;32m[0m
+[1;32m[0mt[1;32m[0mo[1;32m[0mt[1;32m[0ma[1;32m[0ml[1;32m[0m [1;32m[0m1[1;32m[0m2[1;32m[0m
+[1;32m[0md[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m4[1;32m[0m0[1;32m[0m9[1;32m[0m6[1;32m[0m [1;32m[0mJ[1;32m[0mu[1;32m[0mn[1;32m[0m [1;32m[0m2[1;32m[0m7[1;32m[0m [1;32m[0m1[1;32m[0m9[1;32m[0m:[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32m[0m.[1;32m[0m
+[1;32m[0md[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m1[1;32m[0m1[1;32m[0m0[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m4[1;32m[0m0[1;32m[0m9[1;32m[0m6[1;32m[0m [1;32m[0mJ[1;32m[0mu[1;32m[0ml[1;32m[0m [1;32m[0m1[1;32m[0m7[1;32m[0m [1;32m[0m0[1;32m[0m8[1;32m[0m:[1;32m[0m4[1;32m[0m1[1;32m[0m [1;32m[0m.[1;32m[0m.[1;32m[0m
+[1;32m[0m-[1;32m[0mr[1;32m[0mw[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m0[1;32m[0m2[1;32m[0m [1;32m[0mN[1;32m[0mo[1;32m[0mv[1;32m[0m [1;32m[0m [1;32m[0m5[1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m0[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32m.placeholder[0m
+[1;32m[0m
+[1;32m[0m/[1;32m[0me[1;32m[0mt[1;32m[0mc[1;32m[0m/[1;32m[0mc[1;32m[0mr[1;32m[0mo[1;32m[0mn[1;32m[0m.[1;32m[0mw[1;32m[0me[1;32m[0me[1;32m[0mk[1;32m[0ml[1;32m[0my[1;32m[0m:[1;32m[0m
+[1;32m[0mt[1;32m[0mo[1;32m[0mt[1;32m[0ma[1;32m[0ml[1;32m[0m [1;32m[0m1[1;32m[0m6[1;32m[0m
+[1;32m[0md[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m4[1;32m[0m0[1;32m[0m9[1;32m[0m6[1;32m[0m [1;32m[0mJ[1;32m[0mu[1;32m[0mn[1;32m[0m [1;32m[0m2[1;32m[0m7[1;32m[0m [1;32m[0m1[1;32m[0m9[1;32m[0m:[1;32m[0m2[1;32m[0m6[1;32m[0m [1;32m[0m.[1;32m[0m
+[1;32m[0md[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m1[1;32m[0m1[1;32m[0m0[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m4[1;32m[0m0[1;32m[0m9[1;32m[0m6[1;32m[0m [1;32m[0mJ[1;32m[0mu[1;32m[0ml[1;32m[0m [1;32m[0m1[1;32m[0m7[1;32m[0m [1;32m[0m0[1;32m[0m8[1;32m[0m:[1;32m[0m4[1;32m[0m1[1;32m[0m [1;32m[0m.[1;32m[0m.[1;32m[0m
+[1;32m[0m-[1;32m[0mr[1;32m[0mw[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m0[1;32m[0m2[1;32m[0m [1;32m[0mN[1;32m[0mo[1;32m[0mv[1;32m[0m [1;32m[0m [1;32m[0m5[1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m0[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32m.placeholder[0m
+[1;32m[0m-[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m1[1;32m[0m0[1;32m[0m5[1;32m[0m5[1;32m[0m [1;32m[0mM[1;32m[0ma[1;32m[0my[1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m0[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32mman-db[0m
+[1;32m[0m
+[1;32m[0m/[1;32m[0me[1;32m[0mt[1;32m[0mc[1;32m[0m/[1;32m[0mc[1;32m[0mr[1;32m[0mo[1;32m[0mn[1;32m[0m.[1;32m[0my[1;32m[0me[1;32m[0ma[1;32m[0mr[1;32m[0ml[1;32m[0my[1;32m[0m:[1;32m[0m
+[1;32m[0mt[1;32m[0mo[1;32m[0mt[1;32m[0ma[1;32m[0ml[1;32m[0m [1;32m[0m1[1;32m[0m2[1;32m[0m
+[1;32m[0md[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m4[1;32m[0m0[1;32m[0m9[1;32m[0m6[1;32m[0m [1;32m[0mJ[1;32m[0mu[1;32m[0mn[1;32m[0m [1;32m[0m2[1;32m[0m7[1;32m[0m [1;32m[0m1[1;32m[0m9[1;32m[0m:[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32m[0m.[1;32m[0m
+[1;32m[0md[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m1[1;32m[0m1[1;32m[0m0[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m4[1;32m[0m0[1;32m[0m9[1;32m[0m6[1;32m[0m [1;32m[0mJ[1;32m[0mu[1;32m[0ml[1;32m[0m [1;32m[0m1[1;32m[0m7[1;32m[0m [1;32m[0m0[1;32m[0m8[1;32m[0m:[1;32m[0m4[1;32m[0m1[1;32m[0m [1;32m[0m.[1;32m[0m.[1;32m[0m
+[1;32m[0m-[1;32m[0mr[1;32m[0mw[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0mr[1;32m[0m-[1;32m[0m-[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m [1;32m[0m1[1;32m[0m0[1;32m[0m2[1;32m[0m [1;32m[0mN[1;32m[0mo[1;32m[0mv[1;32m[0m [1;32m[0m [1;32m[0m5[1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m0[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32m.placeholder[0m
+[1;32m[0m
+[1;32m[0m/[1;32m[0mv[1;32m[0ma[1;32m[0mr[1;32m[0m/[1;32m[0ms[1;32m[0mp[1;32m[0mo[1;32m[0mo[1;32m[0ml[1;32m[0m/[1;32m[0mc[1;32m[0mr[1;32m[0mo[1;32m[0mn[1;32m[0m/[1;32m[0mc[1;32m[0mr[1;32m[0mo[1;32m[0mn[1;32m[0mt[1;32m[0ma[1;32m[0mb[1;32m[0ms[1;32m[0m:[1;32m[0m
+[1;32m[0mt[1;32m[0mo[1;32m[0mt[1;32m[0ma[1;32m[0ml[1;32m[0m [1;32m[0m8[1;32m[0m
+[1;32m[0md[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0m-[1;32m[0mw[1;32m[0mx[1;32m[0m-[1;32m[0m-[1;32m[0mT[1;32m[0m [1;32m[0m2[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mc[1;32m[0mr[1;32m[0mo[1;32m[0mn[1;32m[0mt[1;32m[0ma[1;32m[0mb[1;32m[0m [1;32m[0m4[1;32m[0m0[1;32m[0m9[1;32m[0m6[1;32m[0m [1;32m[0mN[1;32m[0mo[1;32m[0mv[1;32m[0m [1;32m[0m [1;32m[0m5[1;32m[0m [1;32m[0m [1;32m[0m2[1;32m[0m0[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32m[0m.[1;32m[0m
+[1;32m[0md[1;32m[0mr[1;32m[0mw[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0mr[1;32m[0m-[1;32m[0mx[1;32m[0m [1;32m[0m3[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0mr[1;32m[0mo[1;32m[0mo[1;32m[0mt[1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m [1;32m[0m4[1;32m[0m0[1;32m[0m9[1;32m[0m6[1;32m[0m [1;32m[0mJ[1;32m[0mu[1;32m[0mn[1;32m[0m [1;32m[0m2[1;32m[0m7[1;32m[0m [1;32m[0m1[1;32m[0m9[1;32m[0m:[1;32m[0m2[1;32m[0m5[1;32m[0m [1;32m[0m.[1;32m[0m.[1;32m[0m
+
+SHELL=[1;31;103m/[0mbin[1;31;103m/[0msh
+
+17 *	* * *	[1;95m[1;31mroot[0m[0m	cd [1;31;103m/[0m && run-parts --report [1;31;103m/etc/cron.hourly[0m
+25 6	* * *	[1;95m[1;31mroot[0m[0m	test -x [1;31;103m/usr/sbin[0m[1;31;103m/[0[1;34mman[0macron || { cd [1;31;103m/[0m && run-parts --report [1;31;103m/etc/cron.daily[0m; }
+47 6	* * 7	[1;95m[1;31mroot[0m[0m	test -x [1;31;103m/usr/sbin[0m[1;31;103m/[0[1;34mman[0macron || { cd [1;31;103m/[0m && run-parts --report [1;31;103m/etc/cron.weekly[0m; }
+52 6	1 * *	[1;95m[1;31mroot[0m[0m	test -x [1;31;103m/usr/sbin[0m[1;31;103m/[0[1;34mman[0macron || { cd [1;31;103m/[0m && run-parts --report [1;31;103m/etc/cron.monthly[0m; }
+[1;31;103m/etc[0m[1;31;103m/[0mcrontab:19:17 *	* * *	root	cd [1;31;103m/[0m && [1;31mrun-parts[0m --report [1;31;103m/etc/cron.hourly[0m
+[1;31;103m/etc[0m[1;31;103m/[0mcrontab:20:25 6	* * *	root	test -x [1;31;103m/usr/sbin[0m[1;31;103m/[0manacron || { cd [1;31;103m/[0m && [1;31mrun-parts[0m --report [1;31;103m/etc/cron.daily[0m; }
+[1;31;103m/etc[0m[1;31;103m/[0mcrontab:21:47 6	* * 7	root	test -x [1;31;103m/usr/sbin[0m[1;31;103m/[0manacron || { cd [1;31;103m/[0m && [1;31mrun-parts[0m --report [1;31;103m/etc/cron.weekly[0m; }
+[1;31;103m/etc[0m[1;31;103m/[0mcrontab:22:52 6	1 * *	root	test -x [1;31;103m/usr/sbin[0m[1;31;103m/[0manacron || { cd [1;31;103m/[0m && [1;31mrun-parts[0m --report [1;31;103m/etc/cron.monthly[0m; }
+
+[1;34m══╣ [1;32mCron files with hidden carriage returns [1;90m(T1053.003)
+[0m
+[1;34m══╣ [1;32mChecking for specific cron jobs vulnerabilities [1;90m(T1053.003)
+[0mChecking cron directories...
+Writable cron directory: /etc/cron.d
+Writable cron directory: /etc/cron.daily
+Writable cron directory: /etc/cron.hourly
+Writable cron directory: /etc/cron.monthly
+Writable cron directory: /etc/cron.weekly
+Writable cron directory: /var/spool/cron/crontabs
+[1;34m══╣ [1;32mrun-parts executable entries [1;90m(T1053.003)
+[0m[/etc/cron.hourly]
+[/etc/cron.daily]
+[1;31;103m/etc/cron.daily[0m[1;31;103m/[0mapport
+[1;31;103m/etc/cron.daily[0m[1;31;103m/[0mapt-compat
+[1;31;103m/etc/cron.daily[0m[1;31;103m/[0mdpkg
+[1;31;103m/etc/cron.daily[0m[1;31;103m/[0mlogrotate
+[1;31;103m/etc/cron.daily[0m[1;31;103m/[0mman-db
+[/etc/cron.weekly]
+[1;31;103m/etc/cron.weekly[0m[1;31;103m/[0mman-db
+[/etc/cron.monthly]
+
+
+[1;34m╔══════════╣ [1;32mSystem timers [1;90m(T1053.003)
+[0m[1;34m╚ [1;34m[3mhttps://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#timers
+[0m[1;34m══╣ [1;32mActive timers: [1;90m(T1053.003)
+[0mNEXT                              LEFT LAST                               PASSED UNIT                           ACTIVATES
+Fri 2026-07-17 08:50:00 EEST      5min Fri 2026-07-17 08:40:01 EEST 4min 20s ago sysstat-collect.timer          sysstat-collect.service
+Fri 2026-07-17 09:47:56 EEST   1h 3min Fri 2026-07-17 08:27:14 EEST    17min ago [1;32mfwupd-refresh.timer[0m            fwupd-refresh.service
+Fri 2026-07-17 19:14:14 EEST       10h Wed 2026-07-15 21:09:53 EEST      13h ago update-notifier-download.timer update-notifier-download.service
+Fri 2026-07-17 19:24:09 EEST       10h Wed 2026-07-15 21:19:48 EEST      13h ago [1;32msystemd-tmpfiles-clean.timer[0m   systemd-tmpfiles-clean.service
+Fri 2026-07-17 21:07:33 EEST       12h Fri 2026-07-17 01:46:15 EEST       6h ago [1;32mmotd-news.timer[0m                motd-news.service
+Sat 2026-07-18 00:00:00 EEST       15h Fri 2026-07-17 01:46:15 EEST       6h ago [1;32mdpkg-db-backup.timer[0m           dpkg-db-backup.service
+Sat 2026-07-18 00:00:00 EEST       15h Fri 2026-07-17 01:46:15 EEST       6h ago sysstat-rotate.timer           sysstat-rotate.service
+Sat 2026-07-18 00:07:00 EEST       15h Fri 2026-07-17 01:46:15 EEST       6h ago sysstat-summary.timer          sysstat-summary.service
+Sat 2026-07-18 00:17:17 EEST       15h Fri 2026-07-17 01:46:15 EEST       6h ago lynis.timer                    lynis.service
+Sat 2026-07-18 00:55:07 EEST       16h Fri 2026-07-17 01:46:15 EEST       6h ago [1;32mlogrotate.timer[0m                logrotate.service
+Sat 2026-07-18 02:41:41 EEST       17h Fri 2026-07-17 08:27:14 EEST    17min ago [1;32mapt-daily.timer[0m                apt-daily.service
+Sat 2026-07-18 06:30:16 EEST       21h Fri 2026-07-17 06:07:08 EEST 2h 22min ago [1;32mman-db.timer[0m                   man-db.service
+Sat 2026-07-18 06:33:37 EEST       21h Fri 2026-07-17 06:06:52 EEST 2h 22min ago [1;32mapt-daily-upgrade.timer[0m        apt-daily-upgrade.service
+Sun 2026-07-19 03:10:49 EEST 1 day 18h -                                       - xfs_scrub_all.timer            xfs_scrub_all.service
+Sun 2026-07-19 03:10:54 EEST 1 day 18h -                                       - [1;32me2scrub_all.timer[0m              e2scrub_all.service
+Mon 2026-07-20 01:19:03 EEST    2 days -                                       - [1;32mfstrim.timer[0m                   fstrim.service
+Thu 2026-07-23 22:12:28 EEST    6 days -                                       - update-notifier-motd.timer     update-notifier-motd.service
+-                                    - -                                       - apport-autoreport.timer        apport-autoreport.service
+-                                    - -                                       - [1;32msnapd.snap-repair.timer[0m        snapd.snap-repair.service
+-                                    - -                                       - [1;32mua-timer.timer[0m                 ua-timer.service
+[1;34m══╣ [1;32mDisabled timers: [1;90m(T1053.003)
+[0m[1;34m══╣ [1;32mAdditional timer files: [1;90m(T1053.003)
+[0mPotential privilege escalation in timer file: /etc/systemd/system/mdmonitor.service.wants/mdcheck_continue.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/mdcheck_continue.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/mdmonitor.service.wants/mdcheck_start.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/mdcheck_start.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/mdmonitor.service.wants/mdmonitor-oneshot.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/mdmonitor-oneshot.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/sysstat.service.wants/sysstat-collect.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/sysstat-collect.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/sysstat.service.wants/sysstat-rotate.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/sysstat-rotate.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/sysstat.service.wants/sysstat-summary.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/sysstat-summary.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/apport-autoreport.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/apport-autoreport.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/apt-daily-upgrade.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/apt-daily-upgrade.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/apt-daily.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/apt-daily.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/dpkg-db-backup.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/dpkg-db-backup.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/e2scrub_all.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/e2scrub_all.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/fstrim.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/fstrim.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/fwupd-refresh.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/fwupd-refresh.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/logrotate.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/logrotate.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/lynis.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/lynis.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/man-db.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/man-db.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/motd-news.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/motd-news.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/snapd.snap-repair.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/snapd.snap-repair.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/ua-timer.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/ua-timer.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/update-notifier-download.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/update-notifier-download.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/update-notifier-motd.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/update-notifier-motd.timer\n
+Potential privilege escalation in timer file: /etc/systemd/system/timers.target.wants/xfs_scrub_all.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/xfs_scrub_all.timer\n
+Potential privilege escalation in timer file: /etc/systemd/user/timers.target.wants/launchpadlib-cache-clean.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/user/launchpadlib-cache-clean.timer\n
+Potential privilege escalation in timer file: /snap/core26/409/usr/lib/systemd/system/timers.target.wants/e2scrub_all.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/e2scrub_all.timer\n
+Potential privilege escalation in timer file: /snap/core26/409/usr/lib/systemd/system/timers.target.wants/fstrim.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/fstrim.timer\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/apport-autoreport.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/apt-daily-upgrade.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/apt-daily.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/chrony-dnssrv@.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/dpkg-db-backup.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/e2scrub_all.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/fstrim.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/fwupd-refresh.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/logrotate.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/lynis.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/man-db.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/mdadm-last-resort@.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/mdcheck_continue.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/mdcheck_start.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/mdmonitor-oneshot.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/motd-news.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/snapd.snap-repair.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/sysstat-collect.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/sysstat-rotate.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/sysstat-summary.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/systemd-tmpfiles-clean.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/timers.target.wants/systemd-tmpfiles-clean.timer
+  └─ WRITABLE_FILE: Timer target file is writable: /usr/lib/systemd/system/systemd-tmpfiles-clean.timer\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/ua-timer.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/update-notifier-download.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/update-notifier-motd.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/system/xfs_scrub_all.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/user/launchpadlib-cache-clean.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /usr/lib/systemd/user/systemd-tmpfiles-clean.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /var/lib/systemd/deb-systemd-helper-enabled/mdmonitor.service.wants/mdcheck_continue.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /var/lib/systemd/deb-systemd-helper-enabled/mdmonitor.service.wants/mdcheck_start.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /var/lib/systemd/deb-systemd-helper-enabled/mdmonitor.service.wants/mdmonitor-oneshot.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /var/lib/systemd/deb-systemd-helper-enabled/sysstat.service.wants/sysstat-collect.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /var/lib/systemd/deb-systemd-helper-enabled/sysstat.service.wants/sysstat-rotate.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /var/lib/systemd/deb-systemd-helper-enabled/sysstat.service.wants/sysstat-summary.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /var/lib/systemd/deb-systemd-helper-enabled/timers.target.wants/apport-autoreport.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /var/lib/systemd/deb-systemd-helper-enabled/timers.target.wants/apt-daily-upgrade.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /var/lib/systemd/deb-systemd-helper-enabled/timers.target.wants/apt-daily.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /var/lib/systemd/deb-systemd-helper-enabled/timers.target.wants/dpkg-db-backup.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+Potential privilege escalation in timer file: /var/lib/systemd/deb-systemd-helper-enabled/timers.target.wants/e2scrub_all.timer
+  └─ WRITABLE_FILE: Timer file is writable\n
+
+[1;34m╔══════════╣ [1;32mServices and Service Files [1;90m(T1543.002,T1007)
+[0m[1;34m╚ [1;34m[3mhttps://book.hacktricks.wiki/en/linux-hardening/privilege-escalation/index.html#services
+[0m
+[1;34m══╣ [1;32mActive services: [1;90m(T1543.002,T1007)
+[0m[1;32mapparmor.service[0m                               loaded active exited  Load AppArmor profiles
+[1;32mapport.service[0m                                 loaded active exited  automatic crash report generation
+[1;32mblk-availability.service[0m                       loaded active exited  Availability of block devices
+[1;32mchrony.service[0m                                 loaded active running chrony, an NTP client/server
+[1;32mcloud-config.service[0m                           loaded active exited  Cloud-init: Config Stage
+  Potential issue in service file: /usr/lib/systemd/system/cloud-config.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+[1;32mcloud-final.service[0m                            loaded active exited  Cloud-init: Final Stage
+  Potential issue in service file: /usr/lib/systemd/system/cloud-final.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+[1;32mcloud-init-local.service[0m                       loaded active exited  Cloud-init: Local Stage (pre-network)
+  Potential issue in service file: /usr/lib/systemd/system/cloud-init-local.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+[1;32mcloud-init-network.service[0m                     loaded active exited  Cloud-init: Network Stage
+  Potential issue in service file: /usr/lib/systemd/system/cloud-init-network.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+[1;32mconsole-setup.service[0m                          loaded active exited  Set console font and keymap
+[1;32mcron.service[0m                                   loaded active running Regular background program processing daemon
+[1;32mdbus.service[0m                                   loaded active running D-Bus System Message Bus
+  Potential issue in service file: /usr/lib/systemd/system/dbus.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+[1;32mdracut-shutdown.service[0m                        loaded active exited  Restore /run/initramfs on shutdown
+[1;32mfinalrd.service[0m                                loaded active exited  Create final runtime dir for shutdown pivot root
+[1;32mfwupd.service[0m                                  loaded active running Firmware update daemon
+[1;32mgetty@tty1.service[0m                             loaded active running Getty on tty1
+  Potential issue in service: getty@tty1.service
+  └─ UNSAFE_CMD: Uses potentially dangerous commands\n
+[1;32mkeyboard-setup.service[0m                         loaded active exited  Set the console keyboard layout
+[1;32mkmod-static-nodes.service[0m                      loaded active exited  Create List of Static Device Nodes
+[1;32mldconfig.service[0m                               loaded active exited  Rebuild Dynamic Linker Cache
+  Potential issue in service file: /usr/lib/systemd/system/ldconfig.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+[1;32mlvm2-monitor.service[0m                           loaded active exited  Monitoring of LVM2 mirrors, snapshots etc. using dmeventd or progress polling
+[1;32mModemManager.service[0m                           loaded active running Modem Manager
+  Potential issue in service: ModemManager.service
+  └─ RUNS_AS_ROOT: Service runs as root\n
+[1;32mmultipathd-queueing.service[0m                    loaded active exited  Enable queuing for multipath maps
+[1;32mmultipathd.service[0m                             loaded active running Device-Mapper Multipath Device Controller
+[1;32mnetplan-configure.service[0m                      loaded active exited  Netplan Backend Configuration
+  Potential issue in service file: /usr/lib/systemd/system/netplan-configure.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+[1;32mnetworkd-dispatcher.service[0m                    loaded active running Dispatcher daemon for systemd-networkd
+[1;32mplymouth-quit-wait.service[0m                     loaded active exited  Hold until boot process finishes up
+[1;32mplymouth-quit.service[0m                          loaded active exited  Terminate Plymouth Boot Screen
+[1;32mplymouth-read-write.service[0m                    loaded active exited  Tell Plymouth To Write Out Runtime Data
+[1;32mpolkit.service[0m                                 loaded active running Authorization Manager
+[1;32mrsyslog.service[0m                                loaded active running System Logging Service
+[1;32mserial-getty@ttyS0.service[0m                     loaded active running Serial Getty on ttyS0
+  Potential issue in service: serial-getty@ttyS0.service
+  └─ UNSAFE_CMD: Uses potentially dangerous commands\n
+[1;32msetvtrgb.service[0m                               loaded active exited  Set console scheme
+[1;32msnap.lxd.daemon.service[0m                        loaded active running Service for snap application lxd.daemon
+[1;32msnap.lxd.workaround.service[0m                    loaded active exited  [systemd-run] /bin/true
+  Potential issue in service file: /run/systemd/transient/snap.lxd.workaround.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+[1;32msnapd.apparmor.service[0m                         loaded active exited  Load AppArmor profiles managed internally by snapd
+[1;32msnapd.seeded.service[0m                           loaded active exited  Wait until snapd is fully seeded
+[1;32msnapd.service[0m                                  loaded active running Snap Daemon
+[1;32mssh.service[0m                                    loaded active running OpenBSD Secure Shell server
+[1;32msysstat.service[0m                                loaded active exited  Resets System Activity Logs
+  Potential issue in service file: /usr/lib/systemd/system/sysstat.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+  Potential issue in service: sysstat.service
+  └─ RUNS_AS_ROOT: Service runs as root\n
+[1;32msystemd-binfmt.service[0m                         loaded active exited  Set Up Additional Binary Formats
+[1;32msystemd-fsck-root.service[0m                      loaded active exited  File System Check on Root Device
+systemd-fsck@dev-disk-by\x2dlabel-BOOT.service loaded active exited  File System Check on /dev/disk/by-label/BOOT
+systemd-fsck@dev-disk-by\x2dlabel-UEFI.service loaded active exited  File System Check on /dev/disk/by-label/UEFI
+[1;32msystemd-journal-catalog-update.service[0m         loaded active exited  Rebuild Journal Catalog
+  Potential issue in service file: /usr/lib/systemd/system/systemd-journal-catalog-update.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+[1;32msystemd-journal-flush.service[0m                  loaded active exited  Flush Journal to Persistent Storage
+  Potential issue in service file: /usr/lib/systemd/system/systemd-journal-flush.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+[1;32msystemd-journald.service[0m                       loaded active running Journal Service
+[1;32msystemd-logind.service[0m                         loaded active running User Login Management
+[1;32msystemd-machine-id-commit.service[0m              loaded active exited  Save Transient machine-id to Disk
+  Potential issue in service file: /usr/lib/systemd/system/systemd-machine-id-commit.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+[1;32msystemd-modules-load.service[0m                   loaded active exited  Load Kernel Modules
+[1;32msystemd-networkd-persistent-storage.service[0m    loaded active exited  Enable Persistent Storage in systemd-networkd
+  Potential issue in service file: /usr/lib/systemd/system/systemd-networkd-persistent-storage.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+[1;32msystemd-networkd-wait-online.service[0m           loaded active exited  Wait for Network to be Online
+[1;32msystemd-networkd.service[0m                       loaded active running Network Management
+[1;32msystemd-random-seed.service[0m                    loaded active exited  Load/Save OS Random Seed
+[1;32msystemd-remount-fs.service[0m                     loaded active exited  Remount Root and Kernel File Systems
+  Potential issue in service: systemd-remount-fs.service
+  └─ UNSAFE_CMD: Uses potentially dangerous commands\n
+[1;32msystemd-resolved.service[0m                       loaded active running Network Name Resolution
+[1;32msystemd-sysctl.service[0m                         loaded active exited  Apply Kernel Variables
+[1;32msystemd-sysusers.service[0m                       loaded active exited  Create System Users
+  Potential issue in service file: /usr/lib/systemd/system/systemd-sysusers.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+  Potential issue in service: systemd-sysusers.service
+  └─ UNSAFE_CMD: Uses potentially dangerous commands\n
+[1;32msystemd-tmpfiles-setup-dev-early.service[0m       loaded active exited  Create Static Device Nodes in /dev gracefully
+[1;32msystemd-tmpfiles-setup-dev.service[0m             loaded active exited  Create Static Device Nodes in /dev
+[1;32msystemd-tmpfiles-setup.service[0m                 loaded active exited  Create System Files and Directories
+[1;32msystemd-udev-load-credentials.service[0m          loaded active exited  Load udev Rules from Credentials
+  Potential issue in service file: /usr/lib/systemd/system/systemd-udev-load-credentials.service
+  └─ RELATIVE_PATH: Could be executing some relative path\n
+[1;32msystemd-udev-trigger.service[0m                   loaded active exited  Coldplug All udev Devices

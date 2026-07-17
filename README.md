@@ -1,8 +1,8 @@
 # Z-Privesc
 
-> A Linux privilege-escalation auditor that fuses eight security probes
-> with the Truthimatics evidence engine and emits a CVSS-styled risk
-> report.
+> A Linux privilege-escalation auditor that fuses seventeen security
+> probes with the Truthimatics evidence engine and emits a CVSS-styled
+> risk report.
 
 [![Build](https://github.com/Division-36/Z-Privesc/actions/workflows/build.yml/badge.svg)](https://github.com/Division-36/Z-Privesc/actions)
 [![Coverage](https://img.shields.io/badge/coverage-%E2%89%A595%25-brightgreen)](docs/TRUTHIMATICS.md)
@@ -15,8 +15,8 @@
 
 Z-Privesc is a self-contained, zero-dependency privilege-escalation
 audit tool written in C17. It walks a Linux system looking for the
-eight most prevalent classes of misconfiguration that have historically
-led to local root compromise. Each finding is recorded as a piece of
+seventeen most prevalent classes of misconfiguration that have
+historically led to local root compromise. Each finding is recorded as a piece of
 evidence and adjudicated by the [Truthimatics Public Version](docs/TRUTHIMATICS.md)
 verdict engine. A CVSS-like risk score is computed per finding, per
 probe, and for the system as a whole, then serialised to JSON and HTML.
@@ -36,11 +36,11 @@ able to find these problems before an attacker does.
                 | probe_runner   |
                 +-------+--------+
                         |
-        +-------+-------+-------+-------+-------+-------+-------+-------+
-        v       v       v       v       v       v       v       v
-    +------+ +-------+ +--------+ +-------+ +------+ +------+ +-----+ +------+
-    | suid | | wpATH | | caps   | | wEtc  | | dock | | polk | | ww  | | kern |
-    +--+---+ +---+---+ +----+---+ +---+---+ +---+--+ +---+--+ +---+-+ +---+--+
+         +-------+-------+-------+-------+ ... (17 probe modules) ... +-------+
+         v       v       v       v                                 v       v
+     +------+ +-------+ +--------+ +-------+                     +------+ +------+
+     | suid | | wpATH | | caps   | | wEtc  |        ...          | nfs  | | ldpr |
+     +--+---+ +---+---+ +----+---+ +---+---+                     +---+--+ +---+--+
        |        |           |          |         |        |        |       |
        v        v           v          v         v        v        v       v
               +-------------------------------------------------------+
@@ -96,6 +96,15 @@ man z_privesc       # read the man page
 | `polkit`         | polkit / pkexec misconfigurations | CRITICAL         |
 | `world_writable` | World-writable sensitive files    | CRITICAL         |
 | `kernel_vuln`    | Kernel version CVE matcher        | CRITICAL         |
+| `cron`           | World-writable / wildcard crontabs| CRITICAL         |
+| `sudoers`        | NOPASSWD / over-broad sudoers     | CRITICAL         |
+| `ssh_keys`       | World-readable private SSH keys   | HIGH             |
+| `groups`         | Privileged group membership       | CRITICAL         |
+| `service`        | World-writable systemd units      | CRITICAL         |
+| `kernel_hardening`| Weak sysctl hardening values     | MEDIUM           |
+| `process`        | Suspicious running processes      | HIGH             |
+| `nfs`            | `no_root_squash` NFS exports      | CRITICAL         |
+| `ld_preload`     | World-writable linker preload     | CRITICAL         |
 
 See [docs/PROBES.md](docs/PROBES.md) for the rationale behind each
 probe, the evidence weighting strategy, and the false-positive
@@ -114,6 +123,10 @@ Risk is computed separately on a 0.0 to 10.0 scale (CVSS-like), with a
 per-probe and a per-system label (`INFO` / `LOW` / `MEDIUM` / `HIGH` /
 `CRITICAL`).
 
+For a ground-truth accuracy study — recall and false-positive rates
+measured against planted misconfigurations, not just runtime — see
+[benchmarks.md §9](benchmarks.md).
+
 ## Exit codes
 
 | Code | Meaning                                                |
@@ -130,7 +143,7 @@ per-probe and a per-system label (`INFO` / `LOW` / `MEDIUM` / `HIGH` /
 | Static binary, zero dependencies                 |    Yes    |   No    |  No   |           No            |
 | Deterministic evidence-based verdicts            |    Yes    |   No    |  No   |           No            |
 | CVSS-like risk aggregation                       |    Yes    |   No    |  No   |           No            |
-| 8 categories out of the box                      |    Yes    |  Yes (broad) | Yes (broad) | Yes (broad) |
+| 17 categories out of the box                     |    Yes    |  Yes (broad) | Yes (broad) | Yes (broad) |
 | Documented Threat Model                          |    Yes    | Partial |  No   |           No            |
 | Stable machine-readable output schema            |  v1 (JSON) |  None  |  None |          None           |
 | Per-finding remediation guidance                 |    Yes    |  Partial |  No   |          No            |

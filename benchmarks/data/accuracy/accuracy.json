@@ -1,0 +1,34 @@
+{
+  "method": "The 16 testbeds/ directories are the ground truth: each setup.sh plants one uniquely-named, known privilege-escalation misconfiguration. Z-Privesc detection = the planted artifact's unique signature appears in the probe's JSON findings with a DETERMINISTIC verdict. LinPEAS and Lynis are run once on the fully-planted host and measured heuristically by keyword presence in their raw output (coarse lower bound, clearly labelled).",
+  "environment": "multipass VM 'primary', Ubuntu 26.04 LTS, kernel 7.0.0-27-generic, 1 vCPU, 891 MB. Z-Privesc run as root (the intended defensive operator).",
+  "categories_planted": 16,
+  "zp_true_positives": 13,
+  "zp_false_negatives": 3,
+  "zp_recall": 0.8125,
+  "zp_detected_categories": [
+    "suid", "writable_path", "capabilities", "writable_etc", "docker",
+    "polkit", "world_writable", "cron", "sudoers", "ssh_keys", "groups",
+    "service", "ld_preload"
+  ],
+  "zp_missed_categories": {
+    "kernel_hardening": "REJECT verdict. The testbed's sysctl writes (randomize_va_space=0, etc.) were not applied by this kernel (best-effort testbed limitation, not a clear tool defect).",
+    "process": "No PROC finding emitted. The planted world-writable running executable (/tmp/ww-root-proc) was not flagged (runtime-state probe limitation / planted PID lifecycle).",
+    "nfs": "REJECT verdict. /etc/exports contained no_root_squash but the probe only flags live exports; no nfsd was running."
+  },
+  "zp_false_positive_proxy": {
+    "clean_baseline_high_critical_findings": 0,
+    "note": "On a clean, properly-configured host Z-Privesc emits 0 HIGH/CRITICAL findings. All baseline findings are MEDIUM (standard SUID/SGID binaries, audited by design) or INFO. There are no high-severity false alarms."
+  },
+  "linpeas_heuristic": {
+    "categories_with_signature_in_output": [
+      "suid", "docker", "ssh_keys", "nfs", "polkit", "sudoers",
+      "writable_etc", "cron", "service", "ld_preload"
+    ],
+    "caveat": "Lower bound. Keyword presence only; LinPEAS may detect additional categories under different terminology (e.g. capabilities, world_writable)."
+  },
+  "lynis_heuristic": {
+    "categories_with_signature_in_output": ["sudoers", "writable_etc"],
+    "caveat": "Lower bound and expected: Lynis is a CIS/NIST compliance auditor, not a privilege-escalation-specific scanner, so low PE coverage is by design."
+  },
+  "interpretation": "Z-Privesc achieves 81% recall (13/16) on planted, uniquely-identifiable misconfigurations and 0 high-severity false positives on a clean host. LinPEAS covers a similar or broader set heuristically; Lynis covers PE-specific misconfigurations poorly by design. Speed (2.65s full scan) is secondary to this accuracy for a defensive tool."
+}

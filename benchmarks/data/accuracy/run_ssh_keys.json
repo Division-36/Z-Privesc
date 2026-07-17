@@ -1,0 +1,191 @@
+{
+"schema":"z-privesc.audit/v1",
+"build_id":"n/a",
+"timestamp": 1784266667,
+"duration_ns": 956181698,
+"hostname":"primary",
+"kernel":"Linux version 7.0.0-27-generic (buildd@lcy02-amd64-114) (x86_64-linux-gnu-gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, GNU ld (GNU Binutils for Ubuntu) 2.46) #27-Ubuntu SMP PREEMPT_DYNAMIC Thu Jun 18 19:13:49 UTC 2026",
+"user":"root",
+"uid": 0,
+"overall_risk": 10.00,
+"risk_label":"CRITICAL",
+"probes": [
+  {
+    "name": "suid",
+    "verdict": "DETERMINISTIC",
+    "evidence_count": 22,
+    "risk_score": 5.75,
+    "findings": [
+      {"id":"SUID-00001","target":"/usr/bin/sudo.ws","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00002","target":"/usr/bin/chfn","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00003","target":"/usr/bin/ntfs-3g","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00004","target":"/usr/bin/mount","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00005","target":"/usr/bin/chsh","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00006","target":"/usr/bin/fusermount3","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00007","target":"/usr/bin/newgrp","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00008","target":"/usr/bin/gpasswd","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00009","target":"/usr/bin/umount","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00010","target":"/usr/bin/expiry","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SGID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00011","target":"/usr/bin/ssh-agent","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SGID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00012","target":"/usr/bin/crontab","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SGID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00013","target":"/usr/bin/pkexec","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00014","target":"/usr/bin/passwd","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00015","target":"/usr/bin/su","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00016","target":"/usr/bin/chage","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SGID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00017","target":"/usr/lib/openssh/ssh-keysign","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00018","target":"/usr/lib/dbus-1.0/dbus-daemon-launch-helper","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00019","target":"/usr/lib/cargo/bin/sudo","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00020","target":"/usr/lib/cargo/bin/su","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SUID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00021","target":"/usr/sbin/pam_extrausers_chkpwd","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SGID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75},
+      {"id":"SUID-00022","target":"/usr/sbin/unix_chkpwd","weight":0.50,"severity":"MEDIUM","description":"Root-owned SUID binary SGID by uid=0 (standard binary)","remediation":"Remove the SUID bit: chmod u-s <PATH>","risk_score":5.75}
+    ]
+  },
+  {
+    "name": "writable_path",
+    "verdict": "UNCERTAIN",
+    "evidence_count": 0,
+    "risk_score": 0.00,
+    "findings": [    ]
+  },
+  {
+    "name": "capabilities",
+    "verdict": "DETERMINISTIC",
+    "evidence_count": 5,
+    "risk_score": 5.75,
+    "findings": [
+      {"id":"CAP-00001","target":"/usr/bin/ping","weight":0.50,"severity":"MEDIUM","description":"File has dangerous capabilities set","remediation":"Drop capability: setcap -r ping","risk_score":5.75},
+      {"id":"CAP-00002","target":"/usr/bin/mtr-packet","weight":0.50,"severity":"MEDIUM","description":"File has dangerous capabilities set","remediation":"Drop capability: setcap -r mtr-packet","risk_score":5.75},
+      {"id":"CAP-00003","target":"/usr/lib/snapd/snap-confine","weight":0.50,"severity":"MEDIUM","description":"File has dangerous capabilities set","remediation":"Drop capability: setcap -r snap-confine","risk_score":5.75},
+      {"id":"CAP-00004","target":"/usr/lib/x86_64-linux-gnu/gstreamer1.0/gstreamer-1.0/gst-ptp-helper","weight":0.50,"severity":"MEDIUM","description":"File has dangerous capabilities set","remediation":"Drop capability: setcap -r gst-ptp-helper","risk_score":5.75},
+      {"id":"CAP-00005","target":"/snap/snapd/27406/usr/lib/snapd/snap-confine","weight":0.50,"severity":"MEDIUM","description":"File has dangerous capabilities set","remediation":"Drop capability: setcap -r snap-confine","risk_score":5.75}
+    ]
+  },
+  {
+    "name": "writable_etc",
+    "verdict": "UNCERTAIN",
+    "evidence_count": 0,
+    "risk_score": 0.00,
+    "findings": [    ]
+  },
+  {
+    "name": "docker_socket",
+    "verdict": "UNCERTAIN",
+    "evidence_count": 0,
+    "risk_score": 0.00,
+    "findings": [    ]
+  },
+  {
+    "name": "polkit",
+    "verdict": "DETERMINISTIC",
+    "evidence_count": 1,
+    "risk_score": 9.99,
+    "findings": [
+      {"id":"PKEXEC-CVE-2021-4034","target":"/usr/bin/pkexec","weight":0.99,"severity":"CRITICAL","description":"pkexec is SUID and polkit version predates 0.120; vulnerable to CVE-2021-4034 (PwnKit)","remediation":"Upgrade polkit to >= 0.120 or remove SUID from pkexec","risk_score":9.99}
+    ]
+  },
+  {
+    "name": "world_writable",
+    "verdict": "DETERMINISTIC",
+    "evidence_count": 2,
+    "risk_score": 8.35,
+    "findings": [
+      {"id":"WW-00001","target":"/home/ubuntu/zp_src.tar.gz","weight":0.50,"severity":"LOW","description":"World-writable file in sensitive location (mode 0777)","remediation":"chmod o-w <PATH>","risk_score":3.50},
+      {"id":"STICKY-004","target":"/var/spool","weight":0.85,"severity":"HIGH","description":"Sensitive directory /var/spool lacks sticky bit (mode 0755)","remediation":"chmod +t /var/spool","risk_score":8.35}
+    ]
+  },
+  {
+    "name": "kernel_vuln",
+    "verdict": "REJECT",
+    "evidence_count": 1,
+    "risk_score": 0.65,
+    "findings": [
+      {"id":"KERN-CLEAN","target":"Linux version 7.0.0-27-generic (buildd@lcy02-amd64-114) (x86_64-linux-gnu-gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, GNU ld (GNU Binutils for Ubuntu) 2.46) #27-Ubuntu SMP PREEMPT_DYNAMIC Thu Jun 18 19:13:49 UTC 2026","weight":0.10,"severity":"INFO","description":"Kernel 7.0.0 matches no known high-impact CVEs","remediation":"No action required","risk_score":0.65}
+    ]
+  },
+  {
+    "name": "cron",
+    "verdict": "REJECT",
+    "evidence_count": 1,
+    "risk_score": 0.65,
+    "findings": [
+      {"id":"CRON-CLEAN","target":"/etc/crontab","weight":0.10,"severity":"INFO","description":"No writable or wildcard-prone cron jobs found","remediation":"No action required","risk_score":0.65}
+    ]
+  },
+  {
+    "name": "sudoers",
+    "verdict": "DETERMINISTIC",
+    "evidence_count": 4,
+    "risk_score": 8.10,
+    "findings": [
+      {"id":"SUDO-00001","target":"/etc/sudoers","weight":0.60,"severity":"HIGH","description":"Sudoers ALL rule (line 47, op=ALL=(ALL:ALL))","remediation":"Restrict rule in <PATH>; require authentication","risk_score":8.10},
+      {"id":"SUDO-00002","target":"/etc/sudoers","weight":0.60,"severity":"HIGH","description":"Sudoers ALL rule (line 50, op=ALL=(ALL))","remediation":"Restrict rule in <PATH>; require authentication","risk_score":8.10},
+      {"id":"SUDO-00003","target":"/etc/sudoers","weight":0.60,"severity":"HIGH","description":"Sudoers ALL rule (line 53, op=ALL=(ALL:ALL))","remediation":"Restrict rule in <PATH>; require authentication","risk_score":8.10},
+      {"id":"SUDO-00004","target":"/etc/sudoers.d/90-cloud-init-users","weight":0.60,"severity":"HIGH","description":"Sudoers ALL rule (line 4, op=ALL=(ALL))","remediation":"Restrict rule in <PATH>; require authentication","risk_score":8.10}
+    ]
+  },
+  {
+    "name": "ssh_keys",
+    "verdict": "DETERMINISTIC",
+    "evidence_count": 1,
+    "risk_score": 8.10,
+    "findings": [
+      {"id":"SSH-00001","target":"/root/.ssh/id_rsa","weight":0.60,"severity":"HIGH","description":"SSH private key with permissive mode (mode 0644)","remediation":"chmod 600 <PATH>","risk_score":8.10}
+    ]
+  },
+  {
+    "name": "groups",
+    "verdict": "REJECT",
+    "evidence_count": 1,
+    "risk_score": 0.65,
+    "findings": [
+      {"id":"GRP-CLEAN","target":"root","weight":0.10,"severity":"INFO","description":"User is not a member of any privileged group","remediation":"No action required","risk_score":0.65}
+    ]
+  },
+  {
+    "name": "service",
+    "verdict": "REJECT",
+    "evidence_count": 1,
+    "risk_score": 0.65,
+    "findings": [
+      {"id":"SVC-CLEAN","target":"/etc/systemd/system","weight":0.10,"severity":"INFO","description":"No misconfigured systemd services","remediation":"No action required","risk_score":0.65}
+    ]
+  },
+  {
+    "name": "kernel_hardening",
+    "verdict": "REJECT",
+    "evidence_count": 1,
+    "risk_score": 0.65,
+    "findings": [
+      {"id":"KHARD-CLEAN","target":"/proc/sys","weight":0.10,"severity":"INFO","description":"All kernel hardening checks pass","remediation":"No action required","risk_score":0.65}
+    ]
+  },
+  {
+    "name": "process",
+    "verdict": "DETERMINISTIC",
+    "evidence_count": 2,
+    "risk_score": 6.05,
+    "findings": [
+      {"id":"PROC-DEL-00001","target":"/usr/bin/python3.14 (deleted)","weight":0.70,"severity":"MEDIUM","description":"Root process running deleted binary","remediation":"Restart the service to refresh binary","risk_score":6.05},
+      {"id":"PROC-DEL-00002","target":"/usr/bin/python3.14 (deleted)","weight":0.70,"severity":"MEDIUM","description":"Root process running deleted binary","remediation":"Restart the service to refresh binary","risk_score":6.05}
+    ]
+  },
+  {
+    "name": "nfs",
+    "verdict": "REJECT",
+    "evidence_count": 1,
+    "risk_score": 0.65,
+    "findings": [
+      {"id":"NFS-NONE","target":"/etc/exports","weight":0.10,"severity":"INFO","description":"No /etc/exports file","remediation":"No action required","risk_score":0.65}
+    ]
+  },
+  {
+    "name": "ld_preload",
+    "verdict": "REJECT",
+    "evidence_count": 1,
+    "risk_score": 0.65,
+    "findings": [
+      {"id":"LDP-CLEAN","target":"/etc/ld.so.conf","weight":0.10,"severity":"INFO","description":"No writable or hijackable ld.so.conf entries","remediation":"No action required","risk_score":0.65}
+    ]
+  }
+]
+}

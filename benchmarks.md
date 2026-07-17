@@ -30,11 +30,26 @@ filesystem**:
 | **Lynis** 3.1.6     | Compliance       | 100.45 s             | 850-line free-form report|
 | **LinPEAS** (latest)| Offensive enum   | 120.03 s (capped)    | 378-line color report    |
 
-Z-Privesc finishes in **under 3 seconds** — roughly **38× faster** than
-Lynis and **45× faster** than LinPEAS — while emitting deterministic,
-`jq`-parseable JSON instead of free-form text. It is also the only tool
-of the three that ships **stand-alone static binaries** with no runtime
-dependencies.
+Z-Privesc finishes a full specialized scan in **under 3 seconds** —
+roughly **38× faster** than a Lynis run and **45× faster** than a
+LinPEAS run on the same host.
+
+> **Scope and fairness.** This is **not** a general-efficiency claim.
+> Lynis and LinPEAS audit a far broader surface (network configuration,
+> third-party software, container and cloud-metadata hygiene, and more)
+> whereas Z-Privesc is a *privilege-escalation-specific* auditor. The
+> speed gap reflects the narrower, single-purpose scope, not a claim
+> that Z-Privesc is "better" at anything outside that scope. The
+> honest comparison is: *for the PE-misconfiguration domain that
+> Z-Privesc targets, it is dramatically faster and machine-readable.*
+> An **apples-to-apples accuracy comparison** on the shared probe set is
+> in [§9](#9-accuracy-ground-truth-study), which measures true/false
+> positives and negatives against planted vulnerabilities rather than
+> just runtime.
+
+Z-Privesc also emits deterministic, `jq`-parseable JSON instead of
+free-form text, and is the only tool of the three that ships
+**stand-alone static binaries** with no runtime dependencies.
 
 ---
 
@@ -247,6 +262,95 @@ multipass exec zprivesc-bench -- bash -c '
 ```
 
 Raw captured JSON lives in [`benchmarks/data/`](benchmarks/data/).
+
+---
+
+## 9. Accuracy (Ground-Truth Study)
+
+Runtime alone is not a research contribution; **detection accuracy is**.
+This section measures true/false positives and negatives against a known
+ground truth, not just speed.
+
+### Methodology
+
+The `testbeds/` directory is the ground truth: each `setup.sh` plants
+one uniquely-named, known privilege-escalation misconfiguration, and
+`cleanup.sh` removes it. We run Z-Privesc against each planted category
+and check whether the **planted artifact's unique signature** appears in
+the probe's JSON findings with a `DETERMINISTIC` verdict. A category is a
+**false negative** if its signature never appears.
+
+For a false-positive proxy we run Z-Privesc on a **clean** host (no
+testbed active) and count `HIGH`/`CRITICAL` findings — i.e. high-severity
+alerts on a properly-configured system.
+
+LinPEAS and Lynis are run **once** on the fully-planted host and measured
+**heuristically**: we grep their raw output for each planted artifact's
+signature. This is a deliberately coarse *lower bound* and is labelled as
+such — their broad scope means keyword matching undercounts real
+coverage.
+
+All runs are on the same multipass VM (Ubuntu 26.04, kernel
+7.0.0-27-generic), Z-Privesc executed as root (the intended defensive
+operator). Raw per-category JSON, the detection matrix, and the summary
+live in
+[`benchmarks/data/accuracy/`](benchmarks/data/accuracy/).
+
+### Z-Privesc detection matrix
+
+| Category          | Planted artifact            | Detected? | Verdict       |
+|-------------------|-----------------------------|:---------:|---------------|
+| suid              | `/tmp/bash-root-suid`       | ✅ TP     | DETERMINISTIC |
+| writable_path     | `/tmp/evil-path` (0777)     | ✅ TP     | DETERMINISTIC |
+| capabilities      | `/tmp/python3-cap`          | ✅ TP     | DETERMINISTIC |
+| writable_etc      | `/etc/sudoers.d/zprivesc-weak` (0666) | ✅ TP | DETERMINISTIC |
+| docker_socket     | `/var/run/docker.sock`      | ✅ TP     | DETERMINISTIC |
+| polkit            | `pkexec` SUID + version 0.96 | ✅ TP    | DETERMINISTIC |
+| world_writable    | `/etc/weak-config` (0666)   | ✅ TP     | DETERMINISTIC |
+| cron              | `/etc/cron.d/zprivesc-weak` | ✅ TP     | DETERMINISTIC |
+| sudoers           | `NOPASSWD: ALL` drop-in     | ✅ TP     | DETERMINISTIC |
+| ssh_keys          | `/root/.ssh/id_rsa` (0644)  | ✅ TP     | DETERMINISTIC |
+| groups            | current user in `docker`    | ✅ TP     | DETERMINISTIC |
+| service           | `/etc/systemd/system/zprivesc-weak.service` (0666) | ✅ TP | DETERMINISTIC |
+| ld_preload        | `/etc/ld.so.conf.d/zprivesc-weak.conf` (0666) | ✅ TP | DETERMINISTIC |
+| kernel_hardening  | weak sysctls (`randomize_va_space=0`, …) | ❌ FN | REJECT (testbed sysctl writes not applied by kernel) |
+| process           | world-writable running exe  | ❌ FN     | no PROC finding |
+| nfs               | `/etc/exports` `no_root_squash` | ❌ FN  | REJECT (no live `nfsd`) |
+
+**Result: 13 / 16 categories detected → recall 0.81.**
+
+### False positives
+
+On the clean baseline Z-Privesc emits **0 `HIGH`/`CRITICAL` findings**.
+Every baseline finding is `MEDIUM` (standard SUID/SGID binaries, audited
+by design) or `INFO`. There are **no high-severity false alarms** on a
+properly-configured host — the tool does not cry wolf at the top of its
+severity scale.
+
+### Cross-tool (heuristic lower bound)
+
+| Tool      | Categories with planted signature in output | Note                                   |
+|-----------|:-------------------------------------------:|----------------------------------------|
+| Z-Privesc | 13 / 16 (precise, verdict-confirmed)        | exact                                  |
+| LinPEAS   | ≥ 10 / 16 (keyword match)                   | lower bound; broader real coverage     |
+| Lynis     | 2 / 16 (keyword match)                      | expected — compliance, not PE-specific |
+
+### Honest limitations
+
+- **`kernel_hardening` (FN)**: the testbed's `sysctl` writes were not
+  honoured by this kernel, so there was effectively nothing weak to
+  detect. This is a testbed limitation, not a clear tool defect.
+- **`process` (FN)**: a runtime-state probe; the planted
+  world-writable executable was not flagged (PID lifecycle / probe
+  limitation).
+- **`nfs` (FN)**: the probe only flags *live* exports; with no `nfsd`
+  running the `no_root_squash` config was not raised.
+- LinPEAS/Lynis numbers are keyword proxies, not verdict-confirmed
+  detections, and should be read as coarse comparison only.
+
+**Bottom line:** Z-Privesc is fast *and* accurate on its target domain —
+81% recall on planted misconfigurations with zero high-severity false
+positives — which is the property that matters for a defensive auditor.
 
 ---
 

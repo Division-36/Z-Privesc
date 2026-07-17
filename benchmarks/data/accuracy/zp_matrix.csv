@@ -1,0 +1,17 @@
+category,signature,baseline_present,planted_present,zp_verdict,planted_high
+suid,bash-root-suid,0,1,"DETERMINISTIC",0
+writable_path,evil-path,0,1,"DETERMINISTIC",1
+capabilities,python3-cap,0,1,"DETERMINISTIC",0
+writable_etc,zprivesc-weak,0,5,"DETERMINISTIC",1
+docker,docker.sock,1,3,"",0
+polkit,pkexec,2,2,"DETERMINISTIC",1
+world_writable,weak-config,0,1,"DETERMINISTIC",2
+cron,cron.d/zprivesc-weak,0,3,"DETERMINISTIC",2
+sudoers,zprivesc-nopasswd,0,1,"DETERMINISTIC",5
+ssh_keys,id_rsa,0,1,"DETERMINISTIC",1
+groups,docker,1,2,"DETERMINISTIC",1
+service,zprivesc-weak.service,0,2,"DETERMINISTIC",1
+kernel_hardening,KHARD,1,1,"REJECT",0
+process,ww-root-proc,0,0,"DETERMINISTIC",0
+nfs,no_root_squash,0,0,"REJECT",0
+ld_preload,zprivesc-weak.conf,0,2,"DETERMINISTIC",1
