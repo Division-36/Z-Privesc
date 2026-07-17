@@ -1,0 +1,245 @@
+{
+  "schema": "zp-eval/corpus/v1",
+  "description": "Reference corpus seeded from the in-repo testbeds/. Each target plants one known misconfiguration; ground_truth and verify (rule-technique labels) are explicit so detection and calibration are reproducible. Scale this out to >=40 targets (CTF/Docker/CVE) before submission. NOTE: verify_steps/verify_paths 'label' MUST equal a rule 'tech' string in src/compose.c so outcomes attribute to the right reliability weight.",
+  "defaults": {
+    "provisioner": "multipass",
+    "zp_binary": "./build/bin/z_privesc",
+    "timeout_sec": 300,
+    "baselines": ["linpeas", "lynis"]
+  },
+  "targets": [
+    {
+      "id": "primary-sudoers-nopasswd",
+      "distro": "ubuntu", "release": "22.04", "kernel": "5.15",
+      "provisioner": "multipass", "image": "ubuntu:22.04",
+      "setup": "testbeds/sudoers/setup.sh",
+      "teardown": "testbeds/sudoers/cleanup.sh",
+      "ground_truth": {
+        "reachable_tokens": ["EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["EXEC_AS_ROOT -> root"],
+        "expected_findings": ["SUDO-00001"],
+        "notes": "NOPASSWD sudoers grants direct root execution."
+      },
+      "verify_steps": [
+        { "label": "execute code as root", "cmd": "sudo -n true", "user": "ubuntu" }
+      ],
+      "verify_paths": [
+        { "label": "execute code as root", "cmd": "sudo -n true", "user": "ubuntu" }
+      ]
+    },
+    {
+      "id": "primary-writable-etc-sudoers",
+      "distro": "ubuntu", "release": "22.04", "kernel": "5.15",
+      "provisioner": "multipass", "image": "ubuntu:22.04",
+      "setup": "testbeds/writable_etc/setup.sh",
+      "teardown": "testbeds/writable_etc/cleanup.sh",
+      "ground_truth": {
+        "reachable_tokens": ["WRITE_SUDOERS", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_SUDOERS -> root"],
+        "expected_findings": ["WETC-D-004"],
+        "notes": "World-writable sudoers.d drop-in grants NOPASSWD."
+      },
+      "verify_steps": [
+        { "label": "append NOPASSWD to sudoers", "cmd": "echo '%sudo ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/zp-verify >/dev/null && sudo -n true", "user": "ubuntu" }
+      ],
+      "verify_paths": [
+        { "label": "execute code as root", "cmd": "sudo -n true", "user": "ubuntu" }
+      ]
+    },
+    {
+      "id": "primary-suid-root",
+      "distro": "ubuntu", "release": "22.04", "kernel": "5.15",
+      "provisioner": "multipass", "image": "ubuntu:22.04",
+      "setup": "testbeds/suid/setup.sh",
+      "teardown": "testbeds/suid/cleanup.sh",
+      "ground_truth": {
+        "reachable_tokens": ["EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["EXEC_AS_ROOT -> root"],
+        "expected_findings": ["SUID-ROOT"],
+        "notes": "Dangerous SUID shell binary."
+      },
+      "verify_paths": [
+        { "label": "execute code as root", "cmd": "id -u", "user": "ubuntu" }
+      ]
+    },
+    {
+      "id": "primary-docker-socket",
+      "distro": "ubuntu", "release": "22.04", "kernel": "5.15",
+      "provisioner": "multipass", "image": "ubuntu:22.04",
+      "setup": "testbeds/docker/setup.sh",
+      "teardown": "testbeds/docker/cleanup.sh",
+      "ground_truth": {
+        "reachable_tokens": ["CONTAINER_ESCAPE", "ROOT"],
+        "expected_paths": ["CONTAINER_ESCAPE -> root"],
+        "expected_findings": ["DOCK-001"],
+        "notes": "Mounted /var/run/docker.sock; group membership escapes to host root."
+      },
+      "verify_steps": [
+        { "label": "escape container to host root", "cmd": "docker ps >/dev/null 2>&1", "user": "ubuntu" }
+      ],
+      "verify_paths": [
+        { "label": "escape container to host root", "cmd": "docker run --rm -v /:/host alpine chroot /host id -u", "user": "ubuntu" }
+      ]
+    },
+    {
+      "id": "primary-ssh-root-key",
+      "distro": "ubuntu", "release": "22.04", "kernel": "5.15",
+      "provisioner": "multipass", "image": "ubuntu:22.04",
+      "setup": "testbeds/ssh_keys/setup.sh",
+      "teardown": "testbeds/ssh_keys/cleanup.sh",
+      "ground_truth": {
+        "reachable_tokens": ["READ_ROOT_KEY", "ROOT"],
+        "expected_paths": ["READ_ROOT_KEY -> root"],
+        "expected_findings": ["SSH-00001"],
+        "notes": "Readable root private key."
+      },
+      "verify_paths": [
+        { "label": "SSH in as root with stolen key", "cmd": "ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i /tmp/stolen_root_key root@127.0.0.1 id -u", "user": "ubuntu" }
+      ]
+    },
+    {
+      "id": "primary-polkit-pkexec",
+      "distro": "ubuntu", "release": "22.04", "kernel": "5.15",
+      "provisioner": "multipass", "image": "ubuntu:22.04",
+      "setup": "testbeds/polkit/setup.sh",
+      "teardown": "testbeds/polkit/cleanup.sh",
+      "ground_truth": {
+        "reachable_tokens": ["POLKIT_LPE", "ROOT"],
+        "expected_paths": ["POLKIT_LPE -> root"],
+        "expected_findings": ["PKEXEC-CVE-2021-4034"],
+        "notes": "Vulnerable pkexec (CVE-2021-4034 class)."
+      },
+      "verify_paths": [
+        { "label": "exploit polkit/pkexec", "cmd": "id -u", "user": "ubuntu" }
+      ]
+    },
+    {
+      "id": "primary-service-systemd",
+      "distro": "ubuntu", "release": "22.04", "kernel": "5.15",
+      "provisioner": "multipass", "image": "ubuntu:22.04",
+      "setup": "testbeds/service/setup.sh",
+      "teardown": "testbeds/service/cleanup.sh",
+      "ground_truth": {
+        "reachable_tokens": ["WRITE_SYSTEMD", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_SYSTEMD -> root"],
+        "expected_findings": ["SVC-CLEAN"],
+        "notes": "Writable systemd unit run as root."
+      },
+      "verify_paths": [
+        { "label": "hijack a root-run systemd unit", "cmd": "systemctl status", "user": "ubuntu" }
+      ]
+    },
+    {
+      "id": "primary-groups-docker",
+      "distro": "ubuntu", "release": "22.04", "kernel": "5.15",
+      "provisioner": "multipass", "image": "ubuntu:22.04",
+      "setup": "testbeds/groups/setup.sh",
+      "teardown": "testbeds/groups/cleanup.sh",
+      "ground_truth": {
+        "reachable_tokens": ["CONTAINER_ESCAPE", "ROOT"],
+        "expected_paths": ["CONTAINER_ESCAPE -> root"],
+        "expected_findings": ["GRP-DOCKER"],
+        "notes": "Victim in docker group => container escape."
+      },
+      "verify_paths": [
+        { "label": "escape container to host root", "cmd": "docker ps >/dev/null 2>&1", "user": "ubuntu" }
+      ]
+    },
+    {
+      "id": "primary-capabilities-setuid",
+      "distro": "ubuntu", "release": "22.04", "kernel": "5.15",
+      "provisioner": "multipass", "image": "ubuntu:22.04",
+      "setup": "testbeds/capabilities/setup.sh",
+      "teardown": "testbeds/capabilities/cleanup.sh",
+      "ground_truth": {
+        "reachable_tokens": ["SETUID_CAP", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["SETUID_CAP -> root"],
+        "expected_findings": ["CAP-SETUID"],
+        "notes": "File capability setuid."
+      },
+      "verify_paths": [
+        { "label": "use file capability to setuid", "cmd": "id -u", "user": "ubuntu" }
+      ]
+    },
+    {
+      "id": "primary-ld-preload",
+      "distro": "ubuntu", "release": "22.04", "kernel": "5.15",
+      "provisioner": "multipass", "image": "ubuntu:22.04",
+      "setup": "testbeds/ld_preload/setup.sh",
+      "teardown": "testbeds/ld_preload/cleanup.sh",
+      "ground_truth": {
+        "reachable_tokens": ["INJECT_PRELOAD", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["INJECT_PRELOAD -> root"],
+        "expected_findings": ["LDP-W-00001"],
+        "notes": "World-writable ld.so.conf drop-in."
+      },
+      "verify_paths": [
+        { "label": "LD_PRELOAD into root processes", "cmd": "id -u", "user": "ubuntu" }
+      ]
+    },
+    {
+      "id": "primary-cron-root",
+      "distro": "ubuntu", "release": "22.04", "kernel": "5.15",
+      "provisioner": "multipass", "image": "ubuntu:22.04",
+      "setup": "testbeds/cron/setup.sh",
+      "teardown": "testbeds/cron/cleanup.sh",
+      "ground_truth": {
+        "reachable_tokens": ["WRITE_CRON", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_CRON -> root"],
+        "expected_findings": ["CRON-D-00001"],
+        "notes": "Writable cron.d entry run as root."
+      },
+      "verify_paths": [
+        { "label": "hijack a root-run cron job", "cmd": "id -u", "user": "ubuntu" }
+      ]
+    },
+    {
+      "id": "primary-writable-path-trojan",
+      "distro": "ubuntu", "release": "22.04", "kernel": "5.15",
+      "provisioner": "multipass", "image": "ubuntu:22.04",
+      "setup": "testbeds/writable_path/setup.sh",
+      "teardown": "testbeds/writable_path/cleanup.sh",
+      "ground_truth": {
+        "reachable_tokens": ["WRITE_PATH_TROJAN", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_PATH_TROJAN -> root"],
+        "expected_findings": ["WPATH-W-00001"],
+        "notes": "Writable directory on root's PATH."
+      },
+      "verify_paths": [
+        { "label": "plant trojan in writable PATH", "cmd": "id -u", "user": "ubuntu" }
+      ]
+    },
+    {
+      "id": "primary-nfs-no-root-squash",
+      "distro": "ubuntu", "release": "22.04", "kernel": "5.15",
+      "provisioner": "multipass", "image": "ubuntu:22.04",
+      "setup": "testbeds/nfs/setup.sh",
+      "teardown": "testbeds/nfs/cleanup.sh",
+      "ground_truth": {
+        "reachable_tokens": ["ROOT"],
+        "expected_paths": ["ROOT"],
+        "expected_findings": ["NFS-NO-ROOT-SQUASH"],
+        "notes": "Export with no_root_squash => root on server. Direct grant (no composing rule); not rule-calibrated."
+      },
+      "verify_paths": [
+        { "label": "ROOT", "cmd": "id -u", "user": "ubuntu" }
+      ]
+    },
+    {
+      "id": "primary-ssh-keys-readable",
+      "distro": "ubuntu", "release": "22.04", "kernel": "5.15",
+      "provisioner": "multipass", "image": "ubuntu:22.04",
+      "setup": "testbeds/ssh_keys/setup.sh",
+      "teardown": "testbeds/ssh_keys/cleanup.sh",
+      "ground_truth": {
+        "reachable_tokens": ["READ_ROOT_KEY", "ROOT"],
+        "expected_paths": ["READ_ROOT_KEY -> root"],
+        "expected_findings": ["SSH-00001"],
+        "notes": "Reuse of ssh_keys target for key-theft path."
+      },
+      "verify_paths": [
+        { "label": "SSH in as root with stolen key", "cmd": "id -u", "user": "ubuntu" }
+      ]
+    }
+  ]
+}

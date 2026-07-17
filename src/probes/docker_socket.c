@@ -62,23 +62,32 @@ static int docker_ping(const char *path)
 int zp_probe_docker_socket(struct zp_evidence_chain *c,
                               const char *root, struct audit_ctx *ctx)
 {
-    (void)root;
     (void)ctx;
     if (c == NULL) {
         return ZP_ERR_INVAL;
     }
+    if (root == NULL) {
+        root = "/";
+    }
     for (size_t i = 0; i < sizeof(SOCKET_PATHS) / sizeof(SOCKET_PATHS[0]);
          i++) {
+        char rpath[4096];
+        if (strcmp(root, "/") == 0) {
+            snprintf(rpath, sizeof(rpath), "%s", SOCKET_PATHS[i]);
+        } else if (zp_path_join(rpath, sizeof(rpath), root, SOCKET_PATHS[i])
+                   != ZP_OK) {
+            continue;
+        }
         struct stat st;
-        if (lstat(SOCKET_PATHS[i], &st) != 0) {
+        if (lstat(rpath, &st) != 0) {
             continue;
         }
         if (!S_ISSOCK(st.st_mode)) {
             continue;
         }
-        bool user_reachable = zp_file_writable(SOCKET_PATHS[i]);
+        bool user_reachable = zp_file_writable(rpath);
         bool world_open     = (st.st_mode & S_IWOTH) != 0;
-        int  pinged         = docker_ping(SOCKET_PATHS[i]);
+        int  pinged         = docker_ping(rpath);
         char id[ZP_EVIDENCE_ID_MAX];
         snprintf(id, sizeof(id), "DOCK-%03zu", i + 1);
         char desc[ZP_DESC_MAX];
