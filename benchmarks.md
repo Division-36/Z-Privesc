@@ -20,7 +20,7 @@ Two benchmark runs are described:
 
 ## 1. Executive Summary
 
-Z-Privesc was run on a freshly installed Ubuntu 22.04 LTS VM and timed
+Z-Privesc was run on a freshly installed Ubuntu 26.04 LTS VM and timed
 against LinPEAS and Lynis on the **same host**, scanning the **same
 filesystem**:
 
@@ -60,8 +60,8 @@ Captured in [`benchmarks/data/environment.json`](benchmarks/data/environment.jso
 | Field            | Value                                        |
 |------------------|----------------------------------------------|
 | Host             | `primary` (multipass VM)                     |
-| OS               | Ubuntu 22.04 LTS                             |
-| Kernel           | 5.15.0-185-generic                           |
+| OS               | Ubuntu 26.04 LTS                             |
+| Kernel           | 7.0.0-27-generic                             |
 | Arch             | x86_64                                       |
 | GCC              | gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0         |
 | vCPUs            | 1                                            |
@@ -140,7 +140,7 @@ themselves.
 ## 5. Head-to-Head Comparison (real runtimes)
 
 From [`benchmarks/data/comparison.json`](benchmarks/data/comparison.json),
-all three tools were run on the **same** Ubuntu 22.04 VM:
+all three tools were run on the **same** Ubuntu 26.04 VM:
 
 | Tool        | Version | Install time | Run time  | Output       |
 |-------------|---------|-------------:|----------:|--------------|

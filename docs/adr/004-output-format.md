@@ -44,7 +44,7 @@ format (see ROADMAP.md); it will not replace JSON.
   "timestamp": 1717459200,
   "duration_ns": 123456789,
   "hostname": "victim-box",
-  "kernel": "5.15.0-113-generic",
+  "kernel": "7.0.0-27-generic",
   "user": "bob",
   "uid": 1000,
   "overall_risk": 7.4,
