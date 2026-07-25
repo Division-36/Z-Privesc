@@ -69,7 +69,7 @@ jobs:
           echo "SHA-256: $(sha256sum dist/${TARBALL} | cut -d' ' -f1)"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: z_privesc-linux-${{ matrix.target }}
           path: dist/*.tar.gz
