@@ -3,6 +3,46 @@
 All notable changes to Z-Privesc are recorded in this file.  Versions
 follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.0] - 2026-07-25
+
+### Expanded evaluation
+- 37-target ground-truth corpus: 35 targets on Kali WSL2, 2 on
+  Ubuntu 26.04 multipass VM. Detection recall **1.000** (37/37),
+  path recall **0.943** (33/35), zero false positives on planted
+  targets.
+- Multi-distro verification across kernel 6.18 (WSL2) and kernel
+  7.0 (Ubuntu 26.04).
+- Head-to-head benchmark against LinPEAS and Lynis on identical VM.
+  Z-Privesc: 2.65s full scan. Lynis: 100.45s. LinPEAS: 120.03s.
+- Full accuracy data: benchmarks/data/accuracy/accuracy.json.
+- Reproduction guide: docs/EVALUATION.md.
+
+### Probe improvements
+- NFS probe rewritten: standard host(options) export format parsing.
+- Service probe enhanced: SysV init.d directory scanning alongside
+  systemd unit files.
+- Writable_path probe hardened: PATH injection via relative entries.
+- Kernel_hardening probe fixed: /proc/ path prefix handling.
+- Process probe fixed: compiled binary testbed (shell script exe
+  symlink pointed to interpreter, not the script).
+
+### CI/CD
+- Release workflow: tag-triggered, multi-arch (x86_64 + aarch64),
+  tests gate, GitHub Release with SHA-256 checksums.
+- CodeQL security scanning (schedule-only for private repo).
+- Dependabot: weekly GitHub Actions version updates.
+- Build workflow: hardening verification (RELRO, stack canary).
+- Coverage workflow: runs on PRs, suppresses -O0-only warnings.
+
+### Fixed
+- RELRO check regex for ubuntu-22.04 linker output.
+- test_integration.c: block comment contained */ in glob pattern.
+- Release aarch64: skip smoke test (can't execute cross-compiled
+  binary on x86_64 runner).
+- Coverage build: format-truncation warning at -O0 + -Werror.
+- Documentation contradictions: kernel versions and OS references
+  aligned with actual benchmark data.
+
 ## [1.0.0] - 2026-06-06
 
 ### Added

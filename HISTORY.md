@@ -60,6 +60,30 @@ cadence.
   (1.0.0-rc1 → rc2 → 1.0.0), final release commit.
 - **2026-06-07** — Post-release fixes: audit_ctx_release memory
   leak, capabilities buffer overflow, dead code removal.
+- **2026-07-14** — Expanded evaluation framework: 37-target ground-truth
+  corpus with multi-distro verification (Kali WSL2 + Ubuntu 26.04
+  multipass). 35 targets on WSL2, 2 on multipass (kernel_hardening,
+  process_root require real sysctl/process access).
+- **2026-07-14** — Benchmarks remade on multipass VM (Ubuntu 26.04,
+  kernel 7.0.0-27-generic) with head-to-head comparison against LinPEAS
+  and Lynis. Full accuracy data in benchmarks/data/accuracy/.
+- **2026-07-14** — NFS probe rewritten to handle standard
+  host(options) export format. Service probe enhanced with SysV init.d
+  scanning. Writable_path probe hardened against PATH injection.
+- **2026-07-15** — Documentation overhaul: docs/COMPOSITION.md
+  (exploitability composition engine), docs/EVALUATION.md (reproduction
+  guide), docs/PROBES.md (17 probe rationales), four ADRs.
+- **2026-07-20** — Bug fixes: kernel_hardening path prefix bug
+  (stripped leading / instead of keeping proc/), process probe compiled
+  binary testbed (shell scripts' exe symlink pointed to interpreter).
+- **2026-07-25** — CI/CD overhaul: release.yml (multi-arch x86_64 +
+  aarch64), codeql.yml (security scanning), dependabot.yml (actions
+  updates), hardening verification in build workflow. All 7 workflows
+  passing on GitHub Actions.
+- **2026-07-25** — Technical debt cleanup: deleted ~22 redundant
+  scripts, rewrote .gitignore, fixed all documentation contradictions
+  (kernel versions, OS references), updated man page and --help for all
+  17 probes.
 
 ## Notable design pivots
 

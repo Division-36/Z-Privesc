@@ -4,7 +4,7 @@ This document sketches the planned trajectory of Z-Privesc.  Dates
 and exact feature lists are aspirational; only the `v1` column is
 committed.
 
-## v1 - shipped (2026-06-06)
+## v1 - shipped (2026-07-25)
 
 - 17 probes covering SUID, capabilities, writable paths, cron, sudoers,
   NFS, SSH, LD_PRELOAD, groups, docker, polkit, kernel vulns, services,
@@ -14,7 +14,11 @@ committed.
 - JSON and HTML audit emitters, schema `z-privesc.audit/v1`.
 - BLAKE2b-256 + HMAC cryptographic evidence signing.
 - Per-build identifier, minisign-signed releases.
+- 37-target ground-truth corpus with multi-distro evaluation.
+- Head-to-head benchmarks against LinPEAS and Lynis.
 - Unit and integration tests, gcov coverage.
+- CI/CD: multi-arch builds (x86_64 + aarch64), CodeQL scanning,
+  Dependabot, hardening verification.
 
 ## Future
 
@@ -36,5 +40,5 @@ Z-Privesc will not:
 - Become a remote network scanner.  It audits the local host only.
 - Attempt to **exploit** any finding.  The tool's job is to report,
   not to demonstrate.
-- Be rewritten in another language.  The C17 implementation is a
+- Be rewritten in another language.  The C99 implementation is a
   deliberate design constraint and a security feature.
