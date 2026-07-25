@@ -1,8 +1,10 @@
 # Build artifacts
 *.o
 *.d
+z_privesc
 build/
-dist/
+_build/
+_dist/
 
 # Coverage
 *.gcov
@@ -11,12 +13,15 @@ dist/
 
 # Secrets
 .minisign/
+.release-key
 
 # Paper (private until publication)
 paper/
 
 # Eval results (host-specific, not for repo)
 eval_results/
+_benchmarks/reports/
+_benchmarks/vm_results/
 
 # Python
 __pycache__/
