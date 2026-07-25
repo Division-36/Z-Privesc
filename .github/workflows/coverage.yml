@@ -17,7 +17,7 @@ jobs:
       - name: Build with coverage
         run: make coverage COV_EXTRA_CFLAGS="-Wno-format-truncation"
       - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: build/coverage
