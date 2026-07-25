@@ -1,0 +1,133 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64
+            cc: gcc
+            arch: amd64
+          - target: aarch64
+            cc: aarch64-linux-gnu-gcc
+            arch: arm64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install cross-compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential gcc-aarch64-linux-gnu
+
+      - name: Build static binary
+        run: |
+          make clean
+          if [ "${{ matrix.target }}" = "aarch64" ]; then
+            make static CC=aarch64-linux-gnu-gcc
+          else
+            make static
+          fi
+
+      - name: Verify hardening
+        run: |
+          file build/bin/z_privesc
+          if [ "${{ matrix.target }}" = "x86_64" ]; then
+            readelf -l build/bin/z_privesc | grep -q GNU_RELRO && echo "RELRO: OK" || echo "RELRO: MISSING"
+            readelf -d build/bin/z_privesc | grep -q BIND_NOW && echo "FULL_RELRO: OK" || echo "FULL_RELRO: MISSING"
+            readelf -s build/bin/z_privesc | grep -q __stack_chk_fail && echo "STACK_CANARY: OK" || echo "STACK_CANARY: MISSING"
+          fi
+
+      - name: Smoke test
+        run: |
+          ./build/bin/z_privesc --version
+          ./build/bin/z_privesc --help
+
+      - name: Package tarball
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          TARBALL="z_privesc-${VERSION}-linux-${{ matrix.target }}.tar.gz"
+          cp build/bin/z_privesc /tmp/z_privesc_bin
+          cd /tmp && tar -czf "${{ github.workspace }}/dist/${TARBALL}" z_privesc_bin
+          cd "${{ github.workspace }}"
+          echo "SHA-256: $(sha256sum dist/${TARBALL} | cut -d' ' -f1)"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: z_privesc-linux-${{ matrix.target }}
+          path: dist/*.tar.gz
+
+  tests:
+    name: Tests before release
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run unit tests
+        run: make test
+      - name: Run integration tests
+        run: sudo make test-full
+
+  release:
+    name: Create GitHub Release
+    needs: [build, tests]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+          pattern: z_privesc-linux-*
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum *.tar.gz > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Z-Privesc ${{ github.ref_name }}"
+          body: |
+            ## Z-Privesc ${{ github.ref_name }}
+
+            **17 probes** | **37/37 detection** | **0.943 path recall** | **C99**
+
+            ### Downloads
+            - `z_privesc-${{ github.ref_name }}-linux-x86_64.tar.gz` — x86_64 static binary
+            - `z_privesc-${{ github.ref_name }}-linux-aarch64.tar.gz` — aarch64 (ARM64) static binary
+
+            ### Verification
+            ```bash
+            # Verify checksum
+            sha256sum -c SHA256SUMS.txt
+
+            # Verify signature (optional, requires minisign)
+            minisign -Vm z_privesc-*.tar.gz -P RWSKrBQzqEjk6dndIFokFP3UHqr5mU/bCa6RnHAigPHzAb19FgRsg29i
+            ```
+
+            See [RELEASE-SIGNING.md](https://github.com/Division-36/Z-Privesc/blob/main/RELEASE-SIGNING.md) for full details.
+          files: |
+            dist/z_privesc-*.tar.gz
+            dist/SHA256SUMS.txt
+          draft: false
+          prerelease: false
