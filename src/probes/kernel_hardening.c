@@ -79,8 +79,7 @@ int zp_probe_kernel_hardening(struct zp_evidence_chain *c,
     size_t n = sizeof(CHECKS) / sizeof(CHECKS[0]);
     for (size_t i = 0; i < n; i++) {
         char p[ZP_PATH_MAX];
-        const char *sub = CHECKS[i].path + strlen("/proc/");
-        if (zp_path_join(p, sizeof(p), r, sub) != ZP_OK) {
+        if (zp_path_join(p, sizeof(p), r, CHECKS[i].path + 1) != ZP_OK) {
             continue;
         }
         int got = read_int(p);

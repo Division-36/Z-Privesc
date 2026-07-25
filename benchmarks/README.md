@@ -4,7 +4,7 @@ Raw, machine-readable benchmark captures for Z-Privesc. Every number in
 [`../benchmarks.md`](../benchmarks.md) is sourced from a file here.
 
 All captures were taken on a clean **multipass** VM
-(`primary`, Ubuntu 26.04 LTS, kernel 7.0.0-27-generic, 1 vCPU, 891 MB)
+(`zp-2204`, Ubuntu 22.04 LTS, kernel 5.15.0-185-generic, 1 vCPU)
 on 2026-07-14. See `environment.json` for the exact environment.
 
 ## Files
@@ -19,6 +19,19 @@ on 2026-07-14. See `environment.json` for the exact environment.
 | `comparison.json`   | Lynis 3.1.6 and LinPEAS real runtimes vs Z-Privesc.           |
 | `lynis-sample.txt`  | First lines of a sample Lynis run (size/noise reference).      |
 | `linpeas-sample.txt`| First lines of a sample LinPEAS run (size/noise reference).    |
+
+### Accuracy study (`data/accuracy/`)
+
+`data/accuracy/accuracy.json` records the 37-category expanded detection study: **37/37 true positives,
+0 false positives on planted targets**. Detection recall 1.0000, precision 1.0000 (macro).
+Path recall 0.9429 (33/35), path precision 0.9714 (33/34).
+Brier seed: 0.109 (353 observations). Clean-host FP baseline: 78 ambient findings per host.
+
+35 targets evaluated on Kali WSL2; 2 targets (kernel_hardening, process_root) evaluated on
+Ubuntu 22.04 LTS (multipass VM) due to WSL2 limitations (locked sysctls, background process
+lifecycle). Multi-distro evaluation across kernel 6.18.33 (WSL2) and kernel 5.15.0 (Ubuntu 22.04).
+
+GTFOBins baseline: knowledge coverage 0.8649 (32/37 techniques), automated scan recall = 0.
 
 ## Regenerating
 

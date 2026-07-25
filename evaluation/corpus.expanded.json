@@ -1,0 +1,716 @@
+{
+  "schema": "zp-eval/corpus/v1",
+  "description": "Expanded evaluation corpus n=39 (Kali WSL2 kernel 6.18.33 + multipass Ubuntu 22.04 kernel 5.15.0). 37 planted targets + 2 clean-host baselines. provisioner=ssh (local host).",
+  "defaults": {
+    "provisioner": "ssh",
+    "zp_binary": "./build/bin/z_privesc",
+    "timeout_sec": 300,
+    "baselines": ["lynis", "linpeas"]
+  },
+  "targets": [
+    {
+      "id": "local-sudoers-nopasswd",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/sudoers/setup.sh",
+      "teardown": "testbeds/sudoers/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["EXEC_AS_ROOT -> root"],
+        "expected_findings": ["zprivesc-nopasswd"],
+        "notes": "NOPASSWD sudoers drop-in grants direct root execution."
+      },
+      "verify": [
+        { "label": "execute code as root", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Escalation confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-suid-root",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/suid/setup.sh",
+      "teardown": "testbeds/suid/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["EXEC_AS_ROOT -> root"],
+        "expected_findings": ["bash-root-suid"],
+        "notes": "Dangerous SUID root shell binary."
+      },
+      "verify": [
+        { "label": "execute code as root", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "SUID root shell confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-capabilities-setuid",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/capabilities/setup.sh",
+      "teardown": "testbeds/capabilities/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["SETUID_CAP", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["SETUID_CAP -> root"],
+        "expected_findings": ["python3-cap"],
+        "notes": "File capability cap_setuid on python3."
+      },
+      "verify": [
+        { "label": "use file capability to setuid", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "cap_setuid confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-writable-etc-sudoers",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/writable_etc/setup.sh",
+      "teardown": "testbeds/writable_etc/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["WRITE_SUDOERS", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_SUDOERS -> root"],
+        "expected_findings": ["zprivesc-weak"],
+        "notes": "World-writable /etc/sudoers.d drop-in."
+      },
+      "verify": [
+        { "label": "append NOPASSWD to sudoers", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Writable sudoers confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-ssh-root-key",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/ssh_keys/setup.sh",
+      "teardown": "testbeds/ssh_keys/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["READ_ROOT_KEY", "ROOT"],
+        "expected_paths": ["READ_ROOT_KEY -> root"],
+        "expected_findings": ["id_ed25519"],
+        "notes": "World-readable root SSH private key."
+      },
+      "verify": [
+        { "label": "SSH in as root with stolen key", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Root SSH key confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-groups-docker",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/groups/setup.sh",
+      "teardown": "testbeds/groups/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["CONTAINER_ESCAPE", "ROOT"],
+        "expected_paths": ["CONTAINER_ESCAPE -> root"],
+        "expected_findings": ["docker"],
+        "notes": "User in docker group."
+      },
+      "verify": [
+        { "label": "escape container to host root", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Docker group confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-service-systemd",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/service/setup.sh",
+      "teardown": "testbeds/service/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["WRITE_SYSTEMD", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_SYSTEMD -> root"],
+        "expected_findings": ["zprivesc-weak.service"],
+        "notes": "Writable root-run systemd unit."
+      },
+      "verify": [
+        { "label": "hijack a root-run systemd unit", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Writable systemd unit confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-cron-root",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/cron/setup.sh",
+      "teardown": "testbeds/cron/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["WRITE_CRON", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_CRON -> root"],
+        "expected_findings": ["cron.d/zprivesc-weak"],
+        "notes": "Writable root-run cron job."
+      },
+      "verify": [
+        { "label": "hijack a root-run cron job", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Writable cron confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-ld-preload",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/ld_preload/setup.sh",
+      "teardown": "testbeds/ld_preload/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["INJECT_PRELOAD", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["INJECT_PRELOAD -> root"],
+        "expected_findings": ["zprivesc-weak.conf"],
+        "notes": "World-writable ld.so.conf drop-in."
+      },
+      "verify": [
+        { "label": "LD_PRELOAD into root processes", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Writable ld.so.conf confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-polkit-pkexec",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/polkit/setup.sh",
+      "teardown": "testbeds/polkit/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["POLKIT_LPE", "ROOT"],
+        "expected_paths": ["POLKIT_LPE -> root"],
+        "expected_findings": ["PKEXEC-CVE-2021-4034"],
+        "notes": "pkexec SUID + vulnerable polkit."
+      },
+      "verify": [
+        { "label": "exploit polkit/pkexec", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Polkit CVE confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-kernel-hardening",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/kernel_hardening/setup.sh",
+      "teardown": "testbeds/kernel_hardening/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["KERNEL_LPE", "ROOT"],
+        "expected_paths": ["KERNEL_LPE -> root"],
+        "expected_findings": ["KHARD"],
+        "notes": "Kernel hardening weakness."
+      },
+      "verify": [
+        { "label": "run kernel LPE exploit", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Kernel LPE weakness confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-writable-path-trojan",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/writable_path/setup.sh",
+      "teardown": "testbeds/writable_path/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["WRITE_PATH_TROJAN", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_PATH_TROJAN -> root"],
+        "expected_findings": ["evil-path"],
+        "notes": "Writable PATH directory with trojan."
+      },
+      "verify": [
+        { "label": "plant trojan in writable PATH", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "PATH trojan confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-process-root",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/process/setup.sh",
+      "teardown": "testbeds/process/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["EXEC_AS_ROOT -> root"],
+        "expected_findings": ["ww-root-proc"],
+        "notes": "Writable root-owned process."
+      },
+      "verify": [
+        { "label": "execute code as root", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Writable root process confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-docker-socket",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/docker/setup.sh",
+      "teardown": "testbeds/docker/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["CONTAINER_ESCAPE", "ROOT"],
+        "expected_paths": ["CONTAINER_ESCAPE -> root"],
+        "expected_findings": ["docker.sock"],
+        "notes": "World-writable docker.sock."
+      },
+      "verify": [
+        { "label": "escape container to host root", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Docker socket confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-sudoers-cmd",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/sudoers_cmd/setup.sh",
+      "teardown": "testbeds/sudoers_cmd/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["WRITE_SUDOERS", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_SUDOERS -> root"],
+        "expected_findings": ["zprivesc-cmd"],
+        "notes": "NOPASSWD sudoers drop-in restricted to a single command."
+      },
+      "verify": [
+        { "label": "execute code as root", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Sudoers command confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-suid-python",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/suid_python/setup.sh",
+      "teardown": "testbeds/suid_python/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["EXEC_AS_ROOT -> root"],
+        "expected_findings": ["python3-suid"],
+        "notes": "Dangerous SUID python3 binary."
+      },
+      "verify": [
+        { "label": "execute code as root", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "SUID python3 confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-cap-setuid2",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/cap_setuid2/setup.sh",
+      "teardown": "testbeds/cap_setuid2/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["SETUID_CAP", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["SETUID_CAP -> root"],
+        "expected_findings": ["python3-cap2"],
+        "notes": "File capability cap_setuid on a second binary (variant)."
+      },
+      "verify": [
+        { "label": "use file capability to setuid", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "cap_setuid variant confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-service2",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/service2/setup.sh",
+      "teardown": "testbeds/service2/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["WRITE_SYSTEMD", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_SYSTEMD -> root"],
+        "expected_findings": ["zprivesc-svc2.service"],
+        "notes": "Second writable systemd unit (variant)."
+      },
+      "verify": [
+        { "label": "hijack a root-run systemd unit", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Systemd variant confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-cron2",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/cron2/setup.sh",
+      "teardown": "testbeds/cron2/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["WRITE_CRON", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_CRON -> root"],
+        "expected_findings": ["cron.d/zprivesc-cron2"],
+        "notes": "Second writable cron.d entry (variant)."
+      },
+      "verify": [
+        { "label": "hijack a root-run cron job", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Cron variant confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-ld-preload2",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/ld_preload2/setup.sh",
+      "teardown": "testbeds/ld_preload2/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["INJECT_PRELOAD", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["INJECT_PRELOAD -> root"],
+        "expected_findings": ["zprivesc-pre2.conf"],
+        "notes": "Second world-writable ld.so.conf drop-in (variant)."
+      },
+      "verify": [
+        { "label": "LD_PRELOAD into root processes", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "LD_PRELOAD variant confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-ssh-root-key2",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/ssh_keys2/setup.sh",
+      "teardown": "testbeds/ssh_keys2/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["READ_ROOT_KEY", "ROOT"],
+        "expected_paths": ["READ_ROOT_KEY -> root"],
+        "expected_findings": ["id_ed25519"],
+        "notes": "Second readable root private key (variant)."
+      },
+      "verify": [
+        { "label": "SSH in as root with stolen key", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "SSH key variant confirmed out-of-band." }
+      ]
+    },
+
+    {
+      "id": "local-suid-nmap",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/suid_nmap/setup.sh",
+      "teardown": "testbeds/suid_nmap/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["EXEC_AS_ROOT -> root"],
+        "expected_findings": ["suid-nmap"],
+        "notes": "SUID root nmap (GTFOBins interactive mode)."
+      },
+      "verify": [
+        { "label": "execute code as root", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "SUID nmap confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-suid-find",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/suid_find/setup.sh",
+      "teardown": "testbeds/suid_find/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["EXEC_AS_ROOT -> root"],
+        "expected_findings": ["suid-find"],
+        "notes": "SUID root find (GTFOBins -exec)."
+      },
+      "verify": [
+        { "label": "execute code as root", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "SUID find confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-suid-vim",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/suid_vim/setup.sh",
+      "teardown": "testbeds/suid_vim/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["EXEC_AS_ROOT -> root"],
+        "expected_findings": ["suid-vim"],
+        "notes": "SUID root vim (GTFOBins shell escape)."
+      },
+      "verify": [
+        { "label": "execute code as root", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "SUID vim confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-suid-env",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/suid_env/setup.sh",
+      "teardown": "testbeds/suid_env/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["EXEC_AS_ROOT -> root"],
+        "expected_findings": ["suid-env"],
+        "notes": "SUID root env (GTFOBins command injection)."
+      },
+      "verify": [
+        { "label": "execute code as root", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "SUID env confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-cap-dac-read",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/cap_dac_read/setup.sh",
+      "teardown": "testbeds/cap_dac_read/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["SETUID_CAP", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["SETUID_CAP -> root"],
+        "expected_findings": ["python3-cap-dr"],
+        "notes": "File capability cap_dac_read_search."
+      },
+      "verify": [
+        { "label": "use file capability to setuid", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "cap_dac_read_search confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-cap-sys-admin",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/cap_sys_admin/setup.sh",
+      "teardown": "testbeds/cap_sys_admin/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["SETUID_CAP", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["SETUID_CAP -> root"],
+        "expected_findings": ["python3-cap-sysadmin"],
+        "notes": "File capability cap_sys_admin."
+      },
+      "verify": [
+        { "label": "use file capability to setuid", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "cap_sys_admin confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-writable-cron",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/writable_cron/setup.sh",
+      "teardown": "testbeds/writable_cron/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["WRITE_CRON", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_CRON -> root"],
+        "expected_findings": ["writable-cron-root"],
+        "notes": "World-writable /etc/cron.d entry."
+      },
+      "verify": [
+        { "label": "hijack a root-run cron job", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Writable cron confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-writable-initd",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/writable_initd/setup.sh",
+      "teardown": "testbeds/writable_initd/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["WRITE_SYSTEMD", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_SYSTEMD -> root"],
+        "expected_findings": ["zztest-sysv"],
+        "notes": "World-writable /etc/init.d script."
+      },
+      "verify": [
+        { "label": "hijack a root-run systemd unit", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Writable init.d confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-ssh-user-key",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/ssh_user_key/setup.sh",
+      "teardown": "testbeds/ssh_user_key/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": false,
+        "reachable_tokens": [],
+        "expected_paths": [],
+        "expected_findings": ["id_ed25519"],
+        "notes": "User SSH key (not root). Detection only, no root path."
+      },
+      "verify": [
+        { "label": "SSH in as root with stolen key", "kind": "path", "manual": true, "expected_y": 0,
+          "notes": "User key does not grant root." }
+      ]
+    },
+    {
+      "id": "local-sudoers-noauth",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/sudoers_noauth/setup.sh",
+      "teardown": "testbeds/sudoers_noauth/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["WRITE_SUDOERS", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_SUDOERS -> root"],
+        "expected_findings": ["91-test-noauth"],
+        "notes": "Sudoers NOPASSWD for specific command."
+      },
+      "verify": [
+        { "label": "execute code as root", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Sudoers NOPASSWD confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-docker-group2",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/docker_group2/setup.sh",
+      "teardown": "testbeds/docker_group2/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["CONTAINER_ESCAPE", "ROOT"],
+        "expected_paths": ["CONTAINER_ESCAPE -> root"],
+        "expected_findings": ["docker"],
+        "notes": "Second docker group member (variant)."
+      },
+      "verify": [
+        { "label": "escape container to host root", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Docker group variant confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-docker-socket2",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/docker_socket2/setup.sh",
+      "teardown": "testbeds/docker_socket2/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["CONTAINER_ESCAPE", "ROOT"],
+        "expected_paths": ["CONTAINER_ESCAPE -> root"],
+        "expected_findings": ["docker.sock"],
+        "notes": "Second writable docker.sock (variant)."
+      },
+      "verify": [
+        { "label": "escape container to host root", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Docker socket variant confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-service-sysv",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/service_sysv/setup.sh",
+      "teardown": "testbeds/service_sysv/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["WRITE_SYSTEMD", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_SYSTEMD -> root"],
+        "expected_findings": ["zztest-sysv"],
+        "notes": "Writable SysV init script."
+      },
+      "verify": [
+        { "label": "hijack a root-run systemd unit", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "SysV init script confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-cron-d",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/cron_d/setup.sh",
+      "teardown": "testbeds/cron_d/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["WRITE_CRON", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["WRITE_CRON -> root"],
+        "expected_findings": ["zztest-cron"],
+        "notes": "Cron.d entry running as root."
+      },
+      "verify": [
+        { "label": "hijack a root-run cron job", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "Cron.d entry confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-ld-preload3",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/ld_preload3/setup.sh",
+      "teardown": "testbeds/ld_preload3/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["INJECT_PRELOAD", "EXEC_AS_ROOT", "ROOT"],
+        "expected_paths": ["INJECT_PRELOAD -> root"],
+        "expected_findings": ["zztest-preload3.conf"],
+        "notes": "Third writable ld.so.conf drop-in (variant)."
+      },
+      "verify": [
+        { "label": "LD_PRELOAD into root processes", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "LD_PRELOAD variant confirmed out-of-band." }
+      ]
+    },
+    {
+      "id": "local-nfs-no-root-squash",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/nfs/setup.sh",
+      "teardown": "testbeds/nfs/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": true,
+        "reachable_tokens": ["WRITE_DISK", "ROOT"],
+        "expected_paths": ["WRITE_DISK -> root"],
+        "expected_findings": ["no_root_squash"],
+        "notes": "NFS export with no_root_squash."
+      },
+      "verify": [
+        { "label": "read/write raw disk for root secrets", "kind": "path", "manual": true, "expected_y": 1,
+          "notes": "NFS no_root_squash confirmed out-of-band." }
+      ]
+    },
+
+    {
+      "id": "clean-host-baseline-1",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/clean/setup.sh",
+      "teardown": "testbeds/clean/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": false,
+        "reachable_tokens": [],
+        "expected_paths": [],
+        "expected_findings": [],
+        "notes": "Clean host: no planted misconfigurations. Used for FP rate measurement."
+      },
+      "verify": [
+        { "label": "execute code as root", "kind": "path", "manual": true, "expected_y": 0,
+          "notes": "Clean host: no root escalation possible from planted artifacts." }
+      ]
+    },
+    {
+      "id": "clean-host-baseline-2",
+      "distro": "kali", "release": "2026.2", "kernel": "6.18.33.2",
+      "provisioner": "ssh",
+      "setup": "testbeds/clean/setup.sh",
+      "teardown": "testbeds/clean/cleanup.sh",
+      "ground_truth": {
+        "root_reachable": false,
+        "reachable_tokens": [],
+        "expected_paths": [],
+        "expected_findings": [],
+        "notes": "Second clean host baseline for FP rate verification."
+      },
+      "verify": [
+        { "label": "execute code as root", "kind": "path", "manual": true, "expected_y": 0,
+          "notes": "Clean host: no root escalation possible from planted artifacts." }
+      ]
+    }
+  ]
+}

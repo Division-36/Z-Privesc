@@ -8,13 +8,13 @@
 [![Coverage](https://img.shields.io/badge/coverage-%E2%89%A595%25-brightgreen)](docs/TRUTHIMATICS.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Platform: Linux x86_64](https://img.shields.io/badge/platform-Linux%20x86__64-lightgrey)](docs/ARCHITECTURE.md)
-[![Language: C17](https://img.shields.io/badge/language-C17-00599C)](https://en.cppreference.com/w/c/17)
+[![Language: C99](https://img.shields.io/badge/language-C99%20(GNU)-00599C)](https://en.cppreference.com/w/c/99)
 [![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-orange)](CHANGELOG.md)
 
 ## What is Z-Privesc?
 
 Z-Privesc is a self-contained, zero-dependency privilege-escalation
-audit tool written in C17. It walks a Linux system looking for the
+audit tool written in C99 (GNU extensions). It walks a Linux system looking for the
 seventeen most prevalent classes of misconfiguration that have
 historically led to local root compromise. Each finding is recorded as a piece of
 evidence and adjudicated by the [Truthimatics Public Version](docs/TRUTHIMATICS.md)
@@ -125,7 +125,15 @@ per-probe and a per-system label (`INFO` / `LOW` / `MEDIUM` / `HIGH` /
 
 For a ground-truth accuracy study — recall and false-positive rates
 measured against planted misconfigurations, not just runtime — see
-[benchmarks.md §9](benchmarks.md).
+[benchmarks.md §9](benchmarks.md#9-accuracy-ground-truth-study).
+
+**Headline results** (37-target expanded corpus):
+- Detection recall: **1.000** (37/37)
+- Path recall: **0.943** (33/35)
+- Zero false positives on planted targets
+- Brier score: 0.109
+
+See [docs/EVALUATION.md](docs/EVALUATION.md) for reproduction instructions.
 
 ## Exit codes
 

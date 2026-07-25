@@ -128,6 +128,51 @@ static void inspect_dir(struct zp_evidence_chain *c, const char *path,
     zp_dir_close(d);
 }
 
+static void inspect_sysv(struct zp_evidence_chain *c, const char *path,
+                         size_t *total)
+{
+    struct stat st;
+    if (lstat(path, &st) != 0) {
+        return;
+    }
+    if (S_ISLNK(st.st_mode)) {
+        return;
+    }
+    if (st.st_mode & S_IWOTH) {
+        (*total)++;
+        char id[ZP_EVIDENCE_ID_MAX];
+        snprintf(id, sizeof(id), "SVC-SYSV-%05zu", *total);
+        char desc[ZP_DESC_MAX];
+        snprintf(desc, sizeof(desc),
+                 "World-writable SysV init script (mode %04o)",
+                 st.st_mode & 0777);
+        char rem[ZP_REMEDIATION_MAX];
+        snprintf(rem, sizeof(rem), "chmod o-w <PATH>");
+        zp_evidence_add(c, id, path, desc, rem, 0.99f,
+                          ZP_VERDICT_DETERMINISTIC, ZP_SEV_CRITICAL);
+    }
+}
+
+static void scan_sysv_dir(struct zp_evidence_chain *c, const char *path,
+                          size_t *total)
+{
+    DIR *d = NULL;
+    if (zp_dir_open(&d, path) != ZP_OK) {
+        return;
+    }
+    struct dirent *de;
+    while ((de = readdir(d)) != NULL) {
+        if (de->d_name[0] == '.') {
+            continue;
+        }
+        char child[ZP_PATH_MAX];
+        if (zp_path_join(child, sizeof(child), path, de->d_name) !=
+                ZP_OK) continue;
+        inspect_sysv(c, child, total);
+    }
+    zp_dir_close(d);
+}
+
 int zp_probe_service(struct zp_evidence_chain *c, const char *root,
                         struct audit_ctx *ctx)
 {
@@ -148,9 +193,19 @@ int zp_probe_service(struct zp_evidence_chain *c, const char *root,
             inspect_dir(c, p, &total);
         }
     }
+    const char *sysv_dirs[] = {
+        "/etc/init.d",
+        "/etc/rc.d",
+    };
+    for (size_t i = 0; i < sizeof(sysv_dirs) / sizeof(sysv_dirs[0]); i++) {
+        char p[ZP_PATH_MAX];
+        if (zp_path_join(p, sizeof(p), r, sysv_dirs[i] + 1) == ZP_OK) {
+            scan_sysv_dir(c, p, &total);
+        }
+    }
     if (total == 0) {
         zp_evidence_add(c, "SVC-CLEAN", "/etc/systemd/system",
-                           "No misconfigured systemd services",
+                           "No misconfigured systemd services or SysV init scripts",
                            "No action required",
                            0.1f, ZP_VERDICT_REJECT, ZP_SEV_INFO);
     }

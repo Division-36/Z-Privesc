@@ -1,27 +1,25 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Z-Privesc Evaluation Corpus",
-  "description": "Schema for a versioned corpus of privilege-escalation targets with explicit ground truth and optional exploit-verification commands used for confidence calibration.",
+  "title": "Z-Privesc evaluation corpus",
+  "description": "Manifest of labelled evaluation targets. Each target plants one or more known misconfigurations (via a setup script) and declares ground truth plus exploit-verification procedures used to fit and test the composition engine's calibrated reliability weights.",
   "type": "object",
   "required": ["schema", "targets"],
-  "additionalProperties": false,
   "properties": {
     "schema": {
       "type": "string",
-      "pattern": "^zp-eval/corpus/v[0-9]+$",
-      "description": "Manifest schema version, e.g. zp-eval/corpus/v1."
+      "pattern": "^zp-eval/corpus/v\\d+$"
     },
     "description": { "type": "string" },
     "defaults": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "provisioner": { "type": "string", "enum": ["multipass", "docker", "ssh"] },
+        "image": { "type": "string" },
         "zp_binary": { "type": "string" },
         "timeout_sec": { "type": "integer", "minimum": 1 },
         "baselines": {
           "type": "array",
-          "items": { "type": "string", "enum": ["linpeas", "lynis"] }
+          "items": { "type": "string", "enum": ["linpeas", "lynis", "linenum", "lse", "unix-privesc-check", "traitor"] }
         }
       }
     },
@@ -34,72 +32,100 @@
   "definitions": {
     "target": {
       "type": "object",
-      "required": ["id", "provisioner", "setup", "teardown", "ground_truth"],
-      "additionalProperties": false,
+      "required": ["id", "ground_truth", "verify"],
       "properties": {
-        "id": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
-        "distro": { "type": "string" },
-        "release": { "type": "string" },
-        "kernel": { "type": "string" },
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]+$",
+          "description": "Unique target identifier. Results are written under <results>/<id>/."
+        },
+        "distro": { "type": "string", "examples": ["ubuntu", "debian", "fedora"] },
+        "release": { "type": "string", "examples": ["22.04", "12", "39"] },
+        "kernel": { "type": "string", "examples": ["5.15", "6.1", "6.8"] },
         "provisioner": { "type": "string", "enum": ["multipass", "docker", "ssh"] },
-        "image": { "type": "string", "description": "multipass image name or docker image ref." },
-        "host": { "type": "string", "description": "SSH host (provisioner=ssh)." },
-        "setup": { "type": "string", "description": "Path to a setup shell script (planted state)." },
-        "teardown": { "type": "string", "description": "Path to a teardown shell script." },
-        "timeout_sec": { "type": "integer", "minimum": 1 },
-        "baselines": {
-          "type": "array",
-          "items": { "type": "string", "enum": ["linpeas", "lynis"] }
-        },
+        "image": { "type": "string", "description": "VM/image reference for multipass/docker provisioners." },
+        "setup": { "type": "string", "description": "Path (relative to repo root) to a setup script run as root on the target to plant the misconfiguration." },
+        "teardown": { "type": "string", "description": "Path to a cleanup script run as root to remove the plant." },
         "ground_truth": { "$ref": "#/definitions/ground_truth" },
-        "verify_steps": {
+        "verify": {
           "type": "array",
-          "description": "Per-step exploit verification used for calibration.",
-          "items": { "$ref": "#/definitions/verify" }
-        },
-        "verify_paths": {
-          "type": "array",
-          "description": "End-to-end path exploit verification.",
-          "items": { "$ref": "#/definitions/verify" }
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/verify" },
+          "description": "Exploit-verification procedures. Each produces one calibration outcome (label, p, y)."
         }
       }
     },
     "ground_truth": {
       "type": "object",
-      "additionalProperties": false,
+      "required": ["expected_findings"],
       "properties": {
         "reachable_tokens": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Capability tokens that should be derivable, e.g. WRITE_SUDOERS."
+          "description": "Privilege tokens (see src/compose.c T_* enum names) reachable on this target."
         },
         "expected_paths": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Path technique labels that must be reported, e.g. 'WRITE_SUDOERS -> root'."
+          "description": "Expected escalation_path 'technique' strings, e.g. 'WRITE_SUDOERS -> root'. Used for path-level recall/precision."
         },
         "expected_findings": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Finding ids that must appear, e.g. WETC-D-004."
+          "description": "Finding id signatures expected to appear in Z-Privesc output (detection recall)."
         },
         "root_reachable": {
           "type": "boolean",
-          "description": "Whether the target grants root overall. Defaults to (expected_paths non-empty)."
+          "description": "True if the target should yield at least one 'X -> root' path. Defaults to (expected_paths non-empty)."
         },
         "notes": { "type": "string" }
       }
     },
     "verify": {
       "type": "object",
-      "required": ["cmd"],
-      "additionalProperties": false,
+      "required": ["label", "kind"],
       "properties": {
-        "label": { "type": "string", "description": "Matches a path technique or step technique." },
-        "cmd": { "type": "string", "description": "Command; exit 0 = success (exploit worked), non-zero = failure." },
-        "user": { "type": "string", "description": "Optional user to run as (e.g. the unprivileged victim)." },
-        "timeout_sec": { "type": "integer", "minimum": 1 }
-      }
+        "label": {
+          "type": "string",
+          "description": "Calibration key. MUST equal either (a) a rule 'tech' string in src/compose.c RULES[] (e.g. 'execute code as root'), or (b) a privilege token name (e.g. 'ROOT') for direct grants with no composing rule."
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["path", "step"],
+          "default": "step",
+          "description": "Whether this verifies a whole escalation path (path) or a single composing rule/step (step). Both yield one calibration outcome keyed by 'label'."
+        },
+        "check": {
+          "type": "string",
+          "description": "Shell command run as 'as_user'. MUST return exit 0 IF AND ONLY IF the escalation to root (or the step) genuinely succeeds. Ignored when manual=true."
+        },
+        "as_user": {
+          "type": "string",
+          "default": "ubuntu",
+          "description": "Unprivileged user the check runs as (via 'sudo -u'). The exploit is expected to elevate this user to root."
+        },
+        "manual": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, 'check' is NOT executed; 'expected_y' is used as the verified outcome (human-verified, e.g. kernel LPE / polkit CVE where safe automated verification is impractical)."
+        },
+        "expected_y": {
+          "type": "integer",
+          "enum": [0, 1],
+          "description": "Human-verified outcome, required when manual=true."
+        },
+        "notes": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["manual"], "properties": { "manual": { "const": true } } },
+          "then": { "required": ["expected_y"] }
+        },
+        {
+          "if": { "required": ["manual"], "properties": { "manual": { "const": false } } },
+          "then": { "required": ["check"] }
+        }
+      ]
     }
   }
 }

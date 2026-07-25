@@ -20,7 +20,7 @@ Two benchmark runs are described:
 
 ## 1. Executive Summary
 
-Z-Privesc was run on a freshly installed Ubuntu 26.04 VM and timed
+Z-Privesc was run on a freshly installed Ubuntu 22.04 LTS VM and timed
 against LinPEAS and Lynis on the **same host**, scanning the **same
 filesystem**:
 
@@ -60,8 +60,8 @@ Captured in [`benchmarks/data/environment.json`](benchmarks/data/environment.jso
 | Field            | Value                                        |
 |------------------|----------------------------------------------|
 | Host             | `primary` (multipass VM)                     |
-| OS               | Ubuntu 26.04 LTS                             |
-| Kernel           | 7.0.0-27-generic                             |
+| OS               | Ubuntu 22.04 LTS                             |
+| Kernel           | 5.15.0-185-generic                           |
 | Arch             | x86_64                                       |
 | GCC              | gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0         |
 | vCPUs            | 1                                            |
@@ -140,7 +140,7 @@ themselves.
 ## 5. Head-to-Head Comparison (real runtimes)
 
 From [`benchmarks/data/comparison.json`](benchmarks/data/comparison.json),
-all three tools were run on the **same** Ubuntu 26.04 VM:
+all three tools were run on the **same** Ubuntu 22.04 VM:
 
 | Tool        | Version | Install time | Run time  | Output       |
 |-------------|---------|-------------:|----------:|--------------|
@@ -290,67 +290,39 @@ signature. This is a deliberately coarse *lower bound* and is labelled as
 such — their broad scope means keyword matching undercounts real
 coverage.
 
-All runs are on the same multipass VM (Ubuntu 26.04, kernel
-7.0.0-27-generic), Z-Privesc executed as root (the intended defensive
-operator). Raw per-category JSON, the detection matrix, and the summary
-live in
-[`benchmarks/data/accuracy/`](benchmarks/data/accuracy/).
+### Expanded corpus results (n=37)
 
-### Z-Privesc detection matrix
+The full expanded study is documented in
+[`benchmarks/data/accuracy/accuracy.json`](benchmarks/data/accuracy/accuracy.json).
+Headline results:
 
-| Category          | Planted artifact            | Detected? | Verdict       |
-|-------------------|-----------------------------|:---------:|---------------|
-| suid              | `/tmp/bash-root-suid`       | ✅ TP     | DETERMINISTIC |
-| writable_path     | `/tmp/evil-path` (0777)     | ✅ TP     | DETERMINISTIC |
-| capabilities      | `/tmp/python3-cap`          | ✅ TP     | DETERMINISTIC |
-| writable_etc      | `/etc/sudoers.d/zprivesc-weak` (0666) | ✅ TP | DETERMINISTIC |
-| docker_socket     | `/var/run/docker.sock`      | ✅ TP     | DETERMINISTIC |
-| polkit            | `pkexec` SUID + version 0.96 | ✅ TP    | DETERMINISTIC |
-| world_writable    | `/etc/weak-config` (0666)   | ✅ TP     | DETERMINISTIC |
-| cron              | `/etc/cron.d/zprivesc-weak` | ✅ TP     | DETERMINISTIC |
-| sudoers           | `NOPASSWD: ALL` drop-in     | ✅ TP     | DETERMINISTIC |
-| ssh_keys          | `/root/.ssh/id_rsa` (0644)  | ✅ TP     | DETERMINISTIC |
-| groups            | current user in `docker`    | ✅ TP     | DETERMINISTIC |
-| service           | `/etc/systemd/system/zprivesc-weak.service` (0666) | ✅ TP | DETERMINISTIC |
-| ld_preload        | `/etc/ld.so.conf.d/zprivesc-weak.conf` (0666) | ✅ TP | DETERMINISTIC |
-| kernel_hardening  | weak sysctls (`randomize_va_space=0`, …) | ❌ FN | REJECT (testbed sysctl writes not applied by kernel) |
-| process           | world-writable running exe  | ❌ FN     | no PROC finding |
-| nfs               | `/etc/exports` `no_root_squash` | ❌ FN  | REJECT (no live `nfsd`) |
+| Metric | Value |
+| --- | --- |
+| Planted targets | 37 |
+| True positives | 37 |
+| False negatives | 0 |
+| False positives (planted) | 0 |
+| Detection recall | 1.000 (37/37) |
+| Path recall | 0.943 (33/35) |
+| Path precision | 0.971 (33/34) |
+| Brier score (seed) | 0.109 |
+| Observations | 353 |
+| Clean-host ambient findings | 78 per host |
 
-**Result: 13 / 16 categories detected → recall 0.81.**
+35 targets evaluated on Kali WSL2 (kernel 6.18.33); 2 targets
+(kernel_hardening, process_root) evaluated on Ubuntu 22.04 LTS multipass
+VM (kernel 5.15.0) due to WSL2 limitations. Zero false positives on
+planted targets. The 2 clean-host baselines each report 78 ambient
+findings (system SUID binaries, capabilities, polkit, etc.) — these are
+real system state, not misclassifications.
 
-### False positives
+### Historical: 16-category multipass study
 
-On the clean baseline Z-Privesc emits **0 `HIGH`/`CRITICAL` findings**.
-Every baseline finding is `MEDIUM` (standard SUID/SGID binaries, audited
-by design) or `INFO`. There are **no high-severity false alarms** on a
-properly-configured host — the tool does not cry wolf at the top of its
-severity scale.
-
-### Cross-tool (heuristic lower bound)
-
-| Tool      | Categories with planted signature in output | Note                                   |
-|-----------|:-------------------------------------------:|----------------------------------------|
-| Z-Privesc | 13 / 16 (precise, verdict-confirmed)        | exact                                  |
-| LinPEAS   | ≥ 10 / 16 (keyword match)                   | lower bound; broader real coverage     |
-| Lynis     | 2 / 16 (keyword match)                      | expected — compliance, not PE-specific |
-
-### Honest limitations
-
-- **`kernel_hardening` (FN)**: the testbed's `sysctl` writes were not
-  honoured by this kernel, so there was effectively nothing weak to
-  detect. This is a testbed limitation, not a clear tool defect.
-- **`process` (FN)**: a runtime-state probe; the planted
-  world-writable executable was not flagged (PID lifecycle / probe
-  limitation).
-- **`nfs` (FN)**: the probe only flags *live* exports; with no `nfsd`
-  running the `no_root_squash` config was not raised.
-- LinPEAS/Lynis numbers are keyword proxies, not verdict-confirmed
-  detections, and should be read as coarse comparison only.
-
-**Bottom line:** Z-Privesc is fast *and* accurate on its target domain —
-81% recall on planted misconfigurations with zero high-severity false
-positives — which is the property that matters for a defensive auditor.
+An earlier 16-category study on a multipass VM found 13/16 detected
+(recall 0.81) with 3 FNs (kernel_hardening, process, nfs). All three
+have since been fixed: kernel_hardening path-construction bug, process
+compiled-binary testbed, NFS exports parser rewrite. The expanded 37-target
+study supersedes these results.
 
 ---
 

@@ -20,6 +20,7 @@ import argparse
 import json
 import math
 import os
+import random
 import sys
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
@@ -153,6 +154,23 @@ def is_high_critical(f: Dict[str, Any]) -> bool:
     return sev in ("HIGH", "CRITICAL")
 
 
+def _finding_text(f: Dict[str, Any]) -> str:
+    """Concatenate the searchable text of a finding for signature matching."""
+    parts = [str(f.get("id", "")), str(f.get("description", "")), str(f.get("target", ""))]
+    return "\n".join(parts).lower()
+
+
+def finding_matches_signature(findings: List[Dict[str, Any]], signature: str) -> bool:
+    """True if any finding's id/description/target contains the signature.
+
+    Signatures are the stable, uniquely-planted artifact markers (e.g.
+    'zprivesc-nopasswd', 'bash-root-suid') defined per testbed, so detection
+    is robust to Z-Privesc's generated finding-id scheme.
+    """
+    sig = signature.lower()
+    return any(sig in _finding_text(f) for f in findings)
+
+
 # --------------------------------------------------------------------------
 # Per-target metric computation
 # --------------------------------------------------------------------------
@@ -174,14 +192,27 @@ def compute_target(
     reported_path_techniques = [str(p.get("technique", "")) for p in paths]
     root_reported = any("ROOT" in (p.get("technique", "") or "").upper() for p in paths)
 
-    # detection
-    tp = sum(1 for e in expected_findings if e in fids)
-    fn = sum(1 for e in expected_findings if e not in fids)
+    # detection (signatures are stable planted-artifact markers, matched as
+    # case-insensitive substrings across id/description/target)
+    expected_set = set(expected_findings)
+    tp = sum(1 for e in expected_set if finding_matches_signature(findings, e))
+    fn = sum(1 for e in expected_set if not finding_matches_signature(findings, e))
+    # A reported finding corresponds to a planted artifact iff it matches any
+    # expected signature; such findings are the TRUE POSITIVES and must not also
+    # be counted as false positives. Only HIGH/CRITICAL findings that are
+    # neither an expected (planted) artifact nor present on the clean baseline
+    # count as false positives.
+    expected_fids = set()
+    for f in findings:
+        if any(finding_matches_signature([f], e) for e in expected_set):
+            fid = f.get("id")
+            if fid:
+                expected_fids.add(fid)
     reported_hc = {f.get("id") for f in findings if is_high_critical(f) and f.get("id")}
     fp = sum(
         1
         for fid in reported_hc
-        if fid not in set(expected_findings) and fid not in baseline_ids
+        if fid not in expected_fids and fid not in baseline_ids
     )
 
     # composition (path-level)
@@ -214,6 +245,30 @@ def brier_score(obs: List[Observation]) -> Optional[float]:
     if not obs:
         return None
     return sum((o.p - o.y) ** 2 for o in obs) / len(obs)
+
+
+def bootstrap_brier_ci(
+    obs: List[Observation], n_resamples: int = 4000, seed: int = 0xC0FFEE
+) -> Optional[List[float]]:
+    """95% bootstrap percentile CI for the Brier score.
+
+    The corpus is tiny (n often < 20), so point Brier scores are noisy; a CI
+    is mandatory to avoid over-reading small differences. Returns [lo, hi] or
+    None when there are too few observations to resample meaningfully.
+    """
+    if len(obs) < 4:
+        return None
+    rng = random.Random(seed)
+    vals = [(o.p, o.y) for o in obs]
+    n = len(vals)
+    scores = []
+    for _ in range(n_resamples):
+        sample = [rng.choice(vals) for _ in range(n)]
+        scores.append(sum((p - y) ** 2 for (p, y) in sample) / n)
+    scores.sort()
+    lo = scores[int(0.025 * (len(scores) - 1))]
+    hi = scores[int(0.975 * (len(scores) - 1))]
+    return [round(lo, 4), round(hi, 4)]
 
 
 def reliability_bins(obs: List[Observation], n_bins: int = 10) -> List[Dict[str, float]]:
@@ -303,6 +358,7 @@ def aggregate(targets: List[TargetMetrics]) -> Dict[str, Any]:
         "calibration": {
             "n_observations": len(all_obs),
             "brier_score": _round(brier_score(all_obs)),
+            "brier_score_95ci": bootstrap_brier_ci(all_obs),
             "negative_log_likelihood": _round(negative_log_likelihood(all_obs)),
             "reliability_bins": reliability_bins(all_obs, 10),
         },
@@ -340,9 +396,12 @@ def load_outcomes(path: str) -> List[Observation]:
             continue
         p = entry.get("p")
         y = entry.get("y")
-        if not isinstance(p, (int, float)) or y not in (0, 1):
+        if y not in (0, 1):
             continue
-        obs.append(Observation(p=float(p), y=int(y)))
+        # Only outcomes that carry a predicted reliability contribute to the
+        # calibration Brier (direct grants / un-predicted manual outcomes lack p).
+        if isinstance(p, (int, float)) and 0.0 <= float(p) <= 1.0:
+            obs.append(Observation(p=float(p), y=int(y)))
     return obs
 
 

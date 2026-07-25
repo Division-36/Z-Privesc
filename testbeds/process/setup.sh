@@ -7,7 +7,9 @@ set -e
 cp -f /bin/sleep /tmp/ww-root-proc
 chmod 0666 /tmp/ww-root-proc
 chown root:root /tmp/ww-root-proc
-/tmp/ww-root-proc 9999 &
+# Use setsid to create a new session — more robust than nohup on WSL2,
+# which still kills background processes when the parent SSH session ends.
+setsid /tmp/ww-root-proc 9999 </dev/null >/dev/null 2>&1 &
 PID=$!
 echo "$PID" > /tmp/ww-root-proc.pid
 echo "process testbed ready: pid=$PID /tmp/ww-root-proc (mode 0666)"

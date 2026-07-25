@@ -36,6 +36,8 @@ void zp_cli_print_usage(const char *prog)
 "  --probe=<name>        Run a specific probe (may be repeated)\n"
 "                        Names: suid writable_path capabilities writable_etc\n"
 "                              docker_socket polkit world_writable kernel_vuln\n"
+"                              cron sudoers ssh_keys groups service\n"
+"                              kernel_hardening process nfs ld_preload\n"
 "  --root=<dir>          Scan alternate filesystem root (containers)\n"
 "  --json                Emit JSON audit report to stdout\n"
 "  --html                Emit HTML audit report to stdout\n"

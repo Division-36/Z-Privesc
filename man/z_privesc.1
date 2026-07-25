@@ -8,12 +8,15 @@ z_privesc \- privilege-escalation audit tool
 [\fIOPTIONS\fR]
 .SH DESCRIPTION
 \fBZ\-Privesc\fR inspects a Linux system for misconfigurations known
-to enable local privilege escalation across eight categories: SUID
-binaries, writable PATH entries, Linux capabilities, writable
+to enable local privilege escalation across seventeen categories:
+SUID binaries, writable PATH entries, Linux capabilities, writable
 authentication files in \fI/etc\fR, exposed Docker control sockets,
-polkit / pkexec weaknesses, world\-writable sensitive files, and
-kernel version matches against well\-known privilege\-escalation
-CVEs.
+polkit / pkexec weaknesses, world\-writable sensitive files, kernel
+version matches against well\-known privilege\-escalation CVEs, cron
+misconfiguration, sudoers rule audit, SSH private key permissions,
+privileged group membership, systemd unit file audit, kernel
+hardening /proc/sys settings, root process binary audit, NFS export
+misconfiguration, and LD_PRELOAD / ld.so.conf audit.
 
 Every finding is collected as a piece of \fIevidence\fR and evaluated
 by the \fITruthimatics Public Version\fR engine, which assigns a
@@ -30,7 +33,8 @@ Recognised names are:
 .RS
 .IP
 suid, writable_path, capabilities, writable_etc, docker_socket,
-polkit, world_writable, kernel_vuln
+polkit, world_writable, kernel_vuln, cron, sudoers, ssh_keys,
+groups, service, kernel_hardening, process, nfs, ld_preload
 .RE
 .TP
 .B \-\-root=\fIDIR\fR

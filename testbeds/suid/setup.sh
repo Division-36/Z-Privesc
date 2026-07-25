@@ -5,7 +5,8 @@ set -e
 [ "$(id -u)" = "0" ] || { echo "must run as root" >&2; exit 1; }
 SRC=$(command -v bash || echo /bin/bash)
 [ -x "$SRC" ] || { echo "no bash found" >&2; exit 1; }
-cp -f "$SRC" /tmp/bash-root-suid
-chown root:root /tmp/bash-root-suid
-chmod 4755 /tmp/bash-root-suid
-echo "suid testbed ready: /tmp/bash-root-suid"
+mkdir -p /home/ubuntu/zptest
+cp -f "$SRC" /home/ubuntu/zptest/bash-root-suid
+chown root:root /home/ubuntu/zptest/bash-root-suid
+chmod 4755 /home/ubuntu/zptest/bash-root-suid
+echo "suid testbed ready: /home/ubuntu/zptest/bash-root-suid"

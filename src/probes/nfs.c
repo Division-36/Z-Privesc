@@ -51,14 +51,48 @@ int zp_probe_nfs(struct zp_evidence_chain *c, const char *root,
         if (hash != NULL) *hash = '\0';
         if (line[0] == '\n' || line[0] == '\0') continue;
         char *path = strtok(line, " \t");
-        char *host = strtok(NULL, " \t");
-        if (path == NULL || host == NULL) continue;
-        char *rest = host + strlen(host) + 1;
-        bool world     = (strcmp(host, "*") == 0);
-        bool insecure  = (strstr(rest, "insecure") != NULL);
-        bool no_root   = (strstr(rest, "no_root_squash") != NULL);
-        bool rw        = (strstr(rest, "rw") != NULL &&
-                          strstr(rest, "ro") == NULL);
+        char *host_spec = strtok(NULL, " \t");
+        if (path == NULL || host_spec == NULL) continue;
+        /* Parse host_spec which may be "*(", "*(options)", or just "*" */
+        char host_buf[256];
+        char opts_buf[512];
+        opts_buf[0] = '\0';
+        char *paren = strchr(host_spec, '(');
+        if (paren != NULL) {
+            /* host_spec = "*(no_root_squash,rw)" format */
+            size_t hlen = (size_t)(paren - host_spec);
+            if (hlen >= sizeof(host_buf)) hlen = sizeof(host_buf) - 1;
+            memcpy(host_buf, host_spec, hlen);
+            host_buf[hlen] = '\0';
+            /* Extract options from inside parentheses */
+            char *close_p = strchr(paren + 1, ')');
+            if (close_p != NULL) {
+                size_t olen = (size_t)(close_p - paren - 1);
+                if (olen >= sizeof(opts_buf)) olen = sizeof(opts_buf) - 1;
+                memcpy(opts_buf, paren + 1, olen);
+                opts_buf[olen] = '\0';
+            }
+        } else {
+            strncpy(host_buf, host_spec, sizeof(host_buf) - 1);
+            host_buf[sizeof(host_buf) - 1] = '\0';
+            /* Read remaining tokens as options */
+            char *rest_tok;
+            while ((rest_tok = strtok(NULL, " \t")) != NULL) {
+                if (opts_buf[0] != '\0') {
+                    size_t len = strlen(opts_buf);
+                    if (len + 1 < sizeof(opts_buf)) {
+                        opts_buf[len] = ' ';
+                        opts_buf[len + 1] = '\0';
+                    }
+                }
+                strncat(opts_buf, rest_tok, sizeof(opts_buf) - strlen(opts_buf) - 2);
+            }
+        }
+        bool world     = (strcmp(host_buf, "*") == 0);
+        bool insecure  = (strstr(opts_buf, "insecure") != NULL);
+        bool no_root   = (strstr(opts_buf, "no_root_squash") != NULL);
+        bool rw        = (strstr(opts_buf, "rw") != NULL &&
+                          strstr(opts_buf, "ro") == NULL);
         if (!world && !no_root && !insecure) continue;
         total++;
         char id[ZP_EVIDENCE_ID_MAX];

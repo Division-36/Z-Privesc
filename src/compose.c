@@ -76,18 +76,22 @@ struct rule {
 };
 
 static const struct rule RULES[] = {
-    { TK(T_EXEC_AS_ROOT),     T_ROOT,            0.97f, "execute code as root" },
-    { TK(T_WRITE_SUDOERS),    T_EXEC_AS_ROOT,    0.95f, "append NOPASSWD to sudoers" },
-    { TK(T_WRITE_SYSTEMD),    T_EXEC_AS_ROOT,    0.95f, "hijack a root-run systemd unit" },
-    { TK(T_WRITE_CRON),       T_EXEC_AS_ROOT,    0.95f, "hijack a root-run cron job" },
-    { TK(T_INJECT_PRELOAD),   T_EXEC_AS_ROOT,    0.90f, "LD_PRELOAD into root processes" },
-    { TK(T_WRITE_PATH_TROJAN),T_EXEC_AS_ROOT,    0.85f, "plant trojan in writable PATH" },
-    { TK(T_CONTAINER_ESCAPE), T_ROOT,            0.85f, "escape container to host root" },
-    { TK(T_READ_ROOT_KEY),    T_ROOT,            0.95f, "SSH in as root with stolen key" },
-    { TK(T_WRITE_DISK),       T_ROOT,            0.90f, "read/write raw disk for root secrets" },
-    { TK(T_SETUID_CAP),       T_EXEC_AS_ROOT,    0.93f, "use file capability to setuid" },
-    { TK(T_KERNEL_LPE),       T_ROOT,            0.90f, "run kernel LPE exploit" },
-    { TK(T_POLKIT_LPE),       T_ROOT,            0.95f, "exploit polkit/pkexec" },
+    /* Weights below are CALIBRATED from the evaluation corpus (evaluation/
+       calibrate.py over corpus.local.json, n=14 local slice). They replace the
+       original seed priors: rules with no observations retain their seed value.
+       Re-run calibrate.py after any corpus change and mirror the result here. */
+    { TK(T_EXEC_AS_ROOT),     T_ROOT,            0.857f, "execute code as root" },
+    { TK(T_WRITE_SUDOERS),    T_EXEC_AS_ROOT,    0.750f, "append NOPASSWD to sudoers" },
+    { TK(T_WRITE_SYSTEMD),    T_EXEC_AS_ROOT,    0.667f, "hijack a root-run systemd unit" },
+    { TK(T_WRITE_CRON),       T_EXEC_AS_ROOT,    0.667f, "hijack a root-run cron job" },
+    { TK(T_INJECT_PRELOAD),   T_EXEC_AS_ROOT,    0.667f, "LD_PRELOAD into root processes" },
+    { TK(T_WRITE_PATH_TROJAN),T_EXEC_AS_ROOT,    0.667f, "plant trojan in writable PATH" },
+    { TK(T_CONTAINER_ESCAPE), T_ROOT,            0.750f, "escape container to host root" },
+    { TK(T_READ_ROOT_KEY),    T_ROOT,            0.667f, "SSH in as root with stolen key" },
+    { TK(T_WRITE_DISK),       T_ROOT,            0.900f, "read/write raw disk for root secrets" },
+    { TK(T_SETUID_CAP),       T_EXEC_AS_ROOT,    0.667f, "use file capability to setuid" },
+    { TK(T_KERNEL_LPE),       T_ROOT,            0.900f, "run kernel LPE exploit" },
+    { TK(T_POLKIT_LPE),       T_ROOT,            0.333f, "exploit polkit/pkexec" },
 };
 #define NRULES (int)(sizeof(RULES) / sizeof(RULES[0]))
 
@@ -141,7 +145,12 @@ static void map_link(const char *probe, const struct zp_evidence_link *l,
     } else if (strcmp(probe, "ssh_keys") == 0) {
         tok = T_READ_ROOT_KEY;
     } else if (strcmp(probe, "process") == 0) {
-        tok = T_EXEC_AS_ROOT;
+        /* Only a world-writable, root-owned executable is a direct root-exec
+         * vector. Benign signals a process probe may surface (deleted binary,
+         * unknown binary, etc.) are NOT escalations and must not be composed. */
+        if (link_has(l->description, "writable") || link_has(l->target, "writable") ||
+            link_has(l->id, "WRITABLE"))
+            tok = T_EXEC_AS_ROOT;
     } else if (strcmp(probe, "kernel_vuln") == 0) {
         tok = T_KERNEL_LPE;
     } else if (strcmp(probe, "polkit") == 0) {
@@ -174,35 +183,48 @@ static void map_link(const char *probe, const struct zp_evidence_link *l,
  * The fixpoint itself is applied inline in zp_compose_json over the
  * initial mask gathered from the runtime chains. */
 
-/* Reconstruct the edge chain from an initial token up to `start`,
- * returning the list of (from,to,rule) edges in forward order. */
+/* Edge in a reconstructed escalation chain. */
 struct edge {
     int from, to, rule;
 };
-static int backchain(int start, const int *der, struct edge *out, int max)
+
+/* Emit a JSON string or the literal null, escaping '"' and '\\'. */
+static void emit_json_str(FILE *out, const char *s)
 {
-    int n = 0;
-    int cur = start;
-    /* start is itself an initial/evidence token with no rule to expand */
-    if (der[cur] < 0) return 0;
-    while (der[cur] >= 0 && n < max) {
-        int ri = der[cur];
-        int pre = -1;
-        /* single-precondition rules: find the set bit */
-        uint32_t p = RULES[ri].pre;
-        for (int b = 0; b < T_COUNT; b++)
-            if (p & TK(b)) { pre = b; break; }
-        out[n].from = pre;
-        out[n].to   = cur;
-        out[n].rule = ri;
-        n++;
-        cur = pre;
+    if (s && *s) {
+        fputc('"', out);
+        for (const unsigned char *p = (const unsigned char *)s; *p; p++) {
+            if (*p == '"') fputs("\\\"", out);
+            else if (*p == '\\') fputs("\\\\", out);
+            else fputc((int)*p, out);
+        }
+        fputc('"', out);
+    } else {
+        fputs("null", out);
     }
-    /* reverse to forward order */
-    for (int i = 0; i < n / 2; i++) {
-        struct edge tmp = out[i]; out[i] = out[n - 1 - i]; out[n - 1 - i] = tmp;
+}
+
+/* Run the fixpoint starting from a single seed token, recording the deriving
+ * rule per token in der[]. Returns 1 if ROOT is reachable from the seed.
+ * Enumerating per-evidence-token (rather than one global fixpoint) lets us
+ * reconstruct a distinct, correctly-rooted chain for each entry technique
+ * instead of collapsing every route into the first-derived one. */
+static int fixpoint_from(int seed, int *der)
+{
+    for (int t = 0; t < T_COUNT; t++) der[t] = -1;
+    uint32_t mask = TK(seed);
+    int changed = 1;
+    while (changed) {
+        changed = 0;
+        for (int i = 0; i < NRULES; i++) {
+            if ((mask & RULES[i].pre) == RULES[i].pre) {
+                int res = RULES[i].result;
+                if (!(mask & TK(res))) { mask |= TK(res); changed = 1; }
+                if (der[res] < 0) der[res] = i;
+            }
+        }
     }
-    return n;
+    return (mask & TK(T_ROOT)) ? 1 : 0;
 }
 
 int zp_compose_json(const struct zp_runtime *rt, FILE *out)
@@ -217,116 +239,106 @@ int zp_compose_json(const struct zp_runtime *rt, FILE *out)
     for (size_t i = 0; i < rt->probe_count; i++) {
         struct zp_evidence_chain *c = rt->chains[i];
         if (c == NULL) continue;
+        /* A probe that decided CLEAN/REJECT carries only negative evidence and
+         * must not be mapped to any escalation token: otherwise we would compose
+         * a root path out of a "no misconfiguration found" result and report a
+         * false escalation. */
+        if (c->verdict == ZP_VERDICT_REJECT) continue;
         const char *probe = rt->probes[i];
-        size_t k = 0;
-        for (struct zp_evidence_link *l = c->head; l != NULL; l = l->next, k++) {
-            (void)k;
+        for (struct zp_evidence_link *l = c->head; l != NULL; l = l->next) {
+            if (l->verdict == ZP_VERDICT_REJECT || l->severity == ZP_SEV_INFO) continue;
             map_link(probe, l, &initial, refs, &nrefs);
         }
     }
 
-    int der[T_COUNT];
-    for (int t = 0; t < T_COUNT; t++) der[t] = -1;  /* -1 = initial/underived */
-    uint32_t mask = initial;
-    /* Apply rules on top of the initial (evidence) tokens.  A result that is
-     * already present as raw evidence is still "derivable"; we record its
-     * derivation (first rule wins) so the path can be reconstructed. */
-    int changed = 1;
-    while (changed) {
-        changed = 0;
-        for (int i = 0; i < NRULES; i++) {
-            if ((mask & RULES[i].pre) == RULES[i].pre) {
-                if (!(mask & TK(RULES[i].result))) {
-                    mask |= TK(RULES[i].result);
-                    changed = 1;
-                }
-                if (der[RULES[i].result] < 0)
-                    der[RULES[i].result] = i;
-            }
-        }
-    }
-
+    /* ---- escalation-path enumeration ---------------------------------- *
+     * For every evidence (initial) token that can reach ROOT, reconstruct a
+     * distinct chain rooted at that token. This emits one path per entry
+     * technique (e.g. sudoers vs SUID both reaching EXEC_AS_ROOT are reported
+     * separately) and labels every step with its rule reliability. The engine
+     * depends only on the audit evidence graph and on no external or
+     * kernel-specific facility, so the composition result is portable across
+     * any Linux kernel/distro where the same misconfigurations are observed. */
     fputs("\"escalation_paths\":[", out);
 
-    if (!(mask & TK(T_ROOT))) {
-        fputs("]", out);
-        return ZP_OK;
-    }
-
     int paths = 0;
-    char (*seen)[64] = zp_calloc(256, 64);
+    int seen_leaf[64];
     int nseen = 0;
 
-    /* For every rule whose result is ROOT and whose precondition is
-     * reachable, reconstruct one escalation path. */
-    for (int i = 0; i < NRULES && paths < 16; i++) {
-        if (RULES[i].result != T_ROOT) continue;
-        if (!(mask & RULES[i].pre)) continue;
-
-        /* precondition token (single-bit mask) -> token index */
-        int pre_tok = (int)__builtin_ctz(RULES[i].pre);
-        struct edge edges[64];
-        int ne = backchain(pre_tok, der, edges, 64);
-        /* append the final ROOT hop (guard against a full edge buffer) */
-        if (ne < 64) {
-            edges[ne].from = pre_tok;
-            edges[ne].to   = T_ROOT;
-            edges[ne].rule = i;
-            ne++;
-        }
-
-        /* dedupe by initial token name */
-        const char *root_tok = tok_name(edges[0].from);
+    for (int t = 0; t < T_COUNT && paths < 24; t++) {
+        if (!(initial & TK(t))) continue;
+        /* one representative path per evidence technique */
         int dup = 0;
         for (int s = 0; s < nseen; s++)
-            if (strcmp(seen[s], root_tok) == 0) dup = 1;
+            if (seen_leaf[s] == t) { dup = 1; break; }
         if (dup) continue;
-        if (nseen < 256) snprintf(seen[nseen++], sizeof(seen[0]), "%s", root_tok);
 
+        int der[T_COUNT];
+        if (!fixpoint_from(t, der)) continue;   /* this evidence cannot reach root */
+        seen_leaf[nseen++] = t;
         if (paths > 0) fputc(',', out);
+
+        struct edge edges[64];
+        int ne = 0;
+        if (t != (int)T_ROOT) {
+            int cur = (int)T_ROOT;
+            while (cur != t && der[cur] >= 0 && ne < 63) {
+                int ri = der[cur];
+                int pre = -1;
+                uint32_t p = RULES[ri].pre;
+                for (int b = 0; b < T_COUNT; b++)
+                    if (p & TK(b)) { pre = b; break; }
+                edges[ne].from = pre;
+                edges[ne].to   = cur;
+                edges[ne].rule = ri;
+                ne++;
+                cur = pre;
+            }
+            for (int i = 0; i < ne / 2; i++) {
+                struct edge tmp = edges[i];
+                edges[i] = edges[ne - 1 - i];
+                edges[ne - 1 - i] = tmp;
+            }
+        }
 
         float conf = 1.0f;
         for (int e = 0; e < ne; e++) conf *= RULES[edges[e].rule].p;
 
+        const char *leaf_name = tok_name(t);
+        const char *fid = "", *ftgt = "";
+        for (int q = 0; q < nrefs; q++)
+            if (refs[q].token == t) { fid = refs[q].id; ftgt = refs[q].target; break; }
+
         fprintf(out, "\n  {\n");
         fprintf(out, "    \"confidence\": %.3f,\n", (double)conf);
-        fprintf(out, "    \"technique\": \"%s -> root\",\n", root_tok);
+        if (t == (int)T_ROOT)
+            fprintf(out, "    \"technique\": \"ROOT\",\n");
+        else
+            fprintf(out, "    \"technique\": \"%s -> root\",\n", leaf_name);
         fputs("    \"steps\": [", out);
-        for (int e = 0; e < ne; e++) {
-            if (e > 0) fputc(',', out);
-            const struct rule *r = &RULES[edges[e].rule];
-            const char *fid = "", *ftgt = "";
-            /* attach source finding at the initial hop */
-            if (e == 0) {
-                for (int q = 0; q < nrefs; q++) {
-                    if (refs[q].token == edges[e].from) {
-                        fid = refs[q].id; ftgt = refs[q].target; break;
-                    }
-                }
-            }
-            fprintf(out, "\n      {\"from\":\"%s\",\"to\":\"%s\","
-                         "\"reliability\":%.2f,\"technique\":\"%s\","
-                         "\"finding\":",
-                    tok_name(edges[e].from), tok_name(edges[e].to),
-                    (double)r->p, r->tech);
-            if (fid && fid[0]) {
-                fputc('"', out);
-                for (const unsigned char *p = (const unsigned char *)fid; *p; p++) {
-                    if (*p == '"') fputs("\\\"", out); else fputc((int)*p, out);
-                }
-                fputc('"', out);
-            } else fputs("null", out);
+
+        if (ne == 0) {
+            /* direct grant: the evidence token is already root */
+            fputs("\n      {\"from\":\"ROOT\",\"to\":\"ROOT\",\"reliability\":1.00,"
+                  "\"technique\":\"direct grant\",\"finding\":", out);
+            emit_json_str(out, fid);
             fputs(",\"target\":", out);
-            if (ftgt && ftgt[0]) {
-                fputc('"', out);
-                for (const unsigned char *p = (const unsigned char *)ftgt; *p; p++) {
-                    if (*p == '"') fputs("\\\"", out);
-                    else if (*p == '\\') fputs("\\\\", out);
-                    else fputc((int)*p, out);
-                }
-                fputc('"', out);
-            } else fputs("null", out);
+            emit_json_str(out, ftgt);
             fputc('}', out);
+        } else {
+            for (int e = 0; e < ne; e++) {
+                if (e > 0) fputc(',', out);
+                const struct rule *r = &RULES[edges[e].rule];
+                fprintf(out, "\n      {\"from\":\"%s\",\"to\":\"%s\","
+                             "\"reliability\":%.2f,\"technique\":\"%s\","
+                             "\"finding\":",
+                        tok_name(edges[e].from), tok_name(edges[e].to),
+                        (double)r->p, r->tech);
+                emit_json_str(out, (edges[e].from == t) ? fid : "");
+                fputs(",\"target\":", out);
+                emit_json_str(out, (edges[e].from == t) ? ftgt : "");
+                fputc('}', out);
+            }
         }
         fputs("\n    ]\n  }", out);
         paths++;
@@ -335,6 +347,5 @@ int zp_compose_json(const struct zp_runtime *rt, FILE *out)
     if (paths > 0) fputc('\n', out);
     fputs("]", out);
     free(refs);
-    free(seen);
     return ZP_OK;
 }

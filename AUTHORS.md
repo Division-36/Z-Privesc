@@ -3,7 +3,7 @@
 ## Project lead
 
 - **Zierax (Ziad Salah)** <zs.01117875692@gmail.com> - design, all
-  eight probes, Truthimatics integration, risk aggregator, audit
+  seventeen probes, Truthimatics integration, risk aggregator, audit
   emitter, test framework, documentation, CI, release engineering.
 
 ## Acknowledgements

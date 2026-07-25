@@ -1,8 +1,46 @@
+# Build artifacts
 *.o
 *.d
 build/
 dist/
+
+# Coverage
 *.gcov
 *.gcda
 *.gcno
+
+# Secrets
 .minisign/
+
+# Paper (private until publication)
+paper/
+
+# Eval results (host-specific, not for repo)
+eval_results/
+
+# Python
+__pycache__/
+*.pyc
+
+# Archives
+*.tgz
+
+# Debug scripts
+evaluation/_dbg*
+
+# Local corpus
+evaluation/corpus.local.json
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
