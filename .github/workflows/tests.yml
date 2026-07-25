@@ -11,7 +11,7 @@ jobs:
     name: Unit tests
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build and run unit tests
         run: |
           make test
@@ -20,7 +20,7 @@ jobs:
     name: Integration tests (root in VM)
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run integration suite
         run: |
           sudo make test-full
