@@ -8,7 +8,7 @@
 
 ## Acknowledgements
 
-- The Truthimatics design is reused from the Z-Jail project, also
+- The Truthimatics design is reused from the [Z-Jail](https://github.com/Division-36/Z-Jail) project, also
   authored by Zierax.
 - Build and packaging conventions borrow heavily from
   [csmith-project/csmith](https://github.com/csmith-project/csmith)
