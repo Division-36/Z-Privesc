@@ -18,23 +18,23 @@
 ┌──────────────────────────────────────────────────────┐
 │                   Z-Privesc                          │
 ├──────────────────────────────────────────────────────┤
-│  suid              SUID/SGID binary audit             │
-│  capabilities      File/process Linux capabilities    │
-│  docker_socket     Exposed Docker control socket      │
-│  polkit            polkit/pkexec misconfigurations    │
-│  sudoers           Sudoers rule audit                 │
-│  cron              Cron job misconfigurations         │
-│  writable_path     World-writable $PATH entries       │
-│  writable_etc      Writable /etc auth files           │
-│  world_writable    World-writable sensitive files     │
-│  kernel_vuln       Kernel version CVE matcher         │
-│  ssh_keys          SSH private key permissions        │
-│  groups            Privileged group membership         │
-│  service           Systemd/SysV unit audit            │
-│  kernel_hardening  Weak sysctl values                 │
-│  process           Root process binary audit          │
-│  nfs               NFS export misconfigurations       │
-│  ld_preload        LD_PRELOAD/ld.so.conf audit        │
+│  suid              SUID/SGID binary audit            │
+│  capabilities      File/process Linux capabilities   │
+│  docker_socket     Exposed Docker control socket     │
+│  polkit            polkit/pkexec misconfigurations   │
+│  sudoers           Sudoers rule audit                │
+│  cron              Cron job misconfigurations        │
+│  writable_path     World-writable $PATH entries      │
+│  writable_etc      Writable /etc auth files          │
+│  world_writable    World-writable sensitive files    │
+│  kernel_vuln       Kernel version CVE matcher        │
+│  ssh_keys          SSH private key permissions       │
+│  groups            Privileged group membership       │
+│  service           Systemd/SysV unit audit           │
+│  kernel_hardening  Weak sysctl values                │
+│  process           Root process binary audit         │
+│  nfs               NFS export misconfigurations      │
+│  ld_preload        LD_PRELOAD/ld.so.conf audit       │
 └──────────────────────────────────────────────────────┘
 ```
 
