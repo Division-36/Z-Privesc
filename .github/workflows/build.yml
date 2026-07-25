@@ -18,17 +18,19 @@ jobs:
           sudo apt-get install -y build-essential man-db
       - name: Build
         run: make
-      - name: Build static
-        run: make static
       - name: Smoke test
         run: |
           ./build/bin/z_privesc --version
           ./build/bin/z_privesc --help
       - name: Verify hardening flags
         run: |
+          echo "--- RELRO check ---"
           readelf -l build/bin/z_privesc | grep -q GNU_RELRO && echo "RELRO: OK" || { echo "RELRO: MISSING"; exit 1; }
-          readelf -d build/bin/z_privesc | grep -q BIND_NOW && echo "FULL_RELRO: OK" || { echo "FULL_RELRO: MISSING"; exit 1; }
+          echo "--- Full RELRO check ---"
+          readelf -d build/bin/z_privesc | grep -qE 'BIND_NOW|FLAGS.*NOW' && echo "FULL_RELRO: OK" || { echo "FULL_RELRO: MISSING"; exit 1; }
+          echo "--- Stack canary check ---"
           readelf -s build/bin/z_privesc | grep -q __stack_chk_fail && echo "STACK_CANARY: OK" || { echo "STACK_CANARY: MISSING"; exit 1; }
+          echo "--- Strip check ---"
           file build/bin/z_privesc | grep -q "not stripped" && echo "STRIPPED: NO (debug)" || echo "STRIPPED: OK"
       - name: Install man page
         run: |

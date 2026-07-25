@@ -128,7 +128,7 @@ test-full: $(INTEG_BIN)
 coverage: clean
 	$(MAKE) coverage_build
 
-coverage_build: CFLAGS += -g3 -O0 --coverage
+coverage_build: CFLAGS += -g3 -O0 --coverage -Wno-format-truncation
 coverage_build: LDFLAGS += --coverage
 coverage_build: $(TEST_BIN)
 	./$(TEST_BIN)

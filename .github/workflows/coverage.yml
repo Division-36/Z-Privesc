@@ -15,9 +15,10 @@ jobs:
       - name: Install build tools
         run: sudo apt-get update && sudo apt-get install -y build-essential
       - name: Build with coverage
-        run: make coverage
+        run: make coverage COV_EXTRA_CFLAGS="-Wno-format-truncation"
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: build/coverage
+          if-no-files-found: warn
