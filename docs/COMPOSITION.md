@@ -186,4 +186,5 @@ If no `ROOT`-reachable token exists, the engine emits `"escalation_paths":[]`.
   fixed and verified on Kali WSL2 and Ubuntu 22.04 LTS.
 - Path-level composition is weak: the single-chain-per-token collapse loses
   distinct routes and intermediate derived states carry `null` technique, so
-  `escalation_paths` labels under-report (path recall 0.417 on the slice).
+  `escalation_paths` labels under-report (path recall 0.417 on the slice
+  vs. overall path recall 0.943 from detection alone).

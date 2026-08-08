@@ -63,7 +63,7 @@ multipass exec zp-2204 -- sudo /tmp/zp/build/bin/z_privesc --all --json
 | Brier score (seed) | 0.109 |
 | Observations | 353 |
 | Clean-host findings | 78 per host |
-| Mean scan time | ~13 s (fast targets) |
+| Mean scan time | 2.65 s (full `--all` scan) |
 
 ## Ground Truth
 

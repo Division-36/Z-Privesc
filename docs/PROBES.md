@@ -370,26 +370,33 @@ in statically linked binaries.
 
 ---
 
-## 13. `service` - Systemd unit abuse
+## 13. `service` - Systemd/SysV unit abuse
 
 ### What it looks for
 
-Units under `/etc/systemd/system/`, `/lib/systemd/system/`, and
-`/usr/lib/systemd/system/`.  Any unit file that is world-writable
+**Systemd:** Units under `/etc/systemd/system/`, `/lib/systemd/system/`,
+and `/usr/lib/systemd/system/`.  Any unit file that is world-writable
 is flagged (an attacker who can write a unit can obtain the
 service's privileges on next start/reload).
+
+**SysV init.d:** Scripts under `/etc/init.d/` and `/etc/rc*.d/`.
+World-writable init scripts are flagged (an attacker who can modify
+a script executed as root gains root on next service restart).
 
 ### Evidence weighting
 
 | Condition                          | Weight | Severity |
 |------------------------------------|--------|----------|
 | World-writable unit file           | 0.95   | CRITICAL |
+| World-writable init.d script       | 0.95   | CRITICAL |
 | World-writable unit directory      | 0.70   | MEDIUM   |
 
 ### False-positive mitigations
 
 - Vendor-shipped units are usually root-owned and non-writable;
   only genuinely world-writable files escalate.
+- SysV init.d scripts are checked for world-writable mode bits;
+  vendor scripts in `/usr/share/` are excluded.
 
 ---
 
@@ -444,6 +451,10 @@ PID-scoped probe: it inspects live processes, not the filesystem.
 or `insecure`.  Such exports let a remote root client act as local
 root on the export.
 
+The parser splits exports on `(` to handle the standard
+`host(options)` format, supporting multiple hosts per line and
+complex option strings.
+
 ### Evidence weighting
 
 | Condition                          | Weight | Severity |
@@ -456,6 +467,8 @@ root on the export.
 - The probe reports the parsed misconfiguration even if `nfsd` is
   not currently running; a live export is a stronger signal but
   the static config is the audit artefact.
+- The parser handles standard `/etc/exports` format with
+  `host(options)` syntax and ignores comment lines.
 
 ---
 
