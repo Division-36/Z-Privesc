@@ -173,11 +173,11 @@ sequenceDiagram
 | 8 | `kernel_vuln` | Kernel version CVE matcher | CRITICAL |
 | 9 | `cron` | Cron job misconfigurations | CRITICAL |
 | 10 | `sudoers` | Sudoers rule audit | CRITICAL |
-| 11 | `ssh_keys` | SSH private key permissions | HIGH |
+| 11 | `ssh_keys` | SSH private key permissions | CRITICAL |
 | 12 | `groups` | Privileged group membership | CRITICAL |
 | 13 | `service` | Systemd/SysV unit audit | CRITICAL |
-| 14 | `kernel_hardening` | Weak sysctl values | MEDIUM |
-| 15 | `process` | Root process binary audit | HIGH |
+| 14 | `kernel_hardening` | Weak sysctl values | HIGH |
+| 15 | `process` | Root process binary audit | CRITICAL |
 | 16 | `nfs` | NFS export misconfigurations | CRITICAL |
 | 17 | `ld_preload` | LD_PRELOAD/ld.so.conf audit | CRITICAL |
 
@@ -205,7 +205,7 @@ See [docs/TRUTHIMATICS.md](docs/TRUTHIMATICS.md) for the full specification.
 ## Accuracy
 
 Measured against a 37-target ground-truth corpus across two distros
-(Kali WSL2 + Ubuntu 26.04 multipass):
+(Kali WSL2 + Ubuntu 22.04 LTS multipass):
 
 | Metric | Value |
 |--------|-------|
@@ -226,6 +226,8 @@ Measured against a 37-target ground-truth corpus across two distros
 | Lynis | 3.1.6 | 100.45 s | 850 lines |
 | LinPEAS | latest | 120.03 s | 378 lines |
 
+(LinPEAS timings are capped at 120 s; unmeasured runs exceed that.)
+
 See [benchmarks.md](benchmarks.md) for full methodology and
 [docs/EVALUATION.md](docs/EVALUATION.md) for reproduction.
 
@@ -234,14 +236,18 @@ See [benchmarks.md](benchmarks.md) for full methodology and
 ## Usage
 
 ```text
-z_privesc [--all] [--probe=<name>] [--json] [--verbose] [--version] [--help]
+z_privesc [--all] [--probe=<name>] [--root=<dir>] [--json] [--html]
+          [--quiet] [--verbose] [--version] [--help]
 ```
 
 | Flag | Description |
 |------|-------------|
-| `--all` | Run all 17 probes |
+| `--all` | Run all 17 probes (default) |
 | `--probe=<name>` | Run a single probe (repeatable) |
-| `--json` | Output findings as JSON |
+| `--root=<dir>` | Scan an alternate filesystem root (containers) |
+| `--json` | Emit JSON audit report to stdout |
+| `--html` | Emit HTML audit report to stdout |
+| `--quiet` | Suppress progress output |
 | `--verbose` | Enable debug logging |
 | `--version` | Show version and exit |
 | `--help` | Show usage and exit |
@@ -251,7 +257,6 @@ z_privesc [--all] [--probe=<name>] [--json] [--verbose] [--version] [--help]
 ```sh
 # Run all probes with JSON output
 ./build/bin/z_privesc --all --json | jq
-
 # Run a single probe
 ./build/bin/z_privesc --probe=suid
 
@@ -282,7 +287,7 @@ z_privesc [--all] [--probe=<name>] [--json] [--verbose] [--version] [--help]
 
 ```sh
 make              # build binary
-make test         # unit tests (58/58)
+make test         # unit tests (58 passed, 2 skipped)
 make test-full    # integration tests (requires root in VM)
 make static       # portable static binary
 make coverage     # gcov coverage report
@@ -292,7 +297,7 @@ make clean        # remove build artifacts
 
 The binary is built as a Position Independent Executable with
 `-fstack-protector-strong`, `-D_FORTIFY_SOURCE=2`, full RELRO,
-and `-z now`.
+`-z now`, and `-Wl,--as-needed`.
 
 ### Compile-time Options
 
@@ -307,10 +312,10 @@ make CC=clang CFLAGS="-O3 -march=native"   # custom compiler/flags
 ### Quick Test (no root)
 
 ```sh
-make test         # 58 unit tests
+make test         # 60 unit tests (58 pass, 2 skip)
 ```
 
-These don't need root and run in under 1 second.
+These don't need root and run in a few seconds.
 
 ### Full Test Suite
 
@@ -322,7 +327,7 @@ Requires root for probing system state. The test suite covers:
 
 | # | Test | What it tests |
 |---|------|---------------|
-| 1-58 | Unit tests | Probe logic, truthimatics engine, risk scoring |
+| 1-58 | Unit tests (of 60 registered; 2 skip) | Probe logic, truthimatics engine, risk scoring |
 | 1-37 | Integration tests | Real-world probes against ground-truth corpus |
 
 ---
@@ -385,15 +390,16 @@ Requires root for probing system state. The test suite covers:
 - 17 privilege-escalation probes
 - Truthimatics verdict engine
 - JSON/HTML audit output
-- 58 unit tests + 37-target ground-truth corpus
-- Man page, completions (bash, zsh, fish)
+- 60 unit tests (58 pass, 2 skip) + 37-target ground-truth corpus
+- Man page, minisign-signed releases
 
 ### v2 (planned)
-- Remote network probing
-- Custom probe plugins
+- WASM probe runtime
+- Distributed audit aggregation
+- Signed probe-rule updates
 - CIS/DISA STIG integration
 - Cross-distro kernel CVE database
-- Release signing (minisign)
+- Educational mode
 
 ---
 

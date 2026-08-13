@@ -307,12 +307,12 @@ Headline results:
 | Path precision | 0.971 (33/34) |
 | Brier score (seed) | 0.109 |
 | Observations | 353 |
-| Clean-host ambient findings | 78 per host |
+| Clean-host ambient findings | 47 per host |
 
 35 targets evaluated on Kali WSL2 (kernel 6.18.33); 2 targets
 (kernel_hardening, process_root) evaluated on Ubuntu 22.04 LTS multipass
 VM (kernel 5.15.0) due to WSL2 limitations. Zero false positives on
-planted targets. The 2 clean-host baselines each report 78 ambient
+planted targets. The 2 clean-host baselines each report 47 ambient
 findings (system SUID binaries, capabilities, polkit, etc.) — these are
 real system state, not misclassifications.
 

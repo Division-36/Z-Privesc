@@ -62,7 +62,7 @@ multipass exec zp-2204 -- sudo /tmp/zp/build/bin/z_privesc --all --json
 | Path precision | 0.971 (33/34) |
 | Brier score (seed) | 0.109 |
 | Observations | 353 |
-| Clean-host findings | 78 per host |
+| Clean-host findings | 47 per host |
 | Mean scan time | 2.65 s (full `--all` scan) |
 
 ## Ground Truth

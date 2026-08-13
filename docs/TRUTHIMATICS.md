@@ -112,12 +112,12 @@ The per-probe score is the worst link, `S_probe = max_i s_i`. The
 overall system score is
 
 ```
-S_overall = max_probe S_probe  +  min(1.5, 0.1 · k)
+S_overall = max_probe S_probe  +  min(1.5, 0.3 · (k − 1))
 ```
 
-where `k` is the number of probes returning `D`. The bonus rewards
-*additional* independent escalation paths but is capped so a single
-decisive finding still dominates the label.
+where `k` is the number of probes scoring ≥ 5.0 (applied only when
+`k ≥ 2`). The bonus rewards *additional* independent escalation paths
+but is capped so a single decisive finding still dominates the label.
 
 ## Worked examples
 
@@ -170,5 +170,5 @@ severity_base and severity_range are tuned per severity band so
 that INFO findings are small, MEDIUM findings sit around 5, and
 CRITICAL findings saturate near 10.  The per-probe score is the
 worst finding in the chain.  The overall score is the worst
-probe score plus a small bonus for additional DETERMINISTIC
-probes (capped at +1.5).
+probe score plus `0.3 · (k − 1)` (capped at +1.5), where `k` is
+the number of probes scoring ≥ 5.0.

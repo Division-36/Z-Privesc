@@ -22,7 +22,7 @@ strategy, and the false-positive mitigations applied.
 | 14 | `kernel_hardening` | Weak sysctl hardening values |
 | 15 | `process` | Suspicious running processes |
 | 16 | `nfs` | `no_root_squash` NFS exports |
-| 17 | `ld_preload` | World-writable `ld.so.conf` / `ld.so.preload` |
+| 17 | `ld_preload` | World-writable `ld.so.conf` / global `LD_*` |
 
 > **Implementation note.** Probes must never call glibc NSS functions
 > (`getpwuid`, `getgrnam`, …) directly: in a *statically linked*
@@ -57,9 +57,9 @@ escaping the caller's permission set.
 ### Skipped directories
 
 The walker deliberately skips `proc`, `sys`, `dev`, `snap`, `run`,
-`tmp`, `var`, and `lost+found`.  These either re-enter the
-filesystem (`/proc/<pid>/root`), contain transient content, or
-contain a flood of legitimately-SUID files that drown the signal.
+and `lost+found`.  These either re-enter the filesystem
+(`/proc/<pid>/root`), contain transient content, or contain a flood
+of legitimately-SUID files that drown the signal.
 
 ### False-positive mitigations
 
@@ -111,7 +111,8 @@ plus a read of `/proc/self/status`'s `CapBnd` (bounding) line.
 
 `cap_sys_admin`, `cap_dac_override`, `cap_setuid`, `cap_setgid`,
 `cap_sys_ptrace`, `cap_net_raw`, `cap_dac_read_search`,
-`cap_sys_module`, `cap_sys_rawio`, `cap_linux_immutable`.
+`cap_sys_module`, `cap_sys_rawio`, `cap_linux_immutable`,
+`cap_sys_boot`, `cap_net_admin`.
 
 ### Evidence weighting
 
@@ -186,20 +187,14 @@ current user can drive `docker` operations.
 
 ### CVE coverage
 
-- **CVE-2021-4034 (PwnKit)** - any polkit < 0.120 with SUID
-  `pkexec` is CRITICAL.
-- **CVE-2021-3156 (Baron Samedit)** - sudo before 1.9.5p2; the
-  probe is a *kernel* version check elsewhere, but the polkit
-  probe notes the polkit version because operators update the two
-  together.
+- **CVE-2021-4034 (PwnKit)** - SUID `pkexec` with polkit before
+  0.122 is CRITICAL (weight 0.99).  polkit 0.120.x or 0.121.0-0.121.3
+  with SUID `pkexec` is HIGH (weight 0.70).
 
-### False-positive mitigations
-
-- The probe does not attempt to exploit `pkexec`; it only inspects
-  version and mode bits.
-- World-writable polkit rules directories are flagged even if
-  polkit is up to date - the directory misconfiguration is
-  independent of the package version.
+The probe inspects the version file and mode bits only; it does not
+attempt to exploit `pkexec`.  World-writable polkit rules
+directories are flagged independently of the package version (weight
+0.95, CRITICAL).
 
 ---
 
@@ -222,9 +217,9 @@ file with the world-write bit set, an evidence link is added.
 
 ### Sticky-bit sub-probe
 
-`/tmp`, `/dev/shm`, and `/var/tmp` are checked for the sticky bit
-(`S_ISVTX`).  A missing sticky bit is HIGH severity with weight
-0.85.
+`/tmp`, `/dev/shm`, `/var/tmp`, `/var/spool`, and `/var/lock` are
+checked for the sticky bit (`S_ISVTX`).  A missing sticky bit is
+HIGH severity with weight 0.85.
 
 ---
 
@@ -236,20 +231,17 @@ file with the world-write bit set, an evidence link is added.
 parsed as `major.minor.patch`.  Each entry in the built-in CVE
 table is matched if the host kernel falls within the entry's range.
 
-### Built-in CVE table (abridged)
+### Built-in CVE table
 
-| CVE              | Name                                | Severity  |
-|------------------|-------------------------------------|-----------|
-| CVE-2016-5195    | Dirty COW                           | CRITICAL  |
-| CVE-2021-3156    | Baron Samedit (sudo)                | CRITICAL  |
-| CVE-2021-4034    | PwnKit (polkit)                     | CRITICAL  |
-| CVE-2022-0847    | Dirty Pipe                          | CRITICAL  |
-| CVE-2022-2588    | cls_route UAF                       | HIGH      |
-| CVE-2023-0386    | OverlayFS FUSE                      | HIGH      |
-| CVE-2023-32233   | Netfilter GameOver(lay)             | HIGH      |
-| CVE-2023-2640    | OverlayFS privilege escalation      | HIGH      |
-| CVE-2023-4911    | Looney Tunables (glibc)             | CRITICAL  |
-| CVE-2024-1086    | nf_tables UAF                       | HIGH      |
+| CVE              | Name                                | Weight | Severity  |
+|------------------|-------------------------------------|--------|-----------|
+| CVE-2016-5195    | Dirty COW (mm/gup.c PTRACE race)    | 0.95   | CRITICAL  |
+| CVE-2022-0847    | Dirty Pipe (pipe buffer flag leak)  | 0.95   | CRITICAL  |
+| CVE-2022-2588    | cls_route UAF                       | 0.75   | HIGH      |
+| CVE-2023-0386    | OverlayFS FUSE capability leak      | 0.70   | HIGH      |
+| CVE-2023-32233   | Netfilter UAF (GameOver(lay))       | 0.70   | HIGH      |
+| CVE-2023-2640    | OverlayFS privilege escalation      | 0.70   | HIGH      |
+| CVE-2024-1086    | nf_tables UAF                       | 0.60   | HIGH      |
 
 ### Conservative matching
 
@@ -270,18 +262,25 @@ REJECT link so the engine can be certain to adopt REJECT.
 
 ### What it looks for
 
-`/etc/crontab`, every file under `/etc/cron.d/`, and the spool
-directories `/var/spool/cron/crontabs/`.  World-writable files
-and crontabs containing a `*` wildcard in the user field (which
-lets any user's jobs run as another) are flagged.
+`/etc/crontab`, every file under `/etc/cron.d/`, `/etc/cron.daily/`,
+`/etc/cron.hourly/`, `/etc/cron.weekly/`, `/etc/cron.monthly/`,
+`/etc/anacrontab`, and the spool directories `/var/spool/cron/` and
+`/var/spool/cron/crontabs/`.  World-writable files, cron symlinks
+that resolve to world-writable targets, and wildcard-injection
+candidates are flagged.
 
 ### Evidence weighting
 
-| Condition                          | Weight | Severity |
-|------------------------------------|--------|----------|
-| World-writable crontab             | 0.95   | CRITICAL |
-| Wildcard user field (`* * * * *`)  | 0.80   | HIGH     |
-| Writable cron directory            | 0.70   | MEDIUM   |
+| Condition                              | Weight | Severity |
+|----------------------------------------|--------|----------|
+| World-writable crontab / cron file     | 0.99   | CRITICAL |
+| Cron symlink resolves to world-writable | 0.95  | CRITICAL |
+| Wildcard-injection candidate           | 0.70   | HIGH     |
+
+A wildcard-injection candidate is a crontab line containing `*`
+together with a shell builtin/utility that expands arguments
+(`tar`, `rsync`, `zip`, `cp `, `mv `, `chown`, `chmod`) — the
+classic backup-job exploit.
 
 ### False-positive mitigations
 
@@ -318,24 +317,25 @@ linking.
 
 ### What it looks for
 
-`/root/.ssh/`, `/home/*/.ssh/`, and `/etc/ssh/`.  Any file whose
-name matches a private-key pattern (`id_rsa`, `id_ed25519`,
-`id_ecdsa`, `*.key`, `*.pem`) that is world- or group-readable is
+`/root/.ssh/` and `/home/*/.ssh/`.  Any file whose name matches a
+private-key pattern (`id_rsa`, `id_dsa`, `id_ecdsa`, `id_ed25519`,
+`id_xmss`, `identity`, `key`, `private_key`, plus names containing
+`_key` or ending `.pem`) that is world- or group-readable is
 flagged.
 
 ### Evidence weighting
 
 | Condition                          | Weight | Severity |
 |------------------------------------|--------|----------|
-| World-readable private key         | 0.90   | HIGH     |
-| Group-readable private key         | 0.70   | MEDIUM   |
+| World-writable private key         | 0.95   | CRITICAL |
+| Group- or world-readable (not ww)  | 0.60   | HIGH     |
 
 ### False-positive mitigations
 
-- `authorized_keys` and `known_hosts` are exempt (they are not
-  secret).
-- The key pattern match is prefix/suffix based, not content based,
-  to avoid reading key material into memory.
+- `authorized_keys` and `known_hosts` never match the key-name
+  patterns, so they are not reported.
+- The key pattern match is name-based, not content based, to avoid
+  reading key material into memory.
 
 ---
 
@@ -375,28 +375,30 @@ in statically linked binaries.
 ### What it looks for
 
 **Systemd:** Units under `/etc/systemd/system/`, `/lib/systemd/system/`,
-and `/usr/lib/systemd/system/`.  Any unit file that is world-writable
-is flagged (an attacker who can write a unit can obtain the
-service's privileges on next start/reload).
+and `/usr/lib/systemd/system/`.  Any `.service` file that is
+world-writable is flagged (an attacker who can write a unit can
+obtain the service's privileges on next start/reload).  A root-owned
+unit whose `ExecStart=` binary is world-writable is also flagged.
 
-**SysV init.d:** Scripts under `/etc/init.d/` and `/etc/rc*.d/`.
+**SysV init.d:** Scripts under `/etc/init.d/` and `/etc/rc.d/`.
 World-writable init scripts are flagged (an attacker who can modify
 a script executed as root gains root on next service restart).
 
 ### Evidence weighting
 
-| Condition                          | Weight | Severity |
-|------------------------------------|--------|----------|
-| World-writable unit file           | 0.95   | CRITICAL |
-| World-writable init.d script       | 0.95   | CRITICAL |
-| World-writable unit directory      | 0.70   | MEDIUM   |
+| Condition                              | Weight | Severity |
+|----------------------------------------|--------|----------|
+| World-writable unit file               | 0.99   | CRITICAL |
+| Root service w/ world-writable ExecStart | 0.99 | CRITICAL |
+| World-writable SysV init script        | 0.99   | CRITICAL |
 
 ### False-positive mitigations
 
 - Vendor-shipped units are usually root-owned and non-writable;
   only genuinely world-writable files escalate.
-- SysV init.d scripts are checked for world-writable mode bits;
-  vendor scripts in `/usr/share/` are excluded.
+- Only `*.service` files are scanned under systemd directories;
+  vendor scripts in `/usr/share/` are not part of the SysV scan
+  roots.
 
 ---
 
@@ -404,20 +406,23 @@ a script executed as root gains root on next service restart).
 
 ### What it looks for
 
-A set of sysctl values are read from `/proc/sys`:
+Ten sysctl values are read from `/proc/sys`; each value below its
+required threshold adds an evidence link:
 
-| sysctl                    | Safe value | Risk if weak     |
-|---------------------------|------------|------------------|
-| `kernel.randomize_va_space` | `2`    | ASLR disabled    |
-| `kernel.dmesg_restrict`   | `1`        | kernel leaks     |
-| `kernel.kptr_restrict`    | `1`/`2`    | kernel ptr leaks |
-| `kernel.unprivileged_bpf_disabled` | `1` | eBPF abuse |
-| `kernel.yama.ptrace_scope`| `1`/`2`/`3` | ptrace abuse |
+| sysctl                                   | Required | Weight | Severity |
+|------------------------------------------|----------|--------|----------|
+| `kernel.randomize_va_space`              | `2`      | 0.85   | HIGH     |
+| `kernel.yama.ptrace_scope`               | `1`      | 0.70   | MEDIUM   |
+| `kernel.dmesg_restrict`                  | `1`      | 0.70   | MEDIUM   |
+| `kernel.kptr_restrict`                   | `2`      | 0.60   | MEDIUM   |
+| `kernel.unprivileged_bpf_disabled`       | `1`      | 0.85   | HIGH     |
+| `kernel.perf_event_paranoid`             | `3`      | 0.50   | LOW      |
+| `kernel.kexec_load_disabled`             | `1`      | 0.60   | MEDIUM   |
+| `fs.protected_hardlinks`                 | `1`      | 0.70   | MEDIUM   |
+| `fs.protected_symlinks`                  | `1`      | 0.70   | MEDIUM   |
+| `fs.suid_dumpable`                       | `0`      | 0.70   | MEDIUM   |
 
-### Evidence weighting
-
-Each weak value adds a MEDIUM (0.5) evidence link; a fully hardened
-host gets a REJECT (CLEAN) link.
+A fully hardened host gets a REJECT (CLEAN) link.
 
 ---
 
@@ -425,21 +430,21 @@ host gets a REJECT (CLEAN) link.
 
 ### What it looks for
 
-`/proc` is scanned for processes whose executable or libraries are
-world-writable, or which run with elevated capabilities.  This is a
-PID-scoped probe: it inspects live processes, not the filesystem.
+`/proc` is scanned for root-owned processes whose executable is
+world-writable or whose binary has been deleted while running.  This
+is a PID-scoped probe: it inspects live processes, not the filesystem.
 
 ### Evidence weighting
 
-| Condition                          | Weight | Severity |
-|------------------------------------|--------|----------|
-| Writable executable of a running PID | 0.80 | HIGH   |
-| Process with dangerous capabilities  | 0.70 | MEDIUM |
+| Condition                             | Weight | Severity |
+|---------------------------------------|--------|----------|
+| Root process running world-writable exe | 0.95 | CRITICAL |
+| Root process running deleted binary   | 0.70   | MEDIUM   |
 
 ### False-positive mitigations
 
-- Only the executable path and `/proc/<pid>/status` are read; no
-  attach, no `ptrace`.
+- Only the executable path (`/proc/<pid>/exe`) and the `Uid` field
+  of `/proc/<pid>/status` are read; no attach, no `ptrace`.
 
 ---
 
@@ -447,9 +452,10 @@ PID-scoped probe: it inspects live processes, not the filesystem.
 
 ### What it looks for
 
-`/etc/exports` is parsed for exports containing `no_root_squash`
-or `insecure`.  Such exports let a remote root client act as local
-root on the export.
+`/etc/exports` is parsed for exports that are world-exported (`*`)
+or contain `no_root_squash` or `insecure`.  A world-exported
+`no_root_squash` mount lets a remote root client act as local root
+on the export.
 
 The parser splits exports on `(` to handle the standard
 `host(options)` format, supporting multiple hosts per line and
@@ -459,8 +465,8 @@ complex option strings.
 
 | Condition                          | Weight | Severity |
 |------------------------------------|--------|----------|
-| `no_root_squash` export           | 0.90   | CRITICAL |
-| `insecure` export                 | 0.60   | MEDIUM   |
+| World-exported `no_root_squash`    | 0.99   | CRITICAL |
+| Other world / insecure / no_root_squash | 0.60 | HIGH  |
 
 ### False-positive mitigations
 
@@ -476,17 +482,18 @@ complex option strings.
 
 ### What it looks for
 
-`/etc/ld.so.preload` (applies to every process) and every file
-under `/etc/ld.so.conf.d/`.  Any world-writable entry is flagged:
-an attacker who controls a preloaded library owns every newly
-started process.
+`/etc/ld.so.conf` (or the `/etc/ld.so.conf.d/` directory) and every
+file under `/etc/ld.so.conf.d/`.  Any world-writable entry is
+flagged: an attacker who controls a library path used by the dynamic
+linker owns every newly started process.  A global `LD_PRELOAD` or
+`LD_LIBRARY_PATH` set in `/etc/environment` is also flagged.
 
 ### Evidence weighting
 
-| Condition                          | Weight | Severity |
-|------------------------------------|--------|----------|
-| World-writable `ld.so.preload`     | 0.99   | CRITICAL |
-| World-writable `ld.so.conf.d` file | 0.95   | CRITICAL |
+| Condition                             | Weight | Severity |
+|---------------------------------------|--------|----------|
+| World-writable `ld.so.conf` / `.conf.d` file | 0.99 | CRITICAL |
+| Global `LD_PRELOAD`/`LD_LIBRARY_PATH` in `/etc/environment` | 0.70 | HIGH |
 
 ### False-positive mitigations
 

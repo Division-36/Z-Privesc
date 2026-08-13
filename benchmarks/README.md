@@ -25,7 +25,7 @@ on 2026-07-14. See `environment.json` for the exact environment.
 `data/accuracy/accuracy.json` records the 37-category expanded detection study: **37/37 true positives,
 0 false positives on planted targets**. Detection recall 1.0000, precision 1.0000 (macro).
 Path recall 0.9429 (33/35), path precision 0.9714 (33/34).
-Brier seed: 0.109 (353 observations). Clean-host FP baseline: 78 ambient findings per host.
+Brier seed: 0.109 (353 observations). Clean-host FP baseline: 47 ambient findings per host.
 
 35 targets evaluated on Kali WSL2; 2 targets (kernel_hardening, process_root) evaluated on
 Ubuntu 22.04 LTS (multipass VM) due to WSL2 limitations (locked sysctls, background process

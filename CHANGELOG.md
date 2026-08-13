@@ -7,15 +7,17 @@ follow [Semantic Versioning](https://semver.org/).
 
 ### Expanded evaluation
 - 37-target ground-truth corpus: 35 targets on Kali WSL2, 2 on
-  Ubuntu 26.04 multipass VM. Detection recall **1.000** (37/37),
+  Ubuntu 22.04 LTS multipass VM. Detection recall **1.000** (37/37),
   path recall **0.943** (33/35), zero false positives on planted
   targets.
 - Multi-distro verification across kernel 6.18 (WSL2) and kernel
-  7.0 (Ubuntu 26.04).
+  5.15 (Ubuntu 22.04).
 - Head-to-head benchmark against LinPEAS and Lynis on identical VM.
   Z-Privesc: 2.65s full scan. Lynis: 100.45s. LinPEAS: 120.03s.
 - Full accuracy data: benchmarks/data/accuracy/accuracy.json.
 - Reproduction guide: docs/EVALUATION.md.
+- Test suite: 60 registered unit tests, 58 executed, 2 skipped
+  (`polkit_old_version_match`, `capabilities_long_paths`).
 
 ### Probe improvements
 - NFS probe rewritten: standard host(options) export format parsing.
@@ -68,7 +70,8 @@ follow [Semantic Versioning](https://semver.org/).
 - CLI flags: `--quiet`, `--verbose`, `--probe=NAME`.
 
 ### Changed
-- Initial public release; no prior versions exist.
+- First stable release.  The 0.x line was internal development
+  milestones; 1.0.0 is the first tagged, public release.
 
 ### Security
 - All filesystem probes are read-only by default.  The Docker socket
@@ -90,7 +93,7 @@ follow [Semantic Versioning](https://semver.org/).
   well-formed evidence chain on a clean Ubuntu 22.04 VM.
 - CLI argument parser.
 
-## [0.1.0] - 2026-04-08
+## [0.1.0] - 2026-05-15
 
 ### Added
 - Project bootstrap.  `make` produces a binary that prints
